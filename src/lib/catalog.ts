@@ -236,6 +236,10 @@ const localModelAssetMap = new Map(
   ]),
 );
 
+const modelAssetBaseUrl = normalizeModelAssetBaseUrl(
+  process.env.NEXT_PUBLIC_MODEL_ASSET_BASE_URL,
+);
+
 function withScrapedPart<T extends Part>(part: T): T {
   const scraped = scrapedPartMap.get(part.id);
   const openDb = openDbPartMap.get(part.id);
@@ -272,10 +276,11 @@ function withScrapedPart<T extends Part>(part: T): T {
 function withLocalModelAsset<T extends Part>(part: T): T {
   const asset = localModelAssetMap.get(part.id);
   if (!asset) return part;
+  const model = asset.model ?? part.model;
 
   return {
     ...part,
-    model: asset.model ?? part.model,
+    model: model ? withResolvedModelAssetUrl(model) : undefined,
     productImageUrl: asset.productImageUrl ?? part.productImageUrl,
     purchaseLinks: {
       ...part.purchaseLinks,
@@ -284,6 +289,30 @@ function withLocalModelAsset<T extends Part>(part: T): T {
     externalIds: mergeExternalIds(part.externalIds, asset.externalIds),
     modelSource: asset.modelSource ?? part.modelSource,
   };
+}
+
+function withResolvedModelAssetUrl(model: PartModel): PartModel {
+  if (!model.assetUrl) return model;
+  return {
+    ...model,
+    assetUrl: resolveModelAssetUrl(model.assetUrl),
+  };
+}
+
+function resolveModelAssetUrl(assetUrl: string) {
+  if (!modelAssetBaseUrl || !assetUrl.startsWith("/models/")) return assetUrl;
+
+  if (modelAssetBaseUrl.endsWith("/models")) {
+    return `${modelAssetBaseUrl}${assetUrl.slice("/models".length)}`;
+  }
+
+  return `${modelAssetBaseUrl}${assetUrl}`;
+}
+
+function normalizeModelAssetBaseUrl(value?: string) {
+  const trimmed = value?.trim();
+  if (!trimmed) return "";
+  return trimmed.replace(/\/+$/g, "");
 }
 
 function mergeExternalIds(...items: Array<ExternalIds | undefined>) {

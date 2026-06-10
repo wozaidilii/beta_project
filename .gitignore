@@ -9,3 +9,6 @@ yarn.lock
 *.tsbuildinfo
 dist
 coverage
+output/
+.vercel
+.env*
