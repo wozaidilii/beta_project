@@ -1,4 +1,5 @@
 import scrapedCoreParts from "~/data/scraped-core-parts.json";
+import openDbParts from "~/data/opendb-parts.json";
 
 export const categoryIds = [
   "cpu",
@@ -18,6 +19,13 @@ export type MemoryType = "DDR5" | "DDR4";
 export type FormFactor = "ATX" | "Micro-ATX" | "Mini-ITX";
 export type Severity = "error" | "warning" | "ok";
 export type Vec3 = [number, number, number];
+
+export type ExternalIds = {
+  opendb_id?: string;
+  jdSku?: string;
+  taobaoItemId?: string;
+  modelAssetId?: string;
+};
 
 export type PartSource = {
   sourceName: string;
@@ -67,22 +75,59 @@ export type Part = {
   memoryType?: MemoryType;
   formFactor?: FormFactor;
   supportedFormFactors?: FormFactor[];
+  supportedPsuFormFactors?: string[];
   wattage?: number;
   tdp?: number;
   coolingTdp?: number;
   lengthMm?: number;
+  caseExpansionSlotWidth?: number;
+  totalSlotWidth?: number;
+  caseExpansionSlots?: number;
   gpuClearanceMm?: number;
   heightMm?: number;
   coolerClearanceMm?: number;
   radiatorMm?: number;
   radiatorSupportMm?: number;
+  maxPsuLengthMm?: number;
   m2Slots?: number;
   psuWattage?: number;
+  psuFormFactor?: string;
+  productImageUrl?: string;
+  purchaseLinks?: Partial<Record<"jd" | "taobao" | "tmall" | "pdd" | "official", string>>;
+  externalIds?: ExternalIds;
   source?: PartSource;
+  openDbSource?: PartSource;
   dimensions?: PhysicalDimensions;
   model?: PartModel;
   scrapedSpecs?: Record<string, string | number | boolean | string[]>;
+  openDbSpecs?: Record<string, string | number | boolean | string[]>;
 };
+
+export const importablePartFields = [
+  "socket",
+  "memoryType",
+  "formFactor",
+  "supportedFormFactors",
+  "supportedPsuFormFactors",
+  "wattage",
+  "tdp",
+  "coolingTdp",
+  "lengthMm",
+  "caseExpansionSlotWidth",
+  "totalSlotWidth",
+  "caseExpansionSlots",
+  "gpuClearanceMm",
+  "heightMm",
+  "coolerClearanceMm",
+  "radiatorMm",
+  "radiatorSupportMm",
+  "maxPsuLengthMm",
+  "m2Slots",
+  "psuWattage",
+  "psuFormFactor",
+] as const satisfies ReadonlyArray<keyof Part>;
+
+type ImportablePartPatch = Partial<Pick<Part, (typeof importablePartFields)[number]>>;
 
 type ScrapedPartRecord = {
   id: string;
@@ -97,22 +142,41 @@ type ScrapedPartRecord = {
       | "memoryType"
       | "formFactor"
       | "supportedFormFactors"
+      | "supportedPsuFormFactors"
       | "wattage"
       | "tdp"
       | "coolingTdp"
       | "lengthMm"
+      | "caseExpansionSlotWidth"
+      | "totalSlotWidth"
+      | "caseExpansionSlots"
       | "gpuClearanceMm"
       | "heightMm"
       | "coolerClearanceMm"
       | "radiatorMm"
       | "radiatorSupportMm"
+      | "maxPsuLengthMm"
       | "m2Slots"
       | "psuWattage"
+      | "psuFormFactor"
     >
   >;
+  externalIds?: ExternalIds;
   dimensions?: PhysicalDimensions;
   model?: PartModel;
   scrapedSpecs?: Record<string, string | number | boolean | string[]>;
+};
+
+type OpenDbPartRecord = {
+  id: string;
+  category: CategoryId;
+  source: PartSource;
+  externalIds?: ExternalIds;
+  part?: ImportablePartPatch;
+  dimensions?: PhysicalDimensions;
+  openDbSpecs?: Record<string, string | number | boolean | string[]>;
+  importStatus?: "ok" | "skipped" | "failed";
+  importError?: string;
 };
 
 const scrapedPartMap = new Map(
@@ -122,18 +186,54 @@ const scrapedPartMap = new Map(
   ]),
 );
 
+const openDbPartMap = new Map(
+  (openDbParts as unknown as OpenDbPartRecord[]).map((record) => [
+    record.id,
+    record,
+  ]),
+);
+
 function withScrapedPart<T extends Part>(part: T): T {
   const scraped = scrapedPartMap.get(part.id);
-  if (!scraped) return part;
+  const openDb = openDbPartMap.get(part.id);
+
+  const withScraped = scraped
+    ? {
+        ...part,
+        ...scraped.part,
+        externalIds: mergeExternalIds(part.externalIds, scraped.externalIds),
+        source: scraped.source,
+        dimensions: scraped.dimensions,
+        model: scraped.model,
+        scrapedSpecs: scraped.scrapedSpecs,
+      }
+    : part;
+
+  if (!openDb) return withScraped;
 
   return {
-    ...part,
-    ...scraped.part,
-    source: scraped.source,
-    dimensions: scraped.dimensions,
-    model: scraped.model,
-    scrapedSpecs: scraped.scrapedSpecs,
+    ...withScraped,
+    ...pickDefined(openDb.part),
+    externalIds: mergeExternalIds(withScraped.externalIds, openDb.externalIds),
+    openDbSource: openDb.source,
+    dimensions: {
+      ...withScraped.dimensions,
+      ...pickDefined(openDb.dimensions),
+    },
+    openDbSpecs: openDb.openDbSpecs,
   };
+}
+
+function mergeExternalIds(...items: Array<ExternalIds | undefined>) {
+  const merged = Object.assign({}, ...items.filter(Boolean)) as ExternalIds;
+  return Object.keys(merged).length > 0 ? merged : undefined;
+}
+
+function pickDefined<T extends object>(value?: T) {
+  if (!value) return {};
+  return Object.fromEntries(
+    Object.entries(value).filter(([, item]) => item !== undefined && item !== null),
+  ) as Partial<T>;
 }
 
 export type PartSelection = Partial<Record<CategoryId, string>>;
@@ -205,7 +305,7 @@ export const catalog: Record<CategoryId, Part[]> = {
       tdp: 65,
       metrics: { gaming: 88, creator: 82, ai: 64, quiet: 88 },
     }),
-    {
+    withScrapedPart({
       id: "intel-265k",
       category: "cpu",
       name: "Core Ultra 7 265K",
@@ -218,8 +318,8 @@ export const catalog: Record<CategoryId, Part[]> = {
       wattage: 165,
       tdp: 125,
       metrics: { gaming: 89, creator: 91, ai: 72, quiet: 68 },
-    },
-    {
+    }),
+    withScrapedPart({
       id: "intel-14700f",
       category: "cpu",
       name: "Core i7-14700F",
@@ -232,7 +332,7 @@ export const catalog: Record<CategoryId, Part[]> = {
       wattage: 180,
       tdp: 65,
       metrics: { gaming: 84, creator: 86, ai: 65, quiet: 61 },
-    },
+    }),
   ],
   motherboard: [
     withScrapedPart({
@@ -265,7 +365,7 @@ export const catalog: Record<CategoryId, Part[]> = {
       m2Slots: 3,
       metrics: { gaming: 78, creator: 76, ai: 74, quiet: 74 },
     }),
-    {
+    withScrapedPart({
       id: "gigabyte-z890-aorus",
       category: "motherboard",
       name: "Z890 AORUS ELITE WIFI7",
@@ -279,8 +379,8 @@ export const catalog: Record<CategoryId, Part[]> = {
       formFactor: "ATX",
       m2Slots: 4,
       metrics: { gaming: 88, creator: 90, ai: 88, quiet: 78 },
-    },
-    {
+    }),
+    withScrapedPart({
       id: "colorful-b760m-ddr4",
       category: "motherboard",
       name: "CVN B760M FROZEN WIFI D4",
@@ -294,7 +394,7 @@ export const catalog: Record<CategoryId, Part[]> = {
       formFactor: "Micro-ATX",
       m2Slots: 2,
       metrics: { gaming: 70, creator: 68, ai: 66, quiet: 72 },
-    },
+    }),
   ],
   gpu: [
     withScrapedPart({
@@ -308,6 +408,8 @@ export const catalog: Record<CategoryId, Part[]> = {
       marketTags: ["京东自营", "DLSS", "AI 创作"],
       wattage: 285,
       lengthMm: 304,
+      caseExpansionSlotWidth: 3,
+      totalSlotWidth: 3.125,
       metrics: { gaming: 93, creator: 88, ai: 91, quiet: 70 },
     }),
     withScrapedPart({
@@ -321,9 +423,11 @@ export const catalog: Record<CategoryId, Part[]> = {
       marketTags: ["天猫旗舰", "DLSS", "低功耗"],
       wattage: 180,
       lengthMm: 242,
+      caseExpansionSlotWidth: 2,
+      totalSlotWidth: 2.5,
       metrics: { gaming: 76, creator: 72, ai: 78, quiet: 82 },
     }),
-    {
+    withScrapedPart({
       id: "rx-9070-xt",
       category: "gpu",
       name: "Radeon RX 9070 XT 16G",
@@ -334,9 +438,11 @@ export const catalog: Record<CategoryId, Part[]> = {
       marketTags: ["拼多多百亿补贴", "FSR", "大显存"],
       wattage: 304,
       lengthMm: 330,
+      caseExpansionSlotWidth: 3,
+      totalSlotWidth: 3,
       metrics: { gaming: 90, creator: 80, ai: 74, quiet: 66 },
-    },
-    {
+    }),
+    withScrapedPart({
       id: "rtx-4080-super",
       category: "gpu",
       name: "GeForce RTX 4080 SUPER 16G",
@@ -347,8 +453,10 @@ export const catalog: Record<CategoryId, Part[]> = {
       marketTags: ["线下装机店", "CUDA", "旗舰库存"],
       wattage: 320,
       lengthMm: 340,
+      caseExpansionSlotWidth: 3,
+      totalSlotWidth: 3.5,
       metrics: { gaming: 98, creator: 95, ai: 94, quiet: 62 },
-    },
+    }),
   ],
   memory: [
     withScrapedPart({
@@ -436,7 +544,7 @@ export const catalog: Record<CategoryId, Part[]> = {
     },
   ],
   cooling: [
-    {
+    withScrapedPart({
       id: "pa120-se",
       category: "cooling",
       name: "Peerless Assassin 120 SE",
@@ -448,8 +556,8 @@ export const catalog: Record<CategoryId, Part[]> = {
       coolingTdp: 220,
       heightMm: 157,
       metrics: { gaming: 78, creator: 76, ai: 72, quiet: 86 },
-    },
-    {
+    }),
+    withScrapedPart({
       id: "deepcool-ls520",
       category: "cooling",
       name: "冰堡垒 LS520 SE",
@@ -461,7 +569,7 @@ export const catalog: Record<CategoryId, Part[]> = {
       coolingTdp: 250,
       radiatorMm: 240,
       metrics: { gaming: 84, creator: 82, ai: 78, quiet: 76 },
-    },
+    }),
     withScrapedPart({
       id: "lianli-galahad-360",
       category: "cooling",
@@ -477,7 +585,7 @@ export const catalog: Record<CategoryId, Part[]> = {
     }),
   ],
   psu: [
-    {
+    withScrapedPart({
       id: "huntkey-650-gold",
       category: "psu",
       name: "MVP K650 金牌",
@@ -487,9 +595,11 @@ export const catalog: Record<CategoryId, Part[]> = {
       color: "#111827",
       marketTags: ["线下装机店", "金牌", "预算"],
       psuWattage: 650,
+      psuFormFactor: "ATX",
+      dimensions: { lengthMm: 140, widthMm: 150, heightMm: 86 },
       metrics: { gaming: 70, creator: 68, ai: 66, quiet: 72 },
-    },
-    {
+    }),
+    withScrapedPart({
       id: "superflower-750-gold",
       category: "psu",
       name: "Leadex III 750W 金牌",
@@ -499,8 +609,10 @@ export const catalog: Record<CategoryId, Part[]> = {
       color: "#fbbf24",
       marketTags: ["京东自营", "金牌", "全模组"],
       psuWattage: 750,
+      psuFormFactor: "ATX",
+      dimensions: { lengthMm: 150, widthMm: 150, heightMm: 86 },
       metrics: { gaming: 80, creator: 78, ai: 76, quiet: 80 },
-    },
+    }),
     withScrapedPart({
       id: "seasonic-850-atx3",
       category: "psu",
@@ -511,9 +623,10 @@ export const catalog: Record<CategoryId, Part[]> = {
       color: "#f59e0b",
       marketTags: ["天猫旗舰", "ATX 3.0", "显卡新接口"],
       psuWattage: 850,
+      psuFormFactor: "ATX",
       metrics: { gaming: 88, creator: 86, ai: 88, quiet: 84 },
     }),
-    {
+    withScrapedPart({
       id: "rog-1000-platinum",
       category: "psu",
       name: "ROG LOKI 1000W 白金",
@@ -523,11 +636,13 @@ export const catalog: Record<CategoryId, Part[]> = {
       color: "#ef4444",
       marketTags: ["京东自营", "白金", "高端小箱"],
       psuWattage: 1000,
+      psuFormFactor: "SFX-L",
+      dimensions: { lengthMm: 125, widthMm: 125, heightMm: 63.5 },
       metrics: { gaming: 94, creator: 94, ai: 94, quiet: 88 },
-    },
+    }),
   ],
   case: [
-    {
+    withScrapedPart({
       id: "jonsbo-d31",
       category: "case",
       name: "D31 MESH 副屏版",
@@ -540,8 +655,11 @@ export const catalog: Record<CategoryId, Part[]> = {
       gpuClearanceMm: 330,
       coolerClearanceMm: 168,
       radiatorSupportMm: 360,
+      caseExpansionSlots: 4,
+      maxPsuLengthMm: 220,
+      supportedPsuFormFactors: ["ATX", "SFX", "SFX-L"],
       metrics: { gaming: 78, creator: 76, ai: 74, quiet: 76 },
-    },
+    }),
     withScrapedPart({
       id: "lianli-o11-air-mini",
       category: "case",
@@ -555,9 +673,12 @@ export const catalog: Record<CategoryId, Part[]> = {
       gpuClearanceMm: 362,
       coolerClearanceMm: 170,
       radiatorSupportMm: 360,
+      caseExpansionSlots: 7,
+      maxPsuLengthMm: 200,
+      supportedPsuFormFactors: ["ATX", "SFX", "SFX-L"],
       metrics: { gaming: 88, creator: 84, ai: 82, quiet: 82 },
     }),
-    {
+    withScrapedPart({
       id: "sama-quzao",
       category: "case",
       name: "趣造 2 Air",
@@ -570,8 +691,11 @@ export const catalog: Record<CategoryId, Part[]> = {
       gpuClearanceMm: 350,
       coolerClearanceMm: 165,
       radiatorSupportMm: 240,
+      caseExpansionSlots: 4,
+      maxPsuLengthMm: 200,
+      supportedPsuFormFactors: ["ATX", "SFX", "SFX-L"],
       metrics: { gaming: 74, creator: 70, ai: 70, quiet: 68 },
-    },
+    }),
     withScrapedPart({
       id: "fractal-north",
       category: "case",
@@ -585,6 +709,9 @@ export const catalog: Record<CategoryId, Part[]> = {
       gpuClearanceMm: 355,
       coolerClearanceMm: 170,
       radiatorSupportMm: 240,
+      caseExpansionSlots: 7,
+      maxPsuLengthMm: 255,
+      supportedPsuFormFactors: ["ATX", "SFX", "SFX-L"],
       metrics: { gaming: 84, creator: 82, ai: 80, quiet: 90 },
     }),
   ],
@@ -868,25 +995,42 @@ function getCompatibilityIssues(
     });
   }
 
-  if (gpu?.lengthMm && pcCase?.gpuClearanceMm && gpu.lengthMm > pcCase.gpuClearanceMm) {
+  const gpuLengthMm = gpu?.lengthMm ?? gpu?.dimensions?.lengthMm;
+  const coolerHeightMm = cooling?.heightMm ?? cooling?.dimensions?.heightMm;
+  const psuLengthMm = psu?.dimensions?.lengthMm;
+
+  if (gpuLengthMm && pcCase?.gpuClearanceMm && gpuLengthMm > pcCase.gpuClearanceMm) {
     issues.push({
       id: "gpu-length",
       severity: "error",
       title: "显卡长度超限",
-      detail: `${gpu.name} 长 ${gpu.lengthMm}mm，${pcCase.name} 限长 ${pcCase.gpuClearanceMm}mm。`,
+      detail: `${gpu?.name ?? "显卡"} 长 ${gpuLengthMm}mm，${pcCase.name} 限长 ${pcCase.gpuClearanceMm}mm。`,
     });
   }
 
   if (
-    cooling?.heightMm &&
+    gpu?.totalSlotWidth &&
+    pcCase?.caseExpansionSlots &&
+    gpu.totalSlotWidth > pcCase.caseExpansionSlots
+  ) {
+    issues.push({
+      id: "gpu-slot-width",
+      severity: "error",
+      title: "显卡槽位宽度超限",
+      detail: `${gpu.name} 约 ${gpu.totalSlotWidth} 槽，${pcCase.name} 只有 ${pcCase.caseExpansionSlots} 个扩展槽。`,
+    });
+  }
+
+  if (
+    coolerHeightMm &&
     pcCase?.coolerClearanceMm &&
-    cooling.heightMm > pcCase.coolerClearanceMm
+    coolerHeightMm > pcCase.coolerClearanceMm
   ) {
     issues.push({
       id: "cooler-height",
       severity: "error",
       title: "风冷高度超限",
-      detail: `${cooling.name} 高 ${cooling.heightMm}mm，机箱限高 ${pcCase.coolerClearanceMm}mm。`,
+      detail: `${cooling?.name ?? "散热器"} 高 ${coolerHeightMm}mm，机箱限高 ${pcCase.coolerClearanceMm}mm。`,
     });
   }
 
@@ -909,6 +1053,28 @@ function getCompatibilityIssues(
       severity: "warning",
       title: "散热余量偏紧",
       detail: `${cpu.name} 建议预留更高散热能力，长时间烤机会更稳。`,
+    });
+  }
+
+  if (
+    psu?.psuFormFactor &&
+    pcCase?.supportedPsuFormFactors &&
+    !pcCase.supportedPsuFormFactors.includes(psu.psuFormFactor)
+  ) {
+    issues.push({
+      id: "psu-form-factor",
+      severity: "error",
+      title: "电源尺寸规格不匹配",
+      detail: `${pcCase.name} 支持 ${pcCase.supportedPsuFormFactors.join(" / ")}，当前电源是 ${psu.psuFormFactor}。`,
+    });
+  }
+
+  if (psuLengthMm && pcCase?.maxPsuLengthMm && psuLengthMm > pcCase.maxPsuLengthMm) {
+    issues.push({
+      id: "psu-length",
+      severity: "error",
+      title: "电源长度超限",
+      detail: `${psu.name} 长 ${psuLengthMm}mm，${pcCase.name} 限长 ${pcCase.maxPsuLengthMm}mm。`,
     });
   }
 

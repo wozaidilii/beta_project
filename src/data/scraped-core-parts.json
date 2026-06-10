@@ -89,6 +89,9 @@
       "rotation": [1.5708, 0, 0],
       "scale": 1
     },
+    "externalIds": {
+      "modelAssetId": "msi_b550_gaming_plus"
+    },
     "source": {
       "sourceName": "MSI official specifications",
       "sourceUrl": "https://www.msi.com/Motherboard/MAG-B850M-MORTAR-WIFI/Specification",
@@ -127,6 +130,9 @@
       "rotation": [1.5708, 0, 0],
       "scale": 1
     },
+    "externalIds": {
+      "modelAssetId": "msi_b550_gaming_plus"
+    },
     "source": {
       "sourceName": "ASUS official specifications",
       "sourceUrl": "https://www.asus.com/motherboards-components/motherboards/tuf-gaming/tuf-gaming-b760m-plus-wifi-ii/techspec/",
@@ -162,6 +168,9 @@
       "position": [0.18, -0.52, -0.2],
       "rotation": [0, 0, 0],
       "scale": 1
+    },
+    "externalIds": {
+      "modelAssetId": "nvidia_geforce_rtx_3090"
     },
     "source": {
       "sourceName": "ASUS official specifications",
@@ -200,6 +209,9 @@
       "position": [0.18, -0.52, -0.2],
       "rotation": [0, 0, 0],
       "scale": 1
+    },
+    "externalIds": {
+      "modelAssetId": "nvidia_geforce_rtx_3090"
     },
     "source": {
       "sourceName": "ASUS official specifications",
@@ -376,6 +388,9 @@
       "rotation": [0, 0, 0],
       "scale": 1
     },
+    "externalIds": {
+      "modelAssetId": "xpg_d41_dual_kit_ram"
+    },
     "source": {
       "sourceName": "Local GLB asset",
       "sourceUrl": "/models/xpg_d41_dual_kit_ram.glb",
@@ -408,6 +423,9 @@
       "rotation": [0, 0, 0],
       "scale": 1
     },
+    "externalIds": {
+      "modelAssetId": "xpg_d41_dual_kit_ram"
+    },
     "source": {
       "sourceName": "Local GLB asset",
       "sourceUrl": "/models/xpg_d41_dual_kit_ram.glb",
@@ -439,6 +457,9 @@
       "position": [-0.06, 0.36, -0.5],
       "rotation": [0, 0, 0],
       "scale": 1
+    },
+    "externalIds": {
+      "modelAssetId": "xpg_d41_dual_kit_ram"
     },
     "source": {
       "sourceName": "Local GLB asset",
