@@ -5,15 +5,20 @@ import {
   Box,
   CheckCircle2,
   Cpu,
+  Factory,
   Fan,
   Gauge,
   HardDrive,
   Layers3,
   MemoryStick,
   MonitorUp,
+  Palette,
+  RotateCcw,
+  Ruler,
   Search,
   ShieldCheck,
   ShoppingCart,
+  SlidersHorizontal,
   Sparkles,
   XCircle,
   Zap,
@@ -58,8 +63,63 @@ const scenarioLabels = [
 
 type WorkspaceMode = "builder" | "products";
 type ShopCategoryId = "builds" | CategoryId;
+type ShopFilters = {
+  brand: string;
+  color: string;
+  size: string;
+  minPrice: string;
+  maxPrice: string;
+};
+type ShopFilterOptions = {
+  brands: string[];
+  colors: Array<{ value: string; label: string; swatch: string }>;
+  sizes: string[];
+  price: { min: number; max: number };
+};
 
-const shopCategoryIds: ShopCategoryId[] = ["builds", ...categoryIds];
+const primaryShopCategoryIds: ShopCategoryId[] = [
+  "case",
+  "cpu",
+  "motherboard",
+  "gpu",
+  "memory",
+  "storage",
+  "psu",
+  "cooling",
+];
+const compactShopCategoryIds: ShopCategoryId[] = ["fans", "builds"];
+const defaultShopFilters: ShopFilters = {
+  brand: "all",
+  color: "all",
+  size: "all",
+  minPrice: "",
+  maxPrice: "",
+};
+const futureShopCategories = [
+  "显示器",
+  "键盘",
+  "鼠标",
+  "耳机",
+  "声卡",
+  "网卡",
+  "采集卡",
+  "配件",
+];
+const colorFamilyMeta = {
+  black: { label: "黑色", swatch: "#111827" },
+  white: { label: "白色", swatch: "#f8fafc" },
+  gray: { label: "银灰", swatch: "#94a3b8" },
+  red: { label: "红色", swatch: "#ef4444" },
+  orange: { label: "橙色", swatch: "#f97316" },
+  gold: { label: "金色", swatch: "#f59e0b" },
+  green: { label: "绿色", swatch: "#22c55e" },
+  teal: { label: "青色", swatch: "#14b8a6" },
+  blue: { label: "蓝色", swatch: "#2563eb" },
+  purple: { label: "紫色", swatch: "#7c3aed" },
+  pink: { label: "粉色", swatch: "#d946ef" },
+} as const;
+
+type ColorFamily = keyof typeof colorFamilyMeta;
 
 export function PcBuilderApp() {
   const [selection, setSelection] = useState<PartSelection>(defaultSelection);
@@ -68,7 +128,9 @@ export function PcBuilderApp() {
   const [activeWorkspace, setActiveWorkspace] =
     useState<WorkspaceMode>("builder");
   const [activeShopCategory, setActiveShopCategory] =
-    useState<ShopCategoryId>("builds");
+    useState<ShopCategoryId>("case");
+  const [shopFilters, setShopFilters] =
+    useState<ShopFilters>(defaultShopFilters);
   const [activeScenario, setActiveScenario] =
     useState<(typeof scenarioLabels)[number]["key"]>("gaming");
 
@@ -84,13 +146,22 @@ export function PcBuilderApp() {
       activeShopCategory === "builds"
         ? []
         : catalog[activeShopCategory].filter((part) =>
-            partMatchesQuery(part, query),
+            partMatchesQuery(part, query) && partMatchesFilters(part, shopFilters),
           ),
-    [activeShopCategory, query],
+    [activeShopCategory, query, shopFilters],
   );
   const shopBuilds = useMemo(
-    () => starterBuilds.filter((preset) => presetMatchesQuery(preset, query)),
-    [query],
+    () =>
+      starterBuilds.filter(
+        (preset) =>
+          presetMatchesQuery(preset, query) &&
+          presetMatchesPriceFilter(preset, shopFilters),
+      ),
+    [query, shopFilters],
+  );
+  const shopFilterOptions = useMemo(
+    () => getShopFilterOptions(activeShopCategory),
+    [activeShopCategory],
   );
   const shopTotalCount = useMemo(
     () =>
@@ -98,9 +169,15 @@ export function PcBuilderApp() {
       categoryIds.reduce((total, category) => total + catalog[category].length, 0),
     [],
   );
+  const activeShopCount =
+    activeShopCategory === "builds" ? shopBuilds.length : shopParts.length;
 
   const setPart = (part: Part) => {
     setSelection((current) => ({ ...current, [part.category]: part.id }));
+  };
+  const setShopCategory = (category: ShopCategoryId) => {
+    setActiveShopCategory(category);
+    setShopFilters(defaultShopFilters);
   };
 
   return (
@@ -326,7 +403,10 @@ export function PcBuilderApp() {
                 <div>
                   <span className="eyebrow">产品</span>
                   <h1>装机产品</h1>
-                  <p>{shopTotalCount} 个可选商品 / 当前方案 {formatCny(summary.totalPrice)}</p>
+                  <p>
+                    当前显示 {activeShopCount} 个 / 全部 {shopTotalCount} 个 / 当前方案{" "}
+                    {formatCny(summary.totalPrice)}
+                  </p>
                 </div>
                 <label className="shop-search">
                   <Search size={18} />
@@ -338,36 +418,28 @@ export function PcBuilderApp() {
                 </label>
               </div>
 
-              <div className="shop-category-strip" aria-label="产品分类">
-                {shopCategoryIds.map((category) => {
-                  const Icon = getShopCategoryIcon(category);
-                  const isActive = category === activeShopCategory;
-                  const count =
-                    category === "builds"
-                      ? starterBuilds.length
-                      : catalog[category].length;
+              <ShopCategoryMenu
+                activeCategory={activeShopCategory}
+                onSelect={setShopCategory}
+              />
 
-                  return (
-                    <button
-                      aria-pressed={isActive}
-                      className={`shop-category ${isActive ? "is-active" : ""}`}
-                      key={category}
-                      onClick={() => setActiveShopCategory(category)}
-                      style={
-                        { "--tone": getShopCategoryTone(category) } as React.CSSProperties
-                      }
-                      type="button"
-                    >
-                      <Icon size={18} />
-                      <span>{getShopCategoryLabel(category)}</span>
-                      <strong>{count}</strong>
-                    </button>
-                  );
-                })}
-              </div>
+              <ShopFilterBar
+                activeCategory={activeShopCategory}
+                filters={shopFilters}
+                onChange={setShopFilters}
+                onReset={() => setShopFilters(defaultShopFilters)}
+                options={shopFilterOptions}
+                resultCount={activeShopCount}
+              />
 
               <div className="shop-grid">
-                {activeShopCategory === "builds"
+                {activeShopCount === 0 ? (
+                  <div className="shop-empty">
+                    <SlidersHorizontal size={22} />
+                    <strong>没有符合条件的产品</strong>
+                    <span>调整筛选条件或清空价格范围后再查看。</span>
+                  </div>
+                ) : activeShopCategory === "builds"
                   ? shopBuilds.map((preset) => {
                       const presetSummary = calculateBuild(preset.selection);
                       return (
@@ -440,6 +512,36 @@ function presetMatchesQuery(
   return `${preset.name} ${preset.useCase}`.toLowerCase().includes(keyword);
 }
 
+function partMatchesFilters(part: Part, filters: ShopFilters) {
+  if (filters.brand !== "all" && part.brand !== filters.brand) return false;
+  if (filters.color !== "all" && getColorFamily(part.color) !== filters.color) {
+    return false;
+  }
+  if (filters.size !== "all" && getSizeLabel(part) !== filters.size) return false;
+  return priceWithin(part.price, filters);
+}
+
+function presetMatchesPriceFilter(
+  preset: (typeof starterBuilds)[number],
+  filters: ShopFilters,
+) {
+  return priceWithin(calculateBuild(preset.selection).totalPrice, filters);
+}
+
+function priceWithin(price: number, filters: ShopFilters) {
+  const min = parsePriceInput(filters.minPrice);
+  const max = parsePriceInput(filters.maxPrice);
+  if (min !== undefined && price < min) return false;
+  if (max !== undefined && price > max) return false;
+  return true;
+}
+
+function parsePriceInput(value: string) {
+  if (value.trim() === "") return undefined;
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : undefined;
+}
+
 function getShopCategoryLabel(category: ShopCategoryId) {
   return category === "builds" ? "整机" : categoryMeta[category].label;
 }
@@ -450,6 +552,351 @@ function getShopCategoryTone(category: ShopCategoryId) {
 
 function getShopCategoryIcon(category: ShopCategoryId) {
   return category === "builds" ? Sparkles : categoryIcons[category];
+}
+
+function getShopCategoryCount(category: ShopCategoryId) {
+  return category === "builds" ? starterBuilds.length : catalog[category].length;
+}
+
+function getShopFilterOptions(category: ShopCategoryId): ShopFilterOptions {
+  const prices =
+    category === "builds"
+      ? starterBuilds.map((preset) => calculateBuild(preset.selection).totalPrice)
+      : catalog[category].map((part) => part.price);
+
+  if (category === "builds") {
+    return {
+      brands: [],
+      colors: [],
+      sizes: [],
+      price: getPriceBounds(prices),
+    };
+  }
+
+  const parts = catalog[category];
+  const colorMap = new Map<ColorFamily, { value: string; label: string; swatch: string }>();
+
+  for (const part of parts) {
+    const color = getColorFamily(part.color);
+    colorMap.set(color, { value: color, ...colorFamilyMeta[color] });
+  }
+
+  return {
+    brands: uniqueStrings(parts.map((part) => part.brand)),
+    colors: Array.from(colorMap.values()),
+    sizes: uniqueStrings(parts.map((part) => getSizeLabel(part)).filter(isString)),
+    price: getPriceBounds(prices),
+  };
+}
+
+function getPriceBounds(prices: number[]) {
+  if (prices.length === 0) return { min: 0, max: 0 };
+  return {
+    min: Math.min(...prices),
+    max: Math.max(...prices),
+  };
+}
+
+function uniqueStrings(values: string[]) {
+  return Array.from(new Set(values)).sort((a, b) => a.localeCompare(b, "zh-CN"));
+}
+
+function isString(value: string | undefined): value is string {
+  return Boolean(value);
+}
+
+function getColorFamily(color: string): ColorFamily {
+  const rgb = hexToRgb(color);
+  if (!rgb) return "gray";
+
+  const { h, l, s } = rgbToHsl(rgb.r, rgb.g, rgb.b);
+  if (l >= 0.86 && s < 0.2) return "white";
+  if (l <= 0.2 && s < 0.32) return "black";
+  if (s < 0.22) return "gray";
+  if (h < 18 || h >= 345) return "red";
+  if (h < 42) return "orange";
+  if (h < 62) return "gold";
+  if (h < 155) return "green";
+  if (h < 190) return "teal";
+  if (h < 250) return "blue";
+  if (h < 315) return "purple";
+  return "pink";
+}
+
+function hexToRgb(color: string) {
+  const normalized = color.replace("#", "");
+  if (!/^[\da-f]{6}$/i.test(normalized)) return undefined;
+  return {
+    r: Number.parseInt(normalized.slice(0, 2), 16),
+    g: Number.parseInt(normalized.slice(2, 4), 16),
+    b: Number.parseInt(normalized.slice(4, 6), 16),
+  };
+}
+
+function rgbToHsl(r: number, g: number, b: number) {
+  const red = r / 255;
+  const green = g / 255;
+  const blue = b / 255;
+  const max = Math.max(red, green, blue);
+  const min = Math.min(red, green, blue);
+  const l = (max + min) / 2;
+
+  if (max === min) return { h: 0, s: 0, l };
+
+  const diff = max - min;
+  const s = l > 0.5 ? diff / (2 - max - min) : diff / (max + min);
+  let h = 0;
+
+  if (max === red) h = (green - blue) / diff + (green < blue ? 6 : 0);
+  if (max === green) h = (blue - red) / diff + 2;
+  if (max === blue) h = (red - green) / diff + 4;
+
+  return { h: h * 60, s, l };
+}
+
+function getSizeLabel(part: Part) {
+  if (part.category === "case") {
+    if (part.supportedFormFactors?.includes("ATX")) return "ATX 中塔";
+    if (part.supportedFormFactors?.includes("Micro-ATX")) return "M-ATX 紧凑";
+    if (part.supportedFormFactors?.includes("Mini-ITX")) return "Mini-ITX";
+  }
+
+  if (part.category === "motherboard") return part.formFactor;
+  if (part.category === "gpu") {
+    const length = part.lengthMm ?? part.dimensions?.lengthMm;
+    if (!length) return undefined;
+    if (length <= 260) return "短卡";
+    if (length <= 320) return "标准长度";
+    return "长卡";
+  }
+
+  if (part.category === "cooling") {
+    if (part.radiatorMm) return `${part.radiatorMm}mm 冷排`;
+    const height = part.heightMm ?? part.dimensions?.heightMm;
+    if (!height) return undefined;
+    return height <= 158 ? "中塔风冷" : "高塔风冷";
+  }
+
+  if (part.category === "psu") return part.psuFormFactor;
+  if (part.category === "cpu") return part.socket;
+  if (part.category === "memory") return part.memoryType;
+  if (part.category === "storage") {
+    const capacity = part.name.match(/\d+TB/i)?.[0];
+    return capacity ? `${capacity.toUpperCase()} 容量` : "M.2 SSD";
+  }
+  if (part.category === "fans") return part.series.match(/\d+mm/i)?.[0] ?? "机箱风扇";
+  return undefined;
+}
+
+function ShopCategoryMenu({
+  activeCategory,
+  onSelect,
+}: {
+  activeCategory: ShopCategoryId;
+  onSelect: (category: ShopCategoryId) => void;
+}) {
+  return (
+    <div className="shop-category-menu" aria-label="产品分类">
+      <div className="shop-category-menu__primary">
+        {primaryShopCategoryIds.map((category) => (
+          <ShopCategoryTile
+            active={category === activeCategory}
+            category={category}
+            key={category}
+            onSelect={onSelect}
+          />
+        ))}
+      </div>
+
+      <div className="shop-category-menu__side">
+        <div className="shop-category-menu__compact">
+          {compactShopCategoryIds.map((category) => (
+            <ShopCategoryTile
+              active={category === activeCategory}
+              category={category}
+              compact
+              key={category}
+              onSelect={onSelect}
+            />
+          ))}
+        </div>
+
+        <div className="shop-category-menu__other" aria-label="更多产品">
+          <strong>其他产品</strong>
+          {futureShopCategories.map((category) => (
+            <span key={category}>{category}</span>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ShopCategoryTile({
+  active,
+  category,
+  compact = false,
+  onSelect,
+}: {
+  active: boolean;
+  category: ShopCategoryId;
+  compact?: boolean;
+  onSelect: (category: ShopCategoryId) => void;
+}) {
+  const Icon = getShopCategoryIcon(category);
+
+  return (
+    <button
+      aria-pressed={active}
+      className={`shop-category-tile ${compact ? "is-compact" : ""} ${
+        active ? "is-active" : ""
+      }`}
+      onClick={() => onSelect(category)}
+      style={{ "--tone": getShopCategoryTone(category) } as React.CSSProperties}
+      type="button"
+    >
+      <span className="shop-category-tile__visual" aria-hidden="true">
+        <Icon size={compact ? 38 : 56} />
+      </span>
+      <span className="shop-category-tile__label">{getShopCategoryLabel(category)}</span>
+      <span className="shop-category-tile__count">{getShopCategoryCount(category)}</span>
+    </button>
+  );
+}
+
+function ShopFilterBar({
+  activeCategory,
+  filters,
+  onChange,
+  onReset,
+  options,
+  resultCount,
+}: {
+  activeCategory: ShopCategoryId;
+  filters: ShopFilters;
+  onChange: (filters: ShopFilters) => void;
+  onReset: () => void;
+  options: ShopFilterOptions;
+  resultCount: number;
+}) {
+  const hasFilters =
+    filters.brand !== "all" ||
+    filters.color !== "all" ||
+    filters.size !== "all" ||
+    filters.minPrice !== "" ||
+    filters.maxPrice !== "";
+
+  return (
+    <div className="shop-filter-bar" aria-label="产品筛选">
+      <div className="shop-filter-bar__title">
+        <SlidersHorizontal size={18} />
+        <div>
+          <strong>{getShopCategoryLabel(activeCategory)}筛选</strong>
+          <span>{resultCount} 个结果</span>
+        </div>
+      </div>
+
+      <label className="shop-filter-control">
+        <span>
+          <Factory size={15} />
+          厂商
+        </span>
+        <select
+          onChange={(event) => onChange({ ...filters, brand: event.target.value })}
+          value={filters.brand}
+        >
+          <option value="all">全部厂商</option>
+          {options.brands.map((brand) => (
+            <option key={brand} value={brand}>
+              {brand}
+            </option>
+          ))}
+        </select>
+      </label>
+
+      <label className="shop-filter-control">
+        <span>
+          <Ruler size={15} />
+          大小
+        </span>
+        <select
+          onChange={(event) => onChange({ ...filters, size: event.target.value })}
+          value={filters.size}
+        >
+          <option value="all">全部尺寸</option>
+          {options.sizes.map((size) => (
+            <option key={size} value={size}>
+              {size}
+            </option>
+          ))}
+        </select>
+      </label>
+
+      <div className="shop-filter-control shop-filter-control--color">
+        <span>
+          <Palette size={15} />
+          颜色
+        </span>
+        <div className="shop-color-swatches">
+          <button
+            aria-pressed={filters.color === "all"}
+            className={filters.color === "all" ? "is-active" : ""}
+            onClick={() => onChange({ ...filters, color: "all" })}
+            type="button"
+          >
+            全部
+          </button>
+          {options.colors.map((color) => (
+            <button
+              aria-label={color.label}
+              aria-pressed={filters.color === color.value}
+              className={filters.color === color.value ? "is-active" : ""}
+              key={color.value}
+              onClick={() => onChange({ ...filters, color: color.value })}
+              style={{ "--swatch": color.swatch } as React.CSSProperties}
+              title={color.label}
+              type="button"
+            />
+          ))}
+        </div>
+      </div>
+
+      <div className="shop-filter-control shop-filter-control--price">
+        <span>价格范围</span>
+        <div className="shop-price-inputs">
+          <input
+            aria-label="最低价格"
+            inputMode="numeric"
+            min="0"
+            onChange={(event) => onChange({ ...filters, minPrice: event.target.value })}
+            placeholder={`${options.price.min}`}
+            type="number"
+            value={filters.minPrice}
+          />
+          <span>-</span>
+          <input
+            aria-label="最高价格"
+            inputMode="numeric"
+            min="0"
+            onChange={(event) => onChange({ ...filters, maxPrice: event.target.value })}
+            placeholder={`${options.price.max}`}
+            type="number"
+            value={filters.maxPrice}
+          />
+        </div>
+      </div>
+
+      <button
+        className="shop-filter-reset"
+        disabled={!hasFilters}
+        onClick={onReset}
+        type="button"
+      >
+        <RotateCcw size={15} />
+        <span>重置</span>
+      </button>
+    </div>
+  );
 }
 
 function ShopProductCard({
