@@ -56,14 +56,19 @@ const scenarioLabels = [
   { key: "quiet", label: "静音" },
 ] as const;
 
+type WorkspaceMode = "builder" | "products";
+type ShopCategoryId = "builds" | CategoryId;
+
+const shopCategoryIds: ShopCategoryId[] = ["builds", ...categoryIds];
+
 export function PcBuilderApp() {
   const [selection, setSelection] = useState<PartSelection>(defaultSelection);
   const [activeCategory, setActiveCategory] = useState<CategoryId>("gpu");
   const [query, setQuery] = useState("");
-  const [activeWorkspace, setActiveWorkspace] = useState<"builder" | "products">(
-    "builder",
-  );
-  const [isWorkspaceOpen, setIsWorkspaceOpen] = useState(false);
+  const [activeWorkspace, setActiveWorkspace] =
+    useState<WorkspaceMode>("builder");
+  const [activeShopCategory, setActiveShopCategory] =
+    useState<ShopCategoryId>("builds");
   const [activeScenario, setActiveScenario] =
     useState<(typeof scenarioLabels)[number]["key"]>("gaming");
 
@@ -74,16 +79,23 @@ export function PcBuilderApp() {
       catalog[activeCategory].filter((part) => partMatchesQuery(part, query)),
     [activeCategory, query],
   );
-  const visibleCatalog = useMemo(
+  const shopParts = useMemo(
     () =>
-      categoryIds.map((category) => ({
-        category,
-        parts: catalog[category].filter((part) => partMatchesQuery(part, query)),
-      })),
+      activeShopCategory === "builds"
+        ? []
+        : catalog[activeShopCategory].filter((part) =>
+            partMatchesQuery(part, query),
+          ),
+    [activeShopCategory, query],
+  );
+  const shopBuilds = useMemo(
+    () => starterBuilds.filter((preset) => presetMatchesQuery(preset, query)),
     [query],
   );
-  const productCount = useMemo(
-    () => categoryIds.reduce((total, category) => total + catalog[category].length, 0),
+  const shopTotalCount = useMemo(
+    () =>
+      starterBuilds.length +
+      categoryIds.reduce((total, category) => total + catalog[category].length, 0),
     [],
   );
 
@@ -127,72 +139,55 @@ export function PcBuilderApp() {
       </header>
 
       <section className="workspace-shell">
-        <aside
-          aria-label="工作区导航"
-          className={`workspace-dock ${isWorkspaceOpen ? "is-open" : ""}`}
-          onFocus={() => setIsWorkspaceOpen(true)}
-        >
-          <nav className="dock-tab-rail" aria-label="页面模式">
+        <aside className="workspace-sidebar" aria-label="工作区导航">
+          <span className="sidebar-kicker">工作区</span>
+          <nav className="workspace-nav" aria-label="页面模式">
             <button
               aria-pressed={activeWorkspace === "builder"}
-              className={`dock-tab ${activeWorkspace === "builder" ? "is-active" : ""}`}
-              onClick={() => {
-                setActiveWorkspace("builder");
-                setIsWorkspaceOpen(true);
-              }}
+              className={`workspace-nav__button ${
+                activeWorkspace === "builder" ? "is-active" : ""
+              }`}
+              onClick={() => setActiveWorkspace("builder")}
               type="button"
             >
-              <Cpu size={18} />
+              <Cpu size={20} />
               <span>3D Builder</span>
             </button>
             <button
               aria-pressed={activeWorkspace === "products"}
-              className={`dock-tab ${activeWorkspace === "products" ? "is-active" : ""}`}
-              onClick={() => {
-                setActiveWorkspace("products");
-                setIsWorkspaceOpen(true);
-              }}
+              className={`workspace-nav__button ${
+                activeWorkspace === "products" ? "is-active" : ""
+              }`}
+              onClick={() => setActiveWorkspace("products")}
               type="button"
             >
-              <Box size={18} />
+              <ShoppingCart size={20} />
               <span>产品</span>
             </button>
           </nav>
+        </aside>
 
-          <div className="workspace-drawer panel">
-            <div className="panel-heading drawer-heading">
-              <div>
-                <span className="eyebrow">
-                  {activeWorkspace === "builder" ? "3D Builder" : "Product catalog"}
-                </span>
-                <h1>
-                  {activeWorkspace === "builder"
-                    ? categoryMeta[activeCategory].label
-                    : `${productCount} 个产品`}
-                </h1>
-              </div>
-              {activeWorkspace === "builder" ? (
-                <ShieldCheck size={22} />
-              ) : (
-                <ShoppingCart size={22} />
-              )}
-            </div>
+        <section className="workspace-main">
+          {activeWorkspace === "builder" ? (
+            <section className="builder-grid" aria-label="3D Builder">
+              <aside className="panel picker-panel" aria-label="配件库">
+                <div className="panel-heading">
+                  <div>
+                    <span className="eyebrow">3D Builder</span>
+                    <h1>{categoryMeta[activeCategory].label}</h1>
+                  </div>
+                  <ShieldCheck size={22} />
+                </div>
 
-            <label className="search-box drawer-search">
-              <Search size={17} />
-              <input
-                onChange={(event) => setQuery(event.target.value)}
-                placeholder={
-                  activeWorkspace === "builder"
-                    ? "搜索当前分类"
-                    : "搜索全部产品、品牌、渠道"
-                }
-                value={query}
-              />
-            </label>
+                <label className="search-box">
+                  <Search size={17} />
+                  <input
+                    onChange={(event) => setQuery(event.target.value)}
+                    placeholder="搜索当前分类"
+                    value={query}
+                  />
+                </label>
 
-            {activeWorkspace === "builder" ? (
-              <>
                 <div className="category-rail">
                   {categoryIds.map((category) => {
                     const Icon = categoryIcons[category];
@@ -226,163 +221,198 @@ export function PcBuilderApp() {
                     />
                   ))}
                 </div>
-              </>
-            ) : (
-              <div className="product-catalog">
-                {visibleCatalog.map(({ category, parts }) => {
-                  const Icon = categoryIcons[category];
-                  if (parts.length === 0) return null;
+              </aside>
 
-                  return (
-                    <section className="product-group" key={category}>
+              <section className="scene-panel" aria-label="3D 主机预览">
+                <div className="scene-toolbar">
+                  <div>
+                    <span className="eyebrow">当前焦点</span>
+                    <strong>
+                      {selectedPart?.name ?? categoryMeta[activeCategory].label}
+                    </strong>
+                  </div>
+                  <div className="scene-toolbar__badges">
+                    <span>{summary.powerDraw}W 峰值</span>
+                    <span>{summary.recommendedPsu}W 建议电源</span>
+                  </div>
+                </div>
+                <PcScene activeCategory={activeCategory} selection={selection} />
+                <div className="preset-strip" aria-label="装机预设">
+                  {starterBuilds.map((preset) => (
+                    <button
+                      className="preset-chip"
+                      key={preset.id}
+                      onClick={() => setSelection(preset.selection)}
+                      type="button"
+                    >
+                      <Sparkles size={15} />
+                      <span>{preset.name}</span>
+                      <small>{preset.useCase}</small>
+                    </button>
+                  ))}
+                </div>
+              </section>
+
+              <aside className="panel summary-panel" aria-label="装机清单">
+                <div className="panel-heading">
+                  <div>
+                    <span className="eyebrow">装机清单</span>
+                    <h2>{scoreLabel(summary.scores[activeScenario])}方案</h2>
+                  </div>
+                  <ShoppingCart size={22} />
+                </div>
+
+                <div className="price-block">
+                  <span>RMB</span>
+                  <strong>{formatCny(summary.totalPrice)}</strong>
+                  <small>样例估价，不含显示器与外设</small>
+                </div>
+
+                <div className="score-stack">
+                  {scenarioLabels.map((scenario) => (
+                    <ScoreBar
+                      active={activeScenario === scenario.key}
+                      key={scenario.key}
+                      label={scenario.label}
+                      score={summary.scores[scenario.key]}
+                    />
+                  ))}
+                </div>
+
+                <div className="compatibility-box">
+                  {summary.compatibility.map((issue) => (
+                    <div className={`issue-row severity-${issue.severity}`} key={issue.id}>
+                      <IssueIcon severity={issue.severity} />
+                      <div>
+                        <strong>{issue.title}</strong>
+                        <span>{issue.detail}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="selected-list">
+                  {categoryIds.map((category) => {
+                    const Icon = categoryIcons[category];
+                    const part = summary.selectedParts[category];
+                    return (
                       <button
-                        className="product-group__heading"
+                        className="selected-line"
+                        key={category}
                         onClick={() => {
                           setActiveCategory(category);
                           setActiveWorkspace("builder");
                         }}
-                        style={
-                          { "--tone": categoryMeta[category].tone } as React.CSSProperties
-                        }
                         type="button"
                       >
-                        <span>
-                          <Icon size={17} />
-                          {categoryMeta[category].label}
-                        </span>
-                        <strong>{parts.length}</strong>
+                        <Icon size={17} />
+                        <span>{categoryMeta[category].shortLabel}</span>
+                        <strong>{part?.name ?? "未选择"}</strong>
                       </button>
-                      <div className="product-list">
-                        {parts.map((part) => (
-                          <button
-                            className={`product-row ${
-                              selection[part.category] === part.id ? "is-selected" : ""
-                            }`}
-                            key={part.id}
-                            onClick={() => {
-                              setActiveCategory(part.category);
-                              setPart(part);
-                            }}
-                            type="button"
-                          >
-                            <span
-                              className="product-row__swatch"
-                              style={{ background: part.color }}
-                            />
-                            <span className="product-row__body">
-                              <span>{part.brand}</span>
-                              <strong>{part.name}</strong>
-                              <small>{part.series}</small>
-                            </span>
-                            <span className="product-row__meta">
-                              {selection[part.category] === part.id ? "已装" : formatCny(part.price)}
-                            </span>
-                          </button>
-                        ))}
-                      </div>
-                    </section>
+                    );
+                  })}
+                </div>
+
+                <div className="channel-box">
+                  {summary.channelTags.map((tag) => (
+                    <span key={tag}>{tag}</span>
+                  ))}
+                </div>
+              </aside>
+            </section>
+          ) : (
+            <section className="shop-page" aria-label="产品商城">
+              <div className="shop-header">
+                <div>
+                  <span className="eyebrow">产品</span>
+                  <h1>装机产品</h1>
+                  <p>{shopTotalCount} 个可选商品 / 当前方案 {formatCny(summary.totalPrice)}</p>
+                </div>
+                <label className="shop-search">
+                  <Search size={18} />
+                  <input
+                    onChange={(event) => setQuery(event.target.value)}
+                    placeholder="搜索产品、品牌、渠道"
+                    value={query}
+                  />
+                </label>
+              </div>
+
+              <div className="shop-category-strip" aria-label="产品分类">
+                {shopCategoryIds.map((category) => {
+                  const Icon = getShopCategoryIcon(category);
+                  const isActive = category === activeShopCategory;
+                  const count =
+                    category === "builds"
+                      ? starterBuilds.length
+                      : catalog[category].length;
+
+                  return (
+                    <button
+                      aria-pressed={isActive}
+                      className={`shop-category ${isActive ? "is-active" : ""}`}
+                      key={category}
+                      onClick={() => setActiveShopCategory(category)}
+                      style={
+                        { "--tone": getShopCategoryTone(category) } as React.CSSProperties
+                      }
+                      type="button"
+                    >
+                      <Icon size={18} />
+                      <span>{getShopCategoryLabel(category)}</span>
+                      <strong>{count}</strong>
+                    </button>
                   );
                 })}
               </div>
-            )}
-          </div>
-        </aside>
 
-        <section className="builder-grid">
-          <section className="scene-panel" aria-label="3D 主机预览">
-            <div className="scene-toolbar">
-              <div>
-                <span className="eyebrow">当前焦点</span>
-                <strong>{selectedPart?.name ?? categoryMeta[activeCategory].label}</strong>
+              <div className="shop-grid">
+                {activeShopCategory === "builds"
+                  ? shopBuilds.map((preset) => {
+                      const presetSummary = calculateBuild(preset.selection);
+                      return (
+                        <button
+                          className="shop-card shop-card--build"
+                          key={preset.id}
+                          onClick={() => setSelection(preset.selection)}
+                          type="button"
+                        >
+                          <ProductVisual
+                            category="builds"
+                            color="#e6462f"
+                            label={preset.name}
+                          />
+                          <span className="shop-card__body">
+                            <span className="shop-card__brand">整机方案</span>
+                            <strong>{preset.name}</strong>
+                            <small>{preset.useCase}</small>
+                            <span className="shop-card__tags">
+                              <span>{presetSummary.powerDraw}W 峰值</span>
+                              <span>{presetSummary.recommendedPsu}W 电源</span>
+                              <span>{scoreLabel(presetSummary.scores[activeScenario])}</span>
+                            </span>
+                          </span>
+                          <span className="shop-card__footer">
+                            <strong>{formatCny(presetSummary.totalPrice)}</strong>
+                            <span>装入方案</span>
+                          </span>
+                        </button>
+                      );
+                    })
+                  : shopParts.map((part) => (
+                      <ShopProductCard
+                        isSelected={selection[part.category] === part.id}
+                        key={part.id}
+                        onSelect={() => {
+                          setActiveCategory(part.category);
+                          setPart(part);
+                        }}
+                        part={part}
+                      />
+                    ))}
               </div>
-              <div className="scene-toolbar__badges">
-                <span>{summary.powerDraw}W 峰值</span>
-                <span>{summary.recommendedPsu}W 建议电源</span>
-              </div>
-            </div>
-            <PcScene activeCategory={activeCategory} selection={selection} />
-            <div className="preset-strip" aria-label="装机预设">
-              {starterBuilds.map((preset) => (
-                <button
-                  className="preset-chip"
-                  key={preset.id}
-                  onClick={() => setSelection(preset.selection)}
-                  type="button"
-                >
-                  <Sparkles size={15} />
-                  <span>{preset.name}</span>
-                  <small>{preset.useCase}</small>
-                </button>
-              ))}
-            </div>
-          </section>
-
-          <aside className="panel summary-panel" aria-label="装机清单">
-            <div className="panel-heading">
-              <div>
-                <span className="eyebrow">装机清单</span>
-                <h2>{scoreLabel(summary.scores[activeScenario])}方案</h2>
-              </div>
-              <ShoppingCart size={22} />
-            </div>
-
-            <div className="price-block">
-              <span>RMB</span>
-              <strong>{formatCny(summary.totalPrice)}</strong>
-              <small>样例估价，不含显示器与外设</small>
-            </div>
-
-            <div className="score-stack">
-              {scenarioLabels.map((scenario) => (
-                <ScoreBar
-                  active={activeScenario === scenario.key}
-                  key={scenario.key}
-                  label={scenario.label}
-                  score={summary.scores[scenario.key]}
-                />
-              ))}
-            </div>
-
-            <div className="compatibility-box">
-              {summary.compatibility.map((issue) => (
-                <div className={`issue-row severity-${issue.severity}`} key={issue.id}>
-                  <IssueIcon severity={issue.severity} />
-                  <div>
-                    <strong>{issue.title}</strong>
-                    <span>{issue.detail}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="selected-list">
-              {categoryIds.map((category) => {
-                const Icon = categoryIcons[category];
-                const part = summary.selectedParts[category];
-                return (
-                  <button
-                    className="selected-line"
-                    key={category}
-                    onClick={() => {
-                      setActiveCategory(category);
-                      setActiveWorkspace("builder");
-                    }}
-                    type="button"
-                  >
-                    <Icon size={17} />
-                    <span>{categoryMeta[category].shortLabel}</span>
-                    <strong>{part?.name ?? "未选择"}</strong>
-                  </button>
-                );
-              })}
-            </div>
-
-            <div className="channel-box">
-              {summary.channelTags.map((tag) => (
-                <span key={tag}>{tag}</span>
-              ))}
-            </div>
-          </aside>
+            </section>
+          )}
         </section>
       </section>
     </main>
@@ -398,6 +428,89 @@ function partMatchesQuery(part: Part, query: string) {
   )}`.toLowerCase();
 
   return haystack.includes(keyword);
+}
+
+function presetMatchesQuery(
+  preset: (typeof starterBuilds)[number],
+  query: string,
+) {
+  const keyword = query.trim().toLowerCase();
+  if (!keyword) return true;
+
+  return `${preset.name} ${preset.useCase}`.toLowerCase().includes(keyword);
+}
+
+function getShopCategoryLabel(category: ShopCategoryId) {
+  return category === "builds" ? "整机" : categoryMeta[category].label;
+}
+
+function getShopCategoryTone(category: ShopCategoryId) {
+  return category === "builds" ? "#e6462f" : categoryMeta[category].tone;
+}
+
+function getShopCategoryIcon(category: ShopCategoryId) {
+  return category === "builds" ? Sparkles : categoryIcons[category];
+}
+
+function ShopProductCard({
+  isSelected,
+  onSelect,
+  part,
+}: {
+  isSelected: boolean;
+  onSelect: () => void;
+  part: Part;
+}) {
+  return (
+    <button
+      className={`shop-card ${isSelected ? "is-selected" : ""}`}
+      onClick={onSelect}
+      type="button"
+    >
+      <ProductVisual category={part.category} color={part.color} label={part.name} />
+      <span className="shop-card__body">
+        <span className="shop-card__brand">{part.brand}</span>
+        <strong>{part.name}</strong>
+        <small>{part.series}</small>
+        <SpecLine part={part} />
+        <span className="shop-card__tags">
+          {part.source ? <span>参数已导入</span> : null}
+          {part.marketTags.slice(0, 3).map((tag) => (
+            <span key={tag}>{tag}</span>
+          ))}
+        </span>
+      </span>
+      <span className="shop-card__footer">
+        <strong>{formatCny(part.price)}</strong>
+        <span>{isSelected ? "已装入" : "装入方案"}</span>
+      </span>
+    </button>
+  );
+}
+
+function ProductVisual({
+  category,
+  color,
+  label,
+}: {
+  category: ShopCategoryId;
+  color: string;
+  label: string;
+}) {
+  const Icon = getShopCategoryIcon(category);
+
+  return (
+    <span
+      aria-label={`${label} 商品图`}
+      className="shop-card__image"
+      role="img"
+      style={{ "--product-color": color } as React.CSSProperties}
+    >
+      <span className="shop-card__image-grid" />
+      <Icon size={48} />
+      <span className="shop-card__image-label">{getShopCategoryLabel(category)}</span>
+    </span>
+  );
 }
 
 function PartRow({
