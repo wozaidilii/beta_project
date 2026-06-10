@@ -1,0 +1,11 @@
+Model Information:
+* title:	AMD Ryzen 7 7800X3D
+* source:	https://sketchfab.com/3d-models/amd-ryzen-7-7800x3d-209c4aada00e4b1790d8d274bac98779
+* author:	gioguarino12 (https://sketchfab.com/gioguarino12)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "AMD Ryzen 7 7800X3D" (https://sketchfab.com/3d-models/amd-ryzen-7-7800x3d-209c4aada00e4b1790d8d274bac98779) by gioguarino12 (https://sketchfab.com/gioguarino12) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)

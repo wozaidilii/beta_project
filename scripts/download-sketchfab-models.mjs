@@ -82,11 +82,16 @@ for (const candidate of selected) {
   });
 }
 
+const attributionItems = mergeImportedModels(
+  await readExistingImportedModels(outDir),
+  imported,
+);
+
 await writeFile(
   path.join(outDir, "attribution.json"),
-  `${JSON.stringify(imported, null, 2)}\n`,
+  `${JSON.stringify(attributionItems, null, 2)}\n`,
 );
-await writeFile(path.join(outDir, "ATTRIBUTION.md"), renderAttribution(imported));
+await writeFile(path.join(outDir, "ATTRIBUTION.md"), renderAttribution(attributionItems));
 
 console.log(
   JSON.stringify(
@@ -125,6 +130,25 @@ async function fetchJson(url) {
   }
 
   return response.json();
+}
+
+async function readExistingImportedModels(directory) {
+  try {
+    const text = await readFile(path.join(directory, "attribution.json"), "utf8");
+    const records = JSON.parse(text);
+    return Array.isArray(records) ? records : [];
+  } catch {
+    return [];
+  }
+}
+
+function mergeImportedModels(existing, next) {
+  const byAssetId = new Map();
+  for (const item of existing) byAssetId.set(item.assetId, item);
+  for (const item of next) byAssetId.set(item.assetId, item);
+  return Array.from(byAssetId.values()).sort((left, right) =>
+    left.assetId.localeCompare(right.assetId),
+  );
 }
 
 function formatAuthHeader(value) {

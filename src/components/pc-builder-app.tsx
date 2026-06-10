@@ -3,6 +3,7 @@
 import {
   AlertTriangle,
   Box,
+  Bug,
   CheckCircle2,
   Cpu,
   Factory,
@@ -35,6 +36,7 @@ import {
   categoryMeta,
   defaultSelection,
   formatCny,
+  hasModelAsset,
   scoreLabel,
   starterBuilds,
   type CategoryId,
@@ -135,6 +137,7 @@ export function PcBuilderApp() {
     useState<ShopFilters>(() => getDefaultShopFilters(getShopFilterOptions("case")));
   const [uploadedSetups, setUploadedSetups] = useState<SetupItem[]>([]);
   const [setupUploadError, setSetupUploadError] = useState("");
+  const [showAssemblyDebug, setShowAssemblyDebug] = useState(false);
   const [activeScenario, setActiveScenario] =
     useState<(typeof scenarioLabels)[number]["key"]>("gaming");
 
@@ -142,13 +145,17 @@ export function PcBuilderApp() {
   const selectedPart = summary.selectedParts[activeCategory];
   const activeOptions = useMemo(
     () =>
-      catalog[activeCategory].filter((part) => partMatchesQuery(part, query)),
+      catalog[activeCategory].filter(
+        (part) => partMatchesQuery(part, query) && hasModelAsset(part),
+      ),
     [activeCategory, query],
   );
   const shopParts = useMemo(
     () =>
       catalog[activeShopCategory].filter((part) =>
-        partMatchesQuery(part, query) && partMatchesFilters(part, shopFilters),
+        hasModelAsset(part) &&
+        partMatchesQuery(part, query) &&
+        partMatchesFilters(part, shopFilters),
       ),
     [activeShopCategory, query, shopFilters],
   );
@@ -168,7 +175,12 @@ export function PcBuilderApp() {
     [activeShopCategory],
   );
   const shopTotalCount = useMemo(
-    () => categoryIds.reduce((total, category) => total + catalog[category].length, 0),
+    () =>
+      categoryIds.reduce(
+        (total, category) =>
+          total + catalog[category].filter(hasModelAsset).length,
+        0,
+      ),
     [],
   );
   const activeShopCount = shopParts.length;
@@ -343,9 +355,25 @@ export function PcBuilderApp() {
                   <div className="scene-toolbar__badges">
                     <span>{summary.powerDraw}W 峰值</span>
                     <span>{summary.recommendedPsu}W 建议电源</span>
+                    <button
+                      aria-pressed={showAssemblyDebug}
+                      className={`scene-debug-toggle ${
+                        showAssemblyDebug ? "is-active" : ""
+                      }`}
+                      onClick={() => setShowAssemblyDebug((value) => !value)}
+                      title="切换装配调试"
+                      type="button"
+                    >
+                      <Bug size={14} />
+                      <span>调试</span>
+                    </button>
                   </div>
                 </div>
-                <PcScene activeCategory={activeCategory} selection={selection} />
+                <PcScene
+                  activeCategory={activeCategory}
+                  debug={showAssemblyDebug}
+                  selection={selection}
+                />
               </section>
 
               <aside className="panel summary-panel" aria-label="装机清单">
@@ -625,12 +653,12 @@ function getShopCategoryIcon(category: ProductVisualCategory) {
 }
 
 function getShopCategoryCount(category: ShopCategoryId) {
-  return catalog[category].length;
+  return catalog[category].filter(hasModelAsset).length;
 }
 
 function getShopFilterOptions(category: ShopCategoryId): ShopFilterOptions {
-  const prices = catalog[category].map((part) => part.price);
-  const parts = catalog[category];
+  const parts = catalog[category].filter(hasModelAsset);
+  const prices = parts.map((part) => part.price);
   const colorMap = new Map<ColorFamily, { value: string; label: string; swatch: string }>();
 
   for (const part of parts) {
@@ -685,6 +713,17 @@ function getPricePercent(value: number, bounds: ShopFilterOptions["price"]) {
   const span = bounds.max - bounds.min;
   if (span <= 0) return 0;
   return ((value - bounds.min) / span) * 100;
+}
+
+function getShopCategoryPreviewImage(category: ShopCategoryId) {
+  return catalog[category].find(
+    (part) => hasModelAsset(part) && part.productImageUrl,
+  )?.productImageUrl;
+}
+
+function getImageBackground(imageUrl?: string) {
+  if (!imageUrl) return undefined;
+  return `linear-gradient(180deg, rgba(0, 0, 0, 0.04), rgba(0, 0, 0, 0.42)), url("${imageUrl}")`;
 }
 
 function normalizeUploadedSetup(payload: unknown, fileName: string): SetupItem {
@@ -917,6 +956,7 @@ function ShopCategoryTile({
   onSelect: (category: ShopCategoryId) => void;
 }) {
   const Icon = getShopCategoryIcon(category);
+  const previewImage = getShopCategoryPreviewImage(category);
 
   return (
     <button
@@ -928,8 +968,14 @@ function ShopCategoryTile({
       style={{ "--tone": getShopCategoryTone(category) } as React.CSSProperties}
       type="button"
     >
-      <span className="shop-category-tile__visual" aria-hidden="true">
-        <Icon size={compact ? 38 : 56} />
+      <span
+        className={`shop-category-tile__visual ${
+          previewImage ? "has-photo" : ""
+        }`}
+        aria-hidden="true"
+        style={{ backgroundImage: getImageBackground(previewImage) }}
+      >
+        {previewImage ? null : <Icon size={compact ? 38 : 56} />}
       </span>
       <span className="shop-category-tile__label">{getShopCategoryLabel(category)}</span>
       <span className="shop-category-tile__count">{getShopCategoryCount(category)}</span>
@@ -1171,7 +1217,13 @@ function ShopProductCard({
       onClick={onSelect}
       type="button"
     >
-      <ProductVisual category={part.category} color={part.color} label={part.name} />
+      <ProductVisual
+        category={part.category}
+        color={part.color}
+        hasModel={hasModelAsset(part)}
+        imageUrl={part.productImageUrl}
+        label={part.name}
+      />
       <span className="shop-card__body">
         <span className="shop-card__brand">{part.brand}</span>
         <strong>{part.name}</strong>
@@ -1179,6 +1231,7 @@ function ShopProductCard({
         <SpecLine part={part} />
         <span className="shop-card__tags">
           {part.source ? <span>参数已导入</span> : null}
+          {part.modelSource ? <span>真实模型</span> : null}
           {part.marketTags.slice(0, 3).map((tag) => (
             <span key={tag}>{tag}</span>
           ))}
@@ -1195,24 +1248,41 @@ function ShopProductCard({
 function ProductVisual({
   category,
   color,
+  hasModel = false,
+  imageUrl,
   label,
 }: {
   category: ProductVisualCategory;
   color: string;
+  hasModel?: boolean;
+  imageUrl?: string;
   label: string;
 }) {
   const Icon = getShopCategoryIcon(category);
+  const isBuild = category === "builds";
 
   return (
     <span
       aria-label={`${label} 商品图`}
-      className="shop-card__image"
+      className={`shop-card__image ${imageUrl ? "has-photo" : ""} ${
+        hasModel && !imageUrl ? "has-model" : ""
+      }`}
       role="img"
-      style={{ "--product-color": color } as React.CSSProperties}
+      style={
+        {
+          "--product-color": color,
+          backgroundImage: getImageBackground(imageUrl),
+        } as React.CSSProperties
+      }
     >
-      <span className="shop-card__image-grid" />
-      <Icon size={48} />
-      <span className="shop-card__image-label">{getShopCategoryLabel(category)}</span>
+      {imageUrl ? null : <span className="shop-card__image-grid" />}
+      {imageUrl ? null : isBuild ? <Icon size={48} /> : null}
+      {hasModel && !imageUrl ? (
+        <span className="shop-card__image-status">模型已接入</span>
+      ) : null}
+      <span className="shop-card__image-label">
+        {hasModel ? "3D模型" : getShopCategoryLabel(category)}
+      </span>
     </span>
   );
 }
@@ -1240,6 +1310,7 @@ function PartRow({
         <SpecLine part={part} />
         <span className="tag-line">
           {part.source ? <span>参数已导入</span> : null}
+          {part.modelSource ? <span>真实模型</span> : null}
           {part.marketTags.slice(0, 3).map((tag) => (
             <span key={tag}>{tag}</span>
           ))}

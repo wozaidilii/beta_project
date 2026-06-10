@@ -1,0 +1,11 @@
+Model Information:
+* title:	Samsung 990 PRO SSD
+* source:	https://sketchfab.com/3d-models/samsung-990-pro-ssd-6ada64c9ba734e499978a084e68ec3df
+* author:	PolyDavid (https://sketchfab.com/PolyDavid)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Samsung 990 PRO SSD" (https://sketchfab.com/3d-models/samsung-990-pro-ssd-6ada64c9ba734e499978a084e68ec3df) by PolyDavid (https://sketchfab.com/PolyDavid) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)

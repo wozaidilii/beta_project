@@ -1,0 +1,11 @@
+Model Information:
+* title:	M.2 SSD (Free)
+* source:	https://sketchfab.com/3d-models/m2-ssd-free-9965ed46375b49ee9b6f13c072fb51b4
+* author:	PolyDavid (https://sketchfab.com/PolyDavid)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "M.2 SSD (Free)" (https://sketchfab.com/3d-models/m2-ssd-free-9965ed46375b49ee9b6f13c072fb51b4) by PolyDavid (https://sketchfab.com/PolyDavid) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)

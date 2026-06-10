@@ -1,4 +1,5 @@
 import scrapedCoreParts from "~/data/scraped-core-parts.json";
+import localModelAssets from "~/data/local-model-assets.json";
 import openDbParts from "~/data/opendb-parts.json";
 
 export const categoryIds = [
@@ -44,14 +45,39 @@ export type PhysicalDimensions = {
   pumpHeightMm?: number;
 };
 
+export type AxisDirection = "+x" | "-x" | "+y" | "-y" | "+z" | "-z";
+
+export type AssetAxis = {
+  right: AxisDirection;
+  up: AxisDirection;
+  forward: AxisDirection;
+};
+
+export type ModelAnchorPoint = {
+  position: Vec3;
+  label?: string;
+};
+
+export type ModelPlacement = {
+  anchor: string;
+  attachTo?: {
+    category: CategoryId;
+    anchor: string;
+  };
+  fallbackPosition?: Vec3;
+};
+
 export type PartModel = {
   kind: "parametric" | "glb";
   slot: CategoryId;
   mount?: string;
   assetUrl?: string;
+  assetAxis?: AssetAxis;
   autoCenter?: boolean;
+  anchorPoints?: Record<string, ModelAnchorPoint>;
+  boundingBoxMm?: PhysicalDimensions;
   fitSize?: Vec3;
-  position?: Vec3;
+  placement?: ModelPlacement;
   rotation?: Vec3;
   scale?: number | Vec3;
 };
@@ -96,6 +122,7 @@ export type Part = {
   purchaseLinks?: Partial<Record<"jd" | "taobao" | "tmall" | "pdd" | "official", string>>;
   externalIds?: ExternalIds;
   source?: PartSource;
+  modelSource?: PartSource;
   openDbSource?: PartSource;
   dimensions?: PhysicalDimensions;
   model?: PartModel;
@@ -179,6 +206,15 @@ type OpenDbPartRecord = {
   importError?: string;
 };
 
+type LocalModelAssetRecord = {
+  id: string;
+  model?: PartModel;
+  externalIds?: ExternalIds;
+  productImageUrl?: string;
+  purchaseLinks?: Part["purchaseLinks"];
+  modelSource?: PartSource;
+};
+
 const scrapedPartMap = new Map(
   (scrapedCoreParts as unknown as ScrapedPartRecord[]).map((record) => [
     record.id,
@@ -188,6 +224,13 @@ const scrapedPartMap = new Map(
 
 const openDbPartMap = new Map(
   (openDbParts as unknown as OpenDbPartRecord[]).map((record) => [
+    record.id,
+    record,
+  ]),
+);
+
+const localModelAssetMap = new Map(
+  (localModelAssets as unknown as LocalModelAssetRecord[]).map((record) => [
     record.id,
     record,
   ]),
@@ -209,18 +252,37 @@ function withScrapedPart<T extends Part>(part: T): T {
       }
     : part;
 
-  if (!openDb) return withScraped;
+  const withOpenDb = openDb
+    ? {
+        ...withScraped,
+        ...pickDefined(openDb.part),
+        externalIds: mergeExternalIds(withScraped.externalIds, openDb.externalIds),
+        openDbSource: openDb.source,
+        dimensions: {
+          ...withScraped.dimensions,
+          ...pickDefined(openDb.dimensions),
+        },
+        openDbSpecs: openDb.openDbSpecs,
+      }
+    : withScraped;
+
+  return withLocalModelAsset(withOpenDb);
+}
+
+function withLocalModelAsset<T extends Part>(part: T): T {
+  const asset = localModelAssetMap.get(part.id);
+  if (!asset) return part;
 
   return {
-    ...withScraped,
-    ...pickDefined(openDb.part),
-    externalIds: mergeExternalIds(withScraped.externalIds, openDb.externalIds),
-    openDbSource: openDb.source,
-    dimensions: {
-      ...withScraped.dimensions,
-      ...pickDefined(openDb.dimensions),
+    ...part,
+    model: asset.model ?? part.model,
+    productImageUrl: asset.productImageUrl ?? part.productImageUrl,
+    purchaseLinks: {
+      ...part.purchaseLinks,
+      ...asset.purchaseLinks,
     },
-    openDbSpecs: openDb.openDbSpecs,
+    externalIds: mergeExternalIds(part.externalIds, asset.externalIds),
+    modelSource: asset.modelSource ?? part.modelSource,
   };
 }
 
@@ -495,7 +557,7 @@ export const catalog: Record<CategoryId, Part[]> = {
       memoryType: "DDR5",
       metrics: { gaming: 90, creator: 86, ai: 82, quiet: 78 },
     }),
-    {
+    withScrapedPart({
       id: "gloway-ddr4-32-3600",
       category: "memory",
       name: "弈 Pro DDR4 32GB 3600",
@@ -506,10 +568,10 @@ export const catalog: Record<CategoryId, Part[]> = {
       marketTags: ["线下装机店", "D4", "预算"],
       memoryType: "DDR4",
       metrics: { gaming: 68, creator: 66, ai: 62, quiet: 88 },
-    },
+    }),
   ],
   storage: [
-    {
+    withScrapedPart({
       id: "sn850x-2tb",
       category: "storage",
       name: "WD_BLACK SN850X 2TB",
@@ -519,8 +581,8 @@ export const catalog: Record<CategoryId, Part[]> = {
       color: "#111827",
       marketTags: ["京东自营", "游戏盘", "五年质保"],
       metrics: { gaming: 86, creator: 88, ai: 80, quiet: 92 },
-    },
-    {
+    }),
+    withScrapedPart({
       id: "zhitai-tiplus7100-1tb",
       category: "storage",
       name: "TiPlus7100 1TB",
@@ -530,8 +592,8 @@ export const catalog: Record<CategoryId, Part[]> = {
       color: "#2563eb",
       marketTags: ["天猫旗舰", "国产", "性价比"],
       metrics: { gaming: 76, creator: 74, ai: 72, quiet: 92 },
-    },
-    {
+    }),
+    withScrapedPart({
       id: "samsung-990-pro-4tb",
       category: "storage",
       name: "990 PRO 4TB",
@@ -541,7 +603,7 @@ export const catalog: Record<CategoryId, Part[]> = {
       color: "#1d4ed8",
       marketTags: ["京东自营", "创作盘", "旗舰"],
       metrics: { gaming: 90, creator: 96, ai: 90, quiet: 92 },
-    },
+    }),
   ],
   cooling: [
     withScrapedPart({
@@ -716,7 +778,7 @@ export const catalog: Record<CategoryId, Part[]> = {
     }),
   ],
   fans: [
-    {
+    withScrapedPart({
       id: "thermalright-tl-c12c-3",
       category: "fans",
       name: "TL-C12C 三联包",
@@ -727,8 +789,8 @@ export const catalog: Record<CategoryId, Part[]> = {
       marketTags: ["京东自营", "静音", "三联包"],
       wattage: 9,
       metrics: { gaming: 72, creator: 72, ai: 70, quiet: 82 },
-    },
-    {
+    }),
+    withScrapedPart({
       id: "lianli-sl-inf-3",
       category: "fans",
       name: "UNI FAN SL-INF 三联包",
@@ -739,8 +801,8 @@ export const catalog: Record<CategoryId, Part[]> = {
       marketTags: ["天猫旗舰", "ARGB", "展示向"],
       wattage: 15,
       metrics: { gaming: 80, creator: 78, ai: 76, quiet: 78 },
-    },
-    {
+    }),
+    withScrapedPart({
       id: "noctua-a12x25-3",
       category: "fans",
       name: "NF-A12x25 PWM 三只",
@@ -751,7 +813,7 @@ export const catalog: Record<CategoryId, Part[]> = {
       marketTags: ["线下装机店", "静音", "旗舰"],
       wattage: 6,
       metrics: { gaming: 84, creator: 82, ai: 80, quiet: 96 },
-    },
+    }),
   ],
 };
 
@@ -834,6 +896,12 @@ export function getPart(partId?: string) {
   return categoryIds
     .flatMap((category) => catalog[category])
     .find((part) => part.id === partId);
+}
+
+export function hasModelAsset(
+  part?: Part,
+): part is Part & { model: PartModel & { kind: "glb"; assetUrl: string } } {
+  return part?.model?.kind === "glb" && Boolean(part.model.assetUrl);
 }
 
 export function getSelectedParts(selection: PartSelection) {

@@ -1,0 +1,11 @@
+Model Information:
+* title:	SSD - WD SN7100
+* source:	https://sketchfab.com/3d-models/ssd-wd-sn7100-8287dfa4fd644cb4a044d4dce57968ae
+* author:	PolyDavid (https://sketchfab.com/PolyDavid)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "SSD - WD SN7100" (https://sketchfab.com/3d-models/ssd-wd-sn7100-8287dfa4fd644cb4a044d4dce57968ae) by PolyDavid (https://sketchfab.com/PolyDavid) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)

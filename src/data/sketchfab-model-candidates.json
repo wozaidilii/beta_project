@@ -118,5 +118,65 @@
     "license": "CC Attribution",
     "licenseSlug": "by",
     "licenseUrl": "http://creativecommons.org/licenses/by/4.0/"
+  },
+  {
+    "assetId": "sketchfab_cpu_amd_7800x3d",
+    "category": "cpu",
+    "uid": "209c4aada00e4b1790d8d274bac98779",
+    "name": "AMD Ryzen 7 7800X3D",
+    "author": "gioguarino12",
+    "authorUrl": "https://sketchfab.com/gioguarino12",
+    "viewerUrl": "https://sketchfab.com/3d-models/amd-ryzen-7-7800x3d-209c4aada00e4b1790d8d274bac98779",
+    "license": "CC Attribution",
+    "licenseSlug": "by",
+    "licenseUrl": "http://creativecommons.org/licenses/by/4.0/"
+  },
+  {
+    "assetId": "sketchfab_cpu_unmarked_socket",
+    "category": "cpu",
+    "uid": "26d2147e082648949b9c703c514e6901",
+    "name": "Unmarked processor (CPU) + Socket [HP LP ANIM]",
+    "author": "00004707",
+    "authorUrl": "https://sketchfab.com/0004707",
+    "viewerUrl": "https://sketchfab.com/3d-models/unmarked-processor-cpu-socket-hp-lp-anim-26d2147e082648949b9c703c514e6901",
+    "license": "CC Attribution",
+    "licenseSlug": "by",
+    "licenseUrl": "http://creativecommons.org/licenses/by/4.0/"
+  },
+  {
+    "assetId": "sketchfab_storage_samsung_990_pro",
+    "category": "storage",
+    "uid": "6ada64c9ba734e499978a084e68ec3df",
+    "name": "Samsung 990 PRO SSD",
+    "author": "PolyDavid",
+    "authorUrl": "https://sketchfab.com/PolyDavid",
+    "viewerUrl": "https://sketchfab.com/3d-models/samsung-990-pro-ssd-6ada64c9ba734e499978a084e68ec3df",
+    "license": "CC Attribution",
+    "licenseSlug": "by",
+    "licenseUrl": "http://creativecommons.org/licenses/by/4.0/"
+  },
+  {
+    "assetId": "sketchfab_storage_wd_sn7100",
+    "category": "storage",
+    "uid": "8287dfa4fd644cb4a044d4dce57968ae",
+    "name": "SSD - WD SN7100",
+    "author": "PolyDavid",
+    "authorUrl": "https://sketchfab.com/PolyDavid",
+    "viewerUrl": "https://sketchfab.com/3d-models/ssd-wd-sn7100-8287dfa4fd644cb4a044d4dce57968ae",
+    "license": "CC Attribution",
+    "licenseSlug": "by",
+    "licenseUrl": "http://creativecommons.org/licenses/by/4.0/"
+  },
+  {
+    "assetId": "sketchfab_storage_m2_ssd_free",
+    "category": "storage",
+    "uid": "9965ed46375b49ee9b6f13c072fb51b4",
+    "name": "M.2 SSD (Free)",
+    "author": "PolyDavid",
+    "authorUrl": "https://sketchfab.com/PolyDavid",
+    "viewerUrl": "https://sketchfab.com/3d-models/m2-ssd-free-9965ed46375b49ee9b6f13c072fb51b4",
+    "license": "CC Attribution",
+    "licenseSlug": "by",
+    "licenseUrl": "http://creativecommons.org/licenses/by/4.0/"
   }
 ]

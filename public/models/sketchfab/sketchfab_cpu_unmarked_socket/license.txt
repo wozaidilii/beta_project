@@ -1,0 +1,11 @@
+Model Information:
+* title:	Unmarked processor (CPU) + Socket [HP LP ANIM]
+* source:	https://sketchfab.com/3d-models/unmarked-processor-cpu-socket-hp-lp-anim-26d2147e082648949b9c703c514e6901
+* author:	sliqixy (https://sketchfab.com/sliqixy)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Unmarked processor (CPU) + Socket [HP LP ANIM]" (https://sketchfab.com/3d-models/unmarked-processor-cpu-socket-hp-lp-anim-26d2147e082648949b9c703c514e6901) by sliqixy (https://sketchfab.com/sliqixy) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
