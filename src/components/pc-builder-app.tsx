@@ -64,11 +64,10 @@ const scenarioLabels = [
 type WorkspaceMode = "builder" | "products";
 type ShopCategoryId = "builds" | CategoryId;
 type ShopFilters = {
-  brand: string;
-  color: string;
-  size: string;
-  minPrice: string;
-  maxPrice: string;
+  brands: string[];
+  colors: string[];
+  sizes: string[];
+  priceRange: [number, number];
 };
 type ShopFilterOptions = {
   brands: string[];
@@ -88,13 +87,6 @@ const primaryShopCategoryIds: ShopCategoryId[] = [
   "cooling",
 ];
 const compactShopCategoryIds: ShopCategoryId[] = ["fans", "builds"];
-const defaultShopFilters: ShopFilters = {
-  brand: "all",
-  color: "all",
-  size: "all",
-  minPrice: "",
-  maxPrice: "",
-};
 const futureShopCategories = [
   "显示器",
   "键盘",
@@ -130,7 +122,7 @@ export function PcBuilderApp() {
   const [activeShopCategory, setActiveShopCategory] =
     useState<ShopCategoryId>("case");
   const [shopFilters, setShopFilters] =
-    useState<ShopFilters>(defaultShopFilters);
+    useState<ShopFilters>(() => getDefaultShopFilters(getShopFilterOptions("case")));
   const [activeScenario, setActiveScenario] =
     useState<(typeof scenarioLabels)[number]["key"]>("gaming");
 
@@ -177,7 +169,7 @@ export function PcBuilderApp() {
   };
   const setShopCategory = (category: ShopCategoryId) => {
     setActiveShopCategory(category);
-    setShopFilters(defaultShopFilters);
+    setShopFilters(getDefaultShopFilters(getShopFilterOptions(category)));
   };
 
   return (
@@ -423,65 +415,69 @@ export function PcBuilderApp() {
                 onSelect={setShopCategory}
               />
 
-              <ShopFilterBar
-                activeCategory={activeShopCategory}
-                filters={shopFilters}
-                onChange={setShopFilters}
-                onReset={() => setShopFilters(defaultShopFilters)}
-                options={shopFilterOptions}
-                resultCount={activeShopCount}
-              />
+              <div className="shop-content">
+                <ShopFilterSidebar
+                  activeCategory={activeShopCategory}
+                  filters={shopFilters}
+                  onChange={setShopFilters}
+                  onReset={() =>
+                    setShopFilters(getDefaultShopFilters(shopFilterOptions))
+                  }
+                  options={shopFilterOptions}
+                  resultCount={activeShopCount}
+                />
 
-              <div className="shop-grid">
-                {activeShopCount === 0 ? (
-                  <div className="shop-empty">
-                    <SlidersHorizontal size={22} />
-                    <strong>没有符合条件的产品</strong>
-                    <span>调整筛选条件或清空价格范围后再查看。</span>
-                  </div>
-                ) : activeShopCategory === "builds"
-                  ? shopBuilds.map((preset) => {
-                      const presetSummary = calculateBuild(preset.selection);
-                      return (
-                        <button
-                          className="shop-card shop-card--build"
-                          key={preset.id}
-                          onClick={() => setSelection(preset.selection)}
-                          type="button"
-                        >
-                          <ProductVisual
-                            category="builds"
-                            color="#e6462f"
-                            label={preset.name}
-                          />
-                          <span className="shop-card__body">
-                            <span className="shop-card__brand">整机方案</span>
-                            <strong>{preset.name}</strong>
-                            <small>{preset.useCase}</small>
-                            <span className="shop-card__tags">
-                              <span>{presetSummary.powerDraw}W 峰值</span>
-                              <span>{presetSummary.recommendedPsu}W 电源</span>
-                              <span>{scoreLabel(presetSummary.scores[activeScenario])}</span>
+                <div className="shop-grid">
+                  {activeShopCount === 0 ? (
+                    <div className="shop-empty">
+                      <SlidersHorizontal size={22} />
+                      <strong>没有符合条件的产品</strong>
+                      <span>调整左侧筛选条件或重置价格范围后再查看。</span>
+                    </div>
+                  ) : activeShopCategory === "builds"
+                    ? shopBuilds.map((preset) => {
+                        const presetSummary = calculateBuild(preset.selection);
+                        return (
+                          <button
+                            className="shop-card shop-card--build"
+                            key={preset.id}
+                            onClick={() => setSelection(preset.selection)}
+                            type="button"
+                          >
+                            <ProductVisual
+                              category="builds"
+                              color="#e6462f"
+                              label={preset.name}
+                            />
+                            <span className="shop-card__body">
+                              <span className="shop-card__brand">整机方案</span>
+                              <strong>{preset.name}</strong>
+                              <small>{preset.useCase}</small>
+                              <span className="shop-card__tags">
+                                <span>{presetSummary.powerDraw}W 峰值</span>
+                                <span>{presetSummary.recommendedPsu}W 电源</span>
+                                <span>{scoreLabel(presetSummary.scores[activeScenario])}</span>
+                              </span>
                             </span>
-                          </span>
-                          <span className="shop-card__footer">
-                            <strong>{formatCny(presetSummary.totalPrice)}</strong>
-                            <span>装入方案</span>
-                          </span>
-                        </button>
-                      );
-                    })
-                  : shopParts.map((part) => (
-                      <ShopProductCard
-                        isSelected={selection[part.category] === part.id}
-                        key={part.id}
-                        onSelect={() => {
-                          setActiveCategory(part.category);
-                          setPart(part);
-                        }}
-                        part={part}
-                      />
-                    ))}
+                            <span className="shop-card__footer">
+                              <strong>{formatCny(presetSummary.totalPrice)}</strong>
+                              <span>装入方案</span>
+                            </span>
+                          </button>
+                        );
+                      })
+                    : shopParts.map((part) => (
+                        <ShopProductCard
+                          isSelected={selection[part.category] === part.id}
+                          key={part.id}
+                          onSelect={() => {
+                            setActiveCategory(part.category);
+                            setPart(part);
+                          }}
+                          part={part}
+                        />
+                      ))}
+                </div>
               </div>
             </section>
           )}
@@ -513,11 +509,19 @@ function presetMatchesQuery(
 }
 
 function partMatchesFilters(part: Part, filters: ShopFilters) {
-  if (filters.brand !== "all" && part.brand !== filters.brand) return false;
-  if (filters.color !== "all" && getColorFamily(part.color) !== filters.color) {
+  if (filters.brands.length > 0 && !filters.brands.includes(part.brand)) {
     return false;
   }
-  if (filters.size !== "all" && getSizeLabel(part) !== filters.size) return false;
+  if (
+    filters.colors.length > 0 &&
+    !filters.colors.includes(getColorFamily(part.color))
+  ) {
+    return false;
+  }
+  const size = getSizeLabel(part);
+  if (filters.sizes.length > 0 && (!size || !filters.sizes.includes(size))) {
+    return false;
+  }
   return priceWithin(part.price, filters);
 }
 
@@ -529,17 +533,10 @@ function presetMatchesPriceFilter(
 }
 
 function priceWithin(price: number, filters: ShopFilters) {
-  const min = parsePriceInput(filters.minPrice);
-  const max = parsePriceInput(filters.maxPrice);
-  if (min !== undefined && price < min) return false;
-  if (max !== undefined && price > max) return false;
+  const [min, max] = filters.priceRange;
+  if (price < min) return false;
+  if (price > max) return false;
   return true;
-}
-
-function parsePriceInput(value: string) {
-  if (value.trim() === "") return undefined;
-  const parsed = Number(value);
-  return Number.isFinite(parsed) ? parsed : undefined;
 }
 
 function getShopCategoryLabel(category: ShopCategoryId) {
@@ -587,6 +584,47 @@ function getShopFilterOptions(category: ShopCategoryId): ShopFilterOptions {
     sizes: uniqueStrings(parts.map((part) => getSizeLabel(part)).filter(isString)),
     price: getPriceBounds(prices),
   };
+}
+
+function getDefaultShopFilters(options: ShopFilterOptions): ShopFilters {
+  return {
+    brands: [],
+    colors: [],
+    sizes: [],
+    priceRange: [options.price.min, options.price.max],
+  };
+}
+
+function shopFiltersAreActive(filters: ShopFilters, options: ShopFilterOptions) {
+  return (
+    filters.brands.length > 0 ||
+    filters.colors.length > 0 ||
+    filters.sizes.length > 0 ||
+    filters.priceRange[0] > options.price.min ||
+    filters.priceRange[1] < options.price.max
+  );
+}
+
+function toggleFilterValue(values: string[], value: string) {
+  return values.includes(value)
+    ? values.filter((item) => item !== value)
+    : [...values, value];
+}
+
+function clampPriceRange(
+  value: [number, number],
+  bounds: ShopFilterOptions["price"],
+) {
+  const [rawMin, rawMax] = value;
+  const min = Math.max(bounds.min, Math.min(rawMin, bounds.max));
+  const max = Math.max(bounds.min, Math.min(rawMax, bounds.max));
+  return [Math.min(min, max), Math.max(min, max)] as [number, number];
+}
+
+function getPricePercent(value: number, bounds: ShopFilterOptions["price"]) {
+  const span = bounds.max - bounds.min;
+  if (span <= 0) return 0;
+  return ((value - bounds.min) / span) * 100;
 }
 
 function getPriceBounds(prices: number[]) {
@@ -695,37 +733,70 @@ function ShopCategoryMenu({
   activeCategory: ShopCategoryId;
   onSelect: (category: ShopCategoryId) => void;
 }) {
+  const ActiveIcon = getShopCategoryIcon(activeCategory);
+  const allCategories = [...primaryShopCategoryIds, ...compactShopCategoryIds];
+
   return (
-    <div className="shop-category-menu" aria-label="产品分类">
-      <div className="shop-category-menu__primary">
-        {primaryShopCategoryIds.map((category) => (
-          <ShopCategoryTile
-            active={category === activeCategory}
-            category={category}
-            key={category}
-            onSelect={onSelect}
-          />
-        ))}
+    <div className="shop-category-dock" aria-label="产品分类">
+      <div className="shop-category-dock__trigger" tabIndex={0}>
+        <span
+          className="shop-category-dock__active-icon"
+          style={{ "--tone": getShopCategoryTone(activeCategory) } as React.CSSProperties}
+        >
+          <ActiveIcon size={28} />
+        </span>
+        <div>
+          <span className="eyebrow">产品分类</span>
+          <strong>{getShopCategoryLabel(activeCategory)}</strong>
+          <small>鼠标靠近展开分类缩略图</small>
+        </div>
+        <div className="shop-category-dock__icons" aria-hidden="true">
+          {allCategories.map((category) => {
+            const Icon = getShopCategoryIcon(category);
+            return (
+              <span
+                className={category === activeCategory ? "is-active" : ""}
+                key={category}
+                style={{ "--tone": getShopCategoryTone(category) } as React.CSSProperties}
+              >
+                <Icon size={15} />
+              </span>
+            );
+          })}
+        </div>
       </div>
 
-      <div className="shop-category-menu__side">
-        <div className="shop-category-menu__compact">
-          {compactShopCategoryIds.map((category) => (
+      <div className="shop-category-menu">
+        <div className="shop-category-menu__primary">
+          {primaryShopCategoryIds.map((category) => (
             <ShopCategoryTile
               active={category === activeCategory}
               category={category}
-              compact
               key={category}
               onSelect={onSelect}
             />
           ))}
         </div>
 
-        <div className="shop-category-menu__other" aria-label="更多产品">
-          <strong>其他产品</strong>
-          {futureShopCategories.map((category) => (
-            <span key={category}>{category}</span>
-          ))}
+        <div className="shop-category-menu__side">
+          <div className="shop-category-menu__compact">
+            {compactShopCategoryIds.map((category) => (
+              <ShopCategoryTile
+                active={category === activeCategory}
+                category={category}
+                compact
+                key={category}
+                onSelect={onSelect}
+              />
+            ))}
+          </div>
+
+          <div className="shop-category-menu__other" aria-label="更多产品">
+            <strong>其他产品</strong>
+            {futureShopCategories.map((category) => (
+              <span key={category}>{category}</span>
+            ))}
+          </div>
         </div>
       </div>
     </div>
@@ -764,7 +835,7 @@ function ShopCategoryTile({
   );
 }
 
-function ShopFilterBar({
+function ShopFilterSidebar({
   activeCategory,
   filters,
   onChange,
@@ -779,16 +850,16 @@ function ShopFilterBar({
   options: ShopFilterOptions;
   resultCount: number;
 }) {
-  const hasFilters =
-    filters.brand !== "all" ||
-    filters.color !== "all" ||
-    filters.size !== "all" ||
-    filters.minPrice !== "" ||
-    filters.maxPrice !== "";
+  const hasFilters = shopFiltersAreActive(filters, options);
+  const priceDisabled = options.price.min === options.price.max;
+  const priceStart = getPricePercent(filters.priceRange[0], options.price);
+  const priceEnd = getPricePercent(filters.priceRange[1], options.price);
+  const setPriceRange = (range: [number, number]) =>
+    onChange({ ...filters, priceRange: clampPriceRange(range, options.price) });
 
   return (
-    <div className="shop-filter-bar" aria-label="产品筛选">
-      <div className="shop-filter-bar__title">
+    <aside className="shop-filter-sidebar" aria-label="产品筛选">
+      <div className="shop-filter-sidebar__title">
         <SlidersHorizontal size={18} />
         <div>
           <strong>{getShopCategoryLabel(activeCategory)}筛选</strong>
@@ -796,95 +867,140 @@ function ShopFilterBar({
         </div>
       </div>
 
-      <label className="shop-filter-control">
-        <span>
+      <fieldset className="shop-filter-group">
+        <legend>
           <Factory size={15} />
           厂商
-        </span>
-        <select
-          onChange={(event) => onChange({ ...filters, brand: event.target.value })}
-          value={filters.brand}
-        >
-          <option value="all">全部厂商</option>
+        </legend>
+        <div className="shop-checkbox-list">
+          {options.brands.length === 0 ? (
+            <span className="shop-filter-empty">当前分类暂无厂商筛选</span>
+          ) : null}
           {options.brands.map((brand) => (
-            <option key={brand} value={brand}>
-              {brand}
-            </option>
+            <label className="shop-checkbox" key={brand}>
+              <input
+                checked={filters.brands.includes(brand)}
+                onChange={() =>
+                  onChange({
+                    ...filters,
+                    brands: toggleFilterValue(filters.brands, brand),
+                  })
+                }
+                type="checkbox"
+              />
+              <span className="shop-checkbox__box" />
+              <strong>{brand}</strong>
+            </label>
           ))}
-        </select>
-      </label>
+        </div>
+      </fieldset>
 
-      <label className="shop-filter-control">
-        <span>
+      <fieldset className="shop-filter-group">
+        <legend>
           <Ruler size={15} />
           大小
-        </span>
-        <select
-          onChange={(event) => onChange({ ...filters, size: event.target.value })}
-          value={filters.size}
-        >
-          <option value="all">全部尺寸</option>
+        </legend>
+        <div className="shop-checkbox-list">
+          {options.sizes.length === 0 ? (
+            <span className="shop-filter-empty">当前分类暂无尺寸筛选</span>
+          ) : null}
           {options.sizes.map((size) => (
-            <option key={size} value={size}>
-              {size}
-            </option>
+            <label className="shop-checkbox" key={size}>
+              <input
+                checked={filters.sizes.includes(size)}
+                onChange={() =>
+                  onChange({
+                    ...filters,
+                    sizes: toggleFilterValue(filters.sizes, size),
+                  })
+                }
+                type="checkbox"
+              />
+              <span className="shop-checkbox__box" />
+              <strong>{size}</strong>
+            </label>
           ))}
-        </select>
-      </label>
+        </div>
+      </fieldset>
 
-      <div className="shop-filter-control shop-filter-control--color">
-        <span>
+      <fieldset className="shop-filter-group">
+        <legend>
           <Palette size={15} />
           颜色
-        </span>
-        <div className="shop-color-swatches">
-          <button
-            aria-pressed={filters.color === "all"}
-            className={filters.color === "all" ? "is-active" : ""}
-            onClick={() => onChange({ ...filters, color: "all" })}
-            type="button"
-          >
-            全部
-          </button>
+        </legend>
+        <div className="shop-checkbox-list">
+          {options.colors.length === 0 ? (
+            <span className="shop-filter-empty">当前分类暂无颜色筛选</span>
+          ) : null}
           {options.colors.map((color) => (
-            <button
-              aria-label={color.label}
-              aria-pressed={filters.color === color.value}
-              className={filters.color === color.value ? "is-active" : ""}
-              key={color.value}
-              onClick={() => onChange({ ...filters, color: color.value })}
-              style={{ "--swatch": color.swatch } as React.CSSProperties}
-              title={color.label}
-              type="button"
-            />
+            <label className="shop-checkbox shop-checkbox--color" key={color.value}>
+              <input
+                checked={filters.colors.includes(color.value)}
+                onChange={() =>
+                  onChange({
+                    ...filters,
+                    colors: toggleFilterValue(filters.colors, color.value),
+                  })
+                }
+                type="checkbox"
+              />
+              <span className="shop-checkbox__box" />
+              <i style={{ "--swatch": color.swatch } as React.CSSProperties} />
+              <strong>{color.label}</strong>
+            </label>
           ))}
         </div>
-      </div>
+      </fieldset>
 
-      <div className="shop-filter-control shop-filter-control--price">
-        <span>价格范围</span>
-        <div className="shop-price-inputs">
-          <input
-            aria-label="最低价格"
-            inputMode="numeric"
-            min="0"
-            onChange={(event) => onChange({ ...filters, minPrice: event.target.value })}
-            placeholder={`${options.price.min}`}
-            type="number"
-            value={filters.minPrice}
-          />
-          <span>-</span>
-          <input
-            aria-label="最高价格"
-            inputMode="numeric"
-            min="0"
-            onChange={(event) => onChange({ ...filters, maxPrice: event.target.value })}
-            placeholder={`${options.price.max}`}
-            type="number"
-            value={filters.maxPrice}
-          />
+      <fieldset className="shop-filter-group shop-filter-group--price">
+        <legend>价格区间</legend>
+        <div
+          className="shop-price-range"
+          style={
+            {
+              "--price-start": `${priceStart}%`,
+              "--price-end": `${priceEnd}%`,
+            } as React.CSSProperties
+          }
+        >
+          <div className="shop-price-range__labels">
+            <span>{formatCny(filters.priceRange[0])}</span>
+            <span>{formatCny(filters.priceRange[1])}</span>
+          </div>
+          <div className="shop-price-slider">
+            <span className="shop-price-slider__track" />
+            <span className="shop-price-slider__fill" />
+            <input
+              aria-label="最低价格"
+              disabled={priceDisabled}
+              max={options.price.max}
+              min={options.price.min}
+              onChange={(event) =>
+                setPriceRange([Number(event.target.value), filters.priceRange[1]])
+              }
+              step="50"
+              type="range"
+              value={filters.priceRange[0]}
+            />
+            <input
+              aria-label="最高价格"
+              disabled={priceDisabled}
+              max={options.price.max}
+              min={options.price.min}
+              onChange={(event) =>
+                setPriceRange([filters.priceRange[0], Number(event.target.value)])
+              }
+              step="50"
+              type="range"
+              value={filters.priceRange[1]}
+            />
+          </div>
+          <div className="shop-price-range__bounds">
+            <span>{formatCny(options.price.min)}</span>
+            <span>{formatCny(options.price.max)}</span>
+          </div>
         </div>
-      </div>
+      </fieldset>
 
       <button
         className="shop-filter-reset"
@@ -893,9 +1009,9 @@ function ShopFilterBar({
         type="button"
       >
         <RotateCcw size={15} />
-        <span>重置</span>
+        <span>重置筛选</span>
       </button>
-    </div>
+    </aside>
   );
 }
 
