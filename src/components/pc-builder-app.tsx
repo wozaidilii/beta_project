@@ -291,6 +291,8 @@ export function PcBuilderApp() {
         <section className="workspace-main">
           {activeWorkspace === "builder" ? (
             <section className="builder-grid" aria-label="3D Builder">
+              <BuilderDynamicBackground />
+
               <aside className="panel picker-panel" aria-label="配件库">
                 <div className="panel-heading">
                   <div>
@@ -592,6 +594,24 @@ export function PcBuilderApp() {
         </section>
       </section>
     </main>
+  );
+}
+
+function BuilderDynamicBackground() {
+  return (
+    <div className="builder-tech-bg" aria-hidden="true">
+      <span className="builder-tech-bg__plane" />
+      <span className="builder-tech-bg__axis builder-tech-bg__axis--x" />
+      <span className="builder-tech-bg__axis builder-tech-bg__axis--y" />
+      <span className="builder-tech-bg__bus builder-tech-bg__bus--top" />
+      <span className="builder-tech-bg__bus builder-tech-bg__bus--mid" />
+      <span className="builder-tech-bg__bus builder-tech-bg__bus--bottom" />
+      <span className="builder-tech-bg__pulse builder-tech-bg__pulse--one" />
+      <span className="builder-tech-bg__pulse builder-tech-bg__pulse--two" />
+      <span className="builder-tech-bg__pulse builder-tech-bg__pulse--three" />
+      <span className="builder-tech-bg__corner builder-tech-bg__corner--tl" />
+      <span className="builder-tech-bg__corner builder-tech-bg__corner--br" />
+    </div>
   );
 }
 

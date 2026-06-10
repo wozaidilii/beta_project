@@ -1506,7 +1506,7 @@
           "label": "mountFace",
           "position": [
             0,
-            0,
+            -1.04,
             0
           ]
         }
