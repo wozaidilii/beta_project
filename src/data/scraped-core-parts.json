@@ -1,0 +1,338 @@
+[
+  {
+    "id": "amd-7800x3d",
+    "category": "cpu",
+    "part": {
+      "socket": "AM5",
+      "tdp": 120,
+      "wattage": 120
+    },
+    "dimensions": {
+      "lengthMm": 40,
+      "widthMm": 40,
+      "heightMm": 4
+    },
+    "model": {
+      "kind": "parametric",
+      "slot": "cpu",
+      "mount": "socket-am5"
+    },
+    "source": {
+      "sourceName": "AMD official specifications",
+      "sourceUrl": "https://www.amd.com/en/products/processors/desktops/ryzen/7000-series/amd-ryzen-7-7800x3d.html",
+      "scrapedAt": "2026-06-10T06:30:16.314Z"
+    },
+    "scrapedSpecs": {
+      "cores": 8,
+      "threads": 16,
+      "boostClock": "Up to 5 GHz",
+      "tdp": "120W",
+      "socket": "AM5"
+    },
+    "scrapeStatus": "failed",
+    "scrapeError": "This operation was aborted"
+  },
+  {
+    "id": "amd-9700x",
+    "category": "cpu",
+    "part": {
+      "socket": "AM5",
+      "tdp": 65,
+      "wattage": 88
+    },
+    "dimensions": {
+      "lengthMm": 40,
+      "widthMm": 40,
+      "heightMm": 4
+    },
+    "model": {
+      "kind": "parametric",
+      "slot": "cpu",
+      "mount": "socket-am5"
+    },
+    "source": {
+      "sourceName": "AMD official specifications",
+      "sourceUrl": "https://www.amd.com/en/products/processors/desktops/ryzen/9000-series/amd-ryzen-7-9700x.html",
+      "scrapedAt": "2026-06-10T06:30:16.314Z"
+    },
+    "scrapedSpecs": {
+      "cores": 8,
+      "threads": 16,
+      "boostClock": "Up to 5.5 GHz",
+      "tdp": "65W",
+      "socket": "AM5"
+    },
+    "scrapeStatus": "failed",
+    "scrapeError": "This operation was aborted"
+  },
+  {
+    "id": "msi-b850m-mortar",
+    "category": "motherboard",
+    "part": {
+      "socket": "AM5",
+      "memoryType": "DDR5",
+      "formFactor": "Micro-ATX",
+      "m2Slots": 3
+    },
+    "dimensions": {
+      "lengthMm": 243.84,
+      "widthMm": 243.84,
+      "heightMm": 18
+    },
+    "model": {
+      "kind": "parametric",
+      "slot": "motherboard",
+      "mount": "case-standoffs"
+    },
+    "source": {
+      "sourceName": "MSI official specifications",
+      "sourceUrl": "https://www.msi.com/Motherboard/MAG-B850M-MORTAR-WIFI/Specification",
+      "scrapedAt": "2026-06-10T06:30:16.314Z"
+    },
+    "scrapedSpecs": {
+      "chipset": "AMD B850",
+      "memory": "4x DDR5 UDIMM",
+      "storage": "3x M.2",
+      "pcbInfo": "mATX 243.84mm x 243.84mm"
+    },
+    "scrapeStatus": "failed",
+    "scrapeError": "HTTP 403"
+  },
+  {
+    "id": "asus-b760m-plus",
+    "category": "motherboard",
+    "part": {
+      "socket": "LGA1700",
+      "memoryType": "DDR5",
+      "formFactor": "Micro-ATX",
+      "m2Slots": 3
+    },
+    "dimensions": {
+      "lengthMm": 244,
+      "widthMm": 244,
+      "heightMm": 18
+    },
+    "model": {
+      "kind": "parametric",
+      "slot": "motherboard",
+      "mount": "case-standoffs"
+    },
+    "source": {
+      "sourceName": "ASUS official specifications",
+      "sourceUrl": "https://www.asus.com/motherboards-components/motherboards/tuf-gaming/tuf-gaming-b760m-plus-wifi-ii/techspec/",
+      "scrapedAt": "2026-06-10T06:30:16.314Z"
+    },
+    "scrapedSpecs": {
+      "chipset": "Intel",
+      "memory": "4 x DIMM slots, Max. 192GB, DDR5 7800+(OC)/7000(OC)/6800(OC)/6600(OC)/6400(OC)/ 6200(OC)/ 6000(OC)/ 5800(OC)/ 5600/ 5400/ 5200/ 5000/ 4800 Non-ECC, Un-buffered Memory*",
+      "storage": "3 x M.2 slots and 4 x SATA 6Gb/s ports*",
+      "formFactor": "mATX Form Factor 9.6inch x 9.6 inch ( 24.4 cm x 24.4 cm )"
+    },
+    "scrapeStatus": "ok"
+  },
+  {
+    "id": "rtx-5070-ti",
+    "category": "gpu",
+    "part": {
+      "name": "TUF Gaming GeForce RTX 5070 Ti 16G OC",
+      "brand": "华硕",
+      "lengthMm": 329
+    },
+    "dimensions": {
+      "lengthMm": 329,
+      "heightMm": 140,
+      "thicknessMm": 62.5
+    },
+    "model": {
+      "kind": "parametric",
+      "slot": "gpu",
+      "mount": "pcie-x16"
+    },
+    "source": {
+      "sourceName": "ASUS official specifications",
+      "sourceUrl": "https://www.asus.com/motherboards-components/graphics-cards/tuf-gaming/tuf-rtx5070ti-o16g-gaming/techspec/",
+      "scrapedAt": "2026-06-10T06:30:16.314Z"
+    },
+    "scrapedSpecs": {
+      "memory": "16GB GDDR7",
+      "cudaCores": 8960,
+      "dimensions": "329 x 140 x 62.5 mm",
+      "recommendedPsu": "850W",
+      "powerConnectors": "1 x 16-pin",
+      "slot": "3.125 Slot"
+    },
+    "scrapeStatus": "ok"
+  },
+  {
+    "id": "rtx-5060-ti",
+    "category": "gpu",
+    "part": {
+      "name": "Dual GeForce RTX 5060 Ti 16G",
+      "brand": "华硕",
+      "lengthMm": 229
+    },
+    "dimensions": {
+      "lengthMm": 229,
+      "heightMm": 120,
+      "thicknessMm": 50
+    },
+    "model": {
+      "kind": "parametric",
+      "slot": "gpu",
+      "mount": "pcie-x16"
+    },
+    "source": {
+      "sourceName": "ASUS official specifications",
+      "sourceUrl": "https://www.asus.com/motherboards-components/graphics-cards/dual/dual-rtx5060ti-16g/techspec/",
+      "scrapedAt": "2026-06-10T06:30:16.314Z"
+    },
+    "scrapedSpecs": {
+      "memory": "16GB GDDR7",
+      "cudaCores": 4608,
+      "dimensions": "229 x 120 x 50mm",
+      "recommendedPsu": "550W",
+      "powerConnectors": "1 x 8-pin",
+      "slot": "2.5 Slot"
+    },
+    "scrapeStatus": "ok"
+  },
+  {
+    "id": "lianli-o11-air-mini",
+    "category": "case",
+    "part": {
+      "supportedFormFactors": [
+        "ATX",
+        "Micro-ATX",
+        "Mini-ITX"
+      ],
+      "gpuClearanceMm": 362,
+      "coolerClearanceMm": 170,
+      "radiatorSupportMm": 280
+    },
+    "dimensions": {
+      "depthMm": 400,
+      "widthMm": 288,
+      "heightMm": 384
+    },
+    "model": {
+      "kind": "parametric",
+      "slot": "case",
+      "mount": "root"
+    },
+    "source": {
+      "sourceName": "LIAN LI official specifications",
+      "sourceUrl": "https://lian-li.com/product/o11-air-mini/",
+      "scrapedAt": "2026-06-10T06:30:16.314Z"
+    },
+    "scrapedSpecs": {
+      "dimension": "(D) 400 X (W) 288 X (H) 384 mm",
+      "motherboardSupport": "E-ATX (Max 280 mm wide)/ ATX/ Micro-ATX/ Mini-ITX",
+      "gpuClearance": "362 mm",
+      "cpuCoolerClearance": "170 mm",
+      "radiatorSupport": "(Top) 240mm or 280mm (Side) 240mm (Bottom) 240mm or 280mm (Front) 240mm or 280mm"
+    },
+    "scrapeStatus": "ok"
+  },
+  {
+    "id": "fractal-north",
+    "category": "case",
+    "part": {
+      "supportedFormFactors": [
+        "ATX",
+        "Micro-ATX",
+        "Mini-ITX"
+      ],
+      "gpuClearanceMm": 355,
+      "coolerClearanceMm": 170,
+      "radiatorSupportMm": 360
+    },
+    "dimensions": {
+      "depthMm": 447,
+      "widthMm": 215,
+      "heightMm": 469
+    },
+    "model": {
+      "kind": "parametric",
+      "slot": "case",
+      "mount": "root"
+    },
+    "source": {
+      "sourceName": "Fractal Design official specifications",
+      "sourceUrl": "https://www.fractal-design.com/products/cases/north/north/chalk-white/",
+      "scrapedAt": "2026-06-10T06:30:16.314Z"
+    },
+    "scrapedSpecs": {
+      "caseDimensions": "447 x 215 x 469 mm",
+      "gpuMaxLength": "355 mm with and without front fan mounted",
+      "cpuCoolerMaxHeight": "145 mm with Fan Bracket (Mesh version only)/ 170 mm without",
+      "frontRadiator": "• Enhance the look of your gaming station with sleek wood and alloy details",
+      "topRadiator": "Up to 240 mm"
+    },
+    "scrapeStatus": "ok"
+  },
+  {
+    "id": "lianli-galahad-360",
+    "category": "cooling",
+    "part": {
+      "radiatorMm": 360,
+      "coolingTdp": 320
+    },
+    "dimensions": {
+      "lengthMm": 397.5,
+      "widthMm": 119.2,
+      "heightMm": 27,
+      "pumpLengthMm": 74,
+      "pumpWidthMm": 74,
+      "pumpHeightMm": 69
+    },
+    "model": {
+      "kind": "parametric",
+      "slot": "cooling",
+      "mount": "top-radiator"
+    },
+    "source": {
+      "sourceName": "LIAN LI official specifications",
+      "sourceUrl": "https://lian-li.com/product/galahad-ii-trinity/",
+      "scrapedAt": "2026-06-10T06:30:16.314Z"
+    },
+    "scrapedSpecs": {
+      "radiatorSize": "397.5mm x 119.2mm x 27mm",
+      "pumpSize": "74 mm x 74mm x 69mm",
+      "pumpSpeed": "➌",
+      "compatibleSockets": "Intel: LGA 1851 / 1700 / 1200 / 115x AMD: AM5 / AM4"
+    },
+    "scrapeStatus": "ok"
+  },
+  {
+    "id": "seasonic-850-atx3",
+    "category": "psu",
+    "part": {
+      "name": "FOCUS GX-850 ATX 3.1",
+      "psuWattage": 850
+    },
+    "dimensions": {
+      "lengthMm": 140,
+      "widthMm": 150,
+      "heightMm": 86
+    },
+    "model": {
+      "kind": "parametric",
+      "slot": "psu",
+      "mount": "psu-bay"
+    },
+    "source": {
+      "sourceName": "Seasonic official specifications",
+      "sourceUrl": "https://seasonic.com/focus-gx-atx-3/",
+      "scrapedAt": "2026-06-10T06:30:16.314Z"
+    },
+    "scrapedSpecs": {
+      "wattage": "850W",
+      "dimensions": "140 x 150 x 86 mm",
+      "standard": "ATX 3.1 & PCIe 5.1",
+      "cabling": "Fully Modular",
+      "warranty": "10 Years"
+    },
+    "scrapeStatus": "failed",
+    "scrapeError": "HTTP 403"
+  }
+]

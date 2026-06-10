@@ -1,3 +1,5 @@
+import scrapedCoreParts from "~/data/scraped-core-parts.json";
+
 export const categoryIds = [
   "cpu",
   "motherboard",
@@ -15,6 +17,34 @@ export type SocketType = "AM5" | "LGA1851" | "LGA1700";
 export type MemoryType = "DDR5" | "DDR4";
 export type FormFactor = "ATX" | "Micro-ATX" | "Mini-ITX";
 export type Severity = "error" | "warning" | "ok";
+export type Vec3 = [number, number, number];
+
+export type PartSource = {
+  sourceName: string;
+  sourceUrl: string;
+  scrapedAt: string;
+};
+
+export type PhysicalDimensions = {
+  lengthMm?: number;
+  widthMm?: number;
+  heightMm?: number;
+  depthMm?: number;
+  thicknessMm?: number;
+  pumpLengthMm?: number;
+  pumpWidthMm?: number;
+  pumpHeightMm?: number;
+};
+
+export type PartModel = {
+  kind: "parametric" | "glb";
+  slot: CategoryId;
+  mount?: string;
+  assetUrl?: string;
+  position?: Vec3;
+  rotation?: Vec3;
+  scale?: number | Vec3;
+};
 
 export type Part = {
   id: string;
@@ -46,7 +76,63 @@ export type Part = {
   radiatorSupportMm?: number;
   m2Slots?: number;
   psuWattage?: number;
+  source?: PartSource;
+  dimensions?: PhysicalDimensions;
+  model?: PartModel;
+  scrapedSpecs?: Record<string, string | number | boolean | string[]>;
 };
+
+type ScrapedPartRecord = {
+  id: string;
+  category: CategoryId;
+  source: PartSource;
+  part?: Partial<
+    Pick<
+      Part,
+      | "name"
+      | "brand"
+      | "socket"
+      | "memoryType"
+      | "formFactor"
+      | "supportedFormFactors"
+      | "wattage"
+      | "tdp"
+      | "coolingTdp"
+      | "lengthMm"
+      | "gpuClearanceMm"
+      | "heightMm"
+      | "coolerClearanceMm"
+      | "radiatorMm"
+      | "radiatorSupportMm"
+      | "m2Slots"
+      | "psuWattage"
+    >
+  >;
+  dimensions?: PhysicalDimensions;
+  model?: PartModel;
+  scrapedSpecs?: Record<string, string | number | boolean | string[]>;
+};
+
+const scrapedPartMap = new Map(
+  (scrapedCoreParts as unknown as ScrapedPartRecord[]).map((record) => [
+    record.id,
+    record,
+  ]),
+);
+
+function withScrapedPart<T extends Part>(part: T): T {
+  const scraped = scrapedPartMap.get(part.id);
+  if (!scraped) return part;
+
+  return {
+    ...part,
+    ...scraped.part,
+    source: scraped.source,
+    dimensions: scraped.dimensions,
+    model: scraped.model,
+    scrapedSpecs: scraped.scrapedSpecs,
+  };
+}
 
 export type PartSelection = Partial<Record<CategoryId, string>>;
 
@@ -89,7 +175,7 @@ export const categoryMeta: Record<
 
 export const catalog: Record<CategoryId, Part[]> = {
   cpu: [
-    {
+    withScrapedPart({
       id: "amd-7800x3d",
       category: "cpu",
       name: "Ryzen 7 7800X3D",
@@ -102,8 +188,8 @@ export const catalog: Record<CategoryId, Part[]> = {
       wattage: 120,
       tdp: 120,
       metrics: { gaming: 96, creator: 76, ai: 62, quiet: 78 },
-    },
-    {
+    }),
+    withScrapedPart({
       id: "amd-9700x",
       category: "cpu",
       name: "Ryzen 7 9700X",
@@ -116,7 +202,7 @@ export const catalog: Record<CategoryId, Part[]> = {
       wattage: 88,
       tdp: 65,
       metrics: { gaming: 88, creator: 82, ai: 64, quiet: 88 },
-    },
+    }),
     {
       id: "intel-265k",
       category: "cpu",
@@ -147,7 +233,7 @@ export const catalog: Record<CategoryId, Part[]> = {
     },
   ],
   motherboard: [
-    {
+    withScrapedPart({
       id: "msi-b850m-mortar",
       category: "motherboard",
       name: "MAG B850M MORTAR WIFI",
@@ -161,8 +247,8 @@ export const catalog: Record<CategoryId, Part[]> = {
       formFactor: "Micro-ATX",
       m2Slots: 3,
       metrics: { gaming: 82, creator: 80, ai: 78, quiet: 76 },
-    },
-    {
+    }),
+    withScrapedPart({
       id: "asus-b760m-plus",
       category: "motherboard",
       name: "TUF GAMING B760M-PLUS WIFI II",
@@ -176,7 +262,7 @@ export const catalog: Record<CategoryId, Part[]> = {
       formFactor: "Micro-ATX",
       m2Slots: 3,
       metrics: { gaming: 78, creator: 76, ai: 74, quiet: 74 },
-    },
+    }),
     {
       id: "gigabyte-z890-aorus",
       category: "motherboard",
@@ -209,7 +295,7 @@ export const catalog: Record<CategoryId, Part[]> = {
     },
   ],
   gpu: [
-    {
+    withScrapedPart({
       id: "rtx-5070-ti",
       category: "gpu",
       name: "GeForce RTX 5070 Ti 16G",
@@ -221,8 +307,8 @@ export const catalog: Record<CategoryId, Part[]> = {
       wattage: 285,
       lengthMm: 304,
       metrics: { gaming: 93, creator: 88, ai: 91, quiet: 70 },
-    },
-    {
+    }),
+    withScrapedPart({
       id: "rtx-5060-ti",
       category: "gpu",
       name: "GeForce RTX 5060 Ti 16G",
@@ -234,7 +320,7 @@ export const catalog: Record<CategoryId, Part[]> = {
       wattage: 180,
       lengthMm: 242,
       metrics: { gaming: 76, creator: 72, ai: 78, quiet: 82 },
-    },
+    }),
     {
       id: "rx-9070-xt",
       category: "gpu",
@@ -374,7 +460,7 @@ export const catalog: Record<CategoryId, Part[]> = {
       radiatorMm: 240,
       metrics: { gaming: 84, creator: 82, ai: 78, quiet: 76 },
     },
-    {
+    withScrapedPart({
       id: "lianli-galahad-360",
       category: "cooling",
       name: "Galahad II Trinity 360",
@@ -386,7 +472,7 @@ export const catalog: Record<CategoryId, Part[]> = {
       coolingTdp: 320,
       radiatorMm: 360,
       metrics: { gaming: 92, creator: 94, ai: 90, quiet: 72 },
-    },
+    }),
   ],
   psu: [
     {
@@ -413,7 +499,7 @@ export const catalog: Record<CategoryId, Part[]> = {
       psuWattage: 750,
       metrics: { gaming: 80, creator: 78, ai: 76, quiet: 80 },
     },
-    {
+    withScrapedPart({
       id: "seasonic-850-atx3",
       category: "psu",
       name: "FOCUS GX-850 ATX 3.0",
@@ -424,7 +510,7 @@ export const catalog: Record<CategoryId, Part[]> = {
       marketTags: ["天猫旗舰", "ATX 3.0", "显卡新接口"],
       psuWattage: 850,
       metrics: { gaming: 88, creator: 86, ai: 88, quiet: 84 },
-    },
+    }),
     {
       id: "rog-1000-platinum",
       category: "psu",
@@ -454,7 +540,7 @@ export const catalog: Record<CategoryId, Part[]> = {
       radiatorSupportMm: 360,
       metrics: { gaming: 78, creator: 76, ai: 74, quiet: 76 },
     },
-    {
+    withScrapedPart({
       id: "lianli-o11-air-mini",
       category: "case",
       name: "O11 AIR MINI",
@@ -468,7 +554,7 @@ export const catalog: Record<CategoryId, Part[]> = {
       coolerClearanceMm: 170,
       radiatorSupportMm: 360,
       metrics: { gaming: 88, creator: 84, ai: 82, quiet: 82 },
-    },
+    }),
     {
       id: "sama-quzao",
       category: "case",
@@ -484,7 +570,7 @@ export const catalog: Record<CategoryId, Part[]> = {
       radiatorSupportMm: 240,
       metrics: { gaming: 74, creator: 70, ai: 70, quiet: 68 },
     },
-    {
+    withScrapedPart({
       id: "fractal-north",
       category: "case",
       name: "North Mesh",
@@ -498,7 +584,7 @@ export const catalog: Record<CategoryId, Part[]> = {
       coolerClearanceMm: 170,
       radiatorSupportMm: 240,
       metrics: { gaming: 84, creator: 82, ai: 80, quiet: 90 },
-    },
+    }),
   ],
   fans: [
     {

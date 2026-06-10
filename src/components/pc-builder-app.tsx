@@ -35,6 +35,7 @@ import {
   type PartSelection,
   type Severity,
 } from "~/lib/catalog";
+import { describeDimensions } from "~/lib/model-layout";
 
 const categoryIcons: Record<CategoryId, React.ComponentType<{ size?: number }>> = {
   cpu: Cpu,
@@ -169,7 +170,9 @@ export function PcBuilderApp() {
                   <span className="part-row__brand">{part.brand}</span>
                   <strong>{part.name}</strong>
                   <small>{part.series}</small>
+                  <SpecLine part={part} />
                   <span className="tag-line">
+                    {part.source ? <span>参数已导入</span> : null}
                     {part.marketTags.slice(0, 3).map((tag) => (
                       <span key={tag}>{tag}</span>
                     ))}
@@ -275,6 +278,22 @@ export function PcBuilderApp() {
       </section>
     </main>
   );
+}
+
+function SpecLine({ part }: { part: Part }) {
+  const dimensions = describeDimensions(part);
+  const specs = [
+    dimensions,
+    part.gpuClearanceMm ? `显卡限长 ${part.gpuClearanceMm}mm` : undefined,
+    part.coolerClearanceMm ? `散热限高 ${part.coolerClearanceMm}mm` : undefined,
+    part.psuWattage ? `${part.psuWattage}W` : undefined,
+    part.socket,
+    part.memoryType,
+  ].filter(Boolean);
+
+  if (specs.length === 0) return null;
+
+  return <small className="spec-line">{specs.slice(0, 3).join(" / ")}</small>;
 }
 
 function ScoreBar({

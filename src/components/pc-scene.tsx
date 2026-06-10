@@ -1,16 +1,33 @@
 "use client";
 
-import { ContactShadows, Environment, OrbitControls } from "@react-three/drei";
+import {
+  ContactShadows,
+  Environment,
+  OrbitControls,
+  useGLTF,
+} from "@react-three/drei";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { Suspense, useMemo, useRef } from "react";
+import { Suspense, useMemo, useRef, type ReactNode } from "react";
 import type { Group } from "three";
 
 import {
   calculateBuild,
   categoryMeta,
   type CategoryId,
+  type Part,
+  type PartModel,
   type PartSelection,
 } from "~/lib/catalog";
+import {
+  getAirCoolerSceneBox,
+  getCaseSceneBox,
+  getGpuSceneBox,
+  getMotherboardSceneBox,
+  getPsuSceneBox,
+  getPumpSceneBox,
+  getRadiatorSceneBox,
+  type SceneBox,
+} from "~/lib/model-layout";
 
 type PcSceneProps = {
   selection: PartSelection;
@@ -89,6 +106,7 @@ function PcRig({
   const summary = useMemo(() => calculateBuild(selection), [selection]);
   const part = summary.selectedParts;
   const tone = categoryMeta[activeCategory].tone;
+  const caseBox = getCaseSceneBox(part.case);
 
   useFrame((_, delta) => {
     if (!group.current) return;
@@ -97,33 +115,42 @@ function PcRig({
 
   return (
     <group ref={group} rotation={[0, -0.48, 0]} position={[0, -0.08, 0]} scale={0.78}>
-      <CaseShell
-        color={part.case?.color ?? "#d1d5db"}
-        highlighted={activeCategory === "case"}
-        tone={tone}
-      />
-      <Motherboard
-        color={part.motherboard?.color ?? "#111827"}
-        highlighted={activeCategory === "motherboard"}
-        tone={tone}
-      />
-      <CpuBlock
-        color={part.cpu?.color ?? "#ef4444"}
-        highlighted={activeCategory === "cpu"}
-        tone={tone}
-      />
-      <Cooler
-        color={part.cooling?.color ?? "#94a3b8"}
-        highlighted={activeCategory === "cooling"}
-        tone={tone}
-        radiator={Boolean(part.cooling?.radiatorMm)}
-      />
-      <GpuCard
-        color={part.gpu?.color ?? "#76b900"}
-        highlighted={activeCategory === "gpu"}
-        tone={tone}
-        length={part.gpu?.lengthMm ?? 300}
-      />
+      <PartAsset part={part.case}>
+        <CaseShell
+          color={part.case?.color ?? "#d1d5db"}
+          highlighted={activeCategory === "case"}
+          size={caseBox}
+          tone={tone}
+        />
+      </PartAsset>
+      <PartAsset part={part.motherboard}>
+        <Motherboard
+          highlighted={activeCategory === "motherboard"}
+          part={part.motherboard}
+          tone={tone}
+        />
+      </PartAsset>
+      <PartAsset part={part.cpu}>
+        <CpuBlock
+          color={part.cpu?.color ?? "#ef4444"}
+          highlighted={activeCategory === "cpu"}
+          tone={tone}
+        />
+      </PartAsset>
+      <PartAsset part={part.cooling}>
+        <Cooler
+          highlighted={activeCategory === "cooling"}
+          part={part.cooling}
+          tone={tone}
+        />
+      </PartAsset>
+      <PartAsset part={part.gpu}>
+        <GpuCard
+          highlighted={activeCategory === "gpu"}
+          part={part.gpu}
+          tone={tone}
+        />
+      </PartAsset>
       <MemorySticks
         color={part.memory?.color ?? "#f59e0b"}
         highlighted={activeCategory === "memory"}
@@ -134,11 +161,13 @@ function PcRig({
         highlighted={activeCategory === "storage"}
         tone={tone}
       />
-      <PowerSupply
-        color={part.psu?.color ?? "#f59e0b"}
-        highlighted={activeCategory === "psu"}
-        tone={tone}
-      />
+      <PartAsset part={part.psu}>
+        <PowerSupply
+          highlighted={activeCategory === "psu"}
+          part={part.psu}
+          tone={tone}
+        />
+      </PartAsset>
       <FanBank
         color={part.fans?.color ?? "#ec4899"}
         highlighted={activeCategory === "fans"}
@@ -149,29 +178,65 @@ function PcRig({
   );
 }
 
+function PartAsset({
+  children,
+  part,
+}: {
+  children: ReactNode;
+  part?: Part;
+}) {
+  const model = part?.model;
+  if (model?.kind !== "glb" || !model.assetUrl) return <>{children}</>;
+
+  return (
+    <Suspense fallback={children}>
+      <GltfPart model={model} />
+    </Suspense>
+  );
+}
+
+function GltfPart({ model }: { model: PartModel }) {
+  const gltf = useGLTF(model.assetUrl ?? "");
+  const clone = useMemo(() => gltf.scene.clone(true), [gltf.scene]);
+
+  return (
+    <primitive
+      object={clone}
+      position={model.position ?? [0, 0, 0]}
+      rotation={model.rotation ?? [0, 0, 0]}
+      scale={model.scale ?? 1}
+    />
+  );
+}
+
 function CaseShell({
   color,
   highlighted,
+  size,
   tone,
 }: {
   color: string;
   highlighted: boolean;
+  size: SceneBox;
   tone: string;
 }) {
   const emissive = highlighted ? tone : "#000000";
+  const panel = 0.12;
+  const glassWidth = Math.max(0.2, size.width - 0.26);
+  const glassHeight = Math.max(0.2, size.height - 0.3);
 
   return (
     <group>
-      <mesh castShadow receiveShadow position={[0, 0, -0.82]}>
-        <boxGeometry args={[3.08, 3.78, 0.12]} />
+      <mesh castShadow receiveShadow position={[0, 0, -size.depth / 2]}>
+        <boxGeometry args={[size.width, size.height, panel]} />
         <meshStandardMaterial color={color} emissive={emissive} emissiveIntensity={highlighted ? 0.18 : 0} metalness={0.5} roughness={0.48} />
       </mesh>
-      <mesh castShadow position={[-1.58, 0, 0]}>
-        <boxGeometry args={[0.12, 3.78, 1.74]} />
+      <mesh castShadow position={[-size.width / 2, 0, 0]}>
+        <boxGeometry args={[panel, size.height, size.depth]} />
         <meshStandardMaterial color={color} emissive={emissive} emissiveIntensity={highlighted ? 0.18 : 0} metalness={0.45} roughness={0.48} />
       </mesh>
-      <mesh castShadow position={[1.58, 0, 0]}>
-        <boxGeometry args={[0.12, 3.78, 1.74]} />
+      <mesh castShadow position={[size.width / 2, 0, 0]}>
+        <boxGeometry args={[panel, size.height, size.depth]} />
         <meshStandardMaterial
           color={color}
           emissive={emissive}
@@ -182,16 +247,16 @@ function CaseShell({
           transparent
         />
       </mesh>
-      <mesh castShadow position={[0, 1.92, 0]}>
-        <boxGeometry args={[3.08, 0.12, 1.74]} />
+      <mesh castShadow position={[0, size.height / 2, 0]}>
+        <boxGeometry args={[size.width, panel, size.depth]} />
         <meshStandardMaterial color={color} emissive={emissive} emissiveIntensity={highlighted ? 0.18 : 0} metalness={0.45} roughness={0.48} />
       </mesh>
-      <mesh castShadow position={[0, -1.92, 0]}>
-        <boxGeometry args={[3.08, 0.12, 1.74]} />
+      <mesh castShadow position={[0, -size.height / 2, 0]}>
+        <boxGeometry args={[size.width, panel, size.depth]} />
         <meshStandardMaterial color={color} emissive={emissive} emissiveIntensity={highlighted ? 0.18 : 0} metalness={0.45} roughness={0.48} />
       </mesh>
-      <mesh position={[0, 0, 0.88]}>
-        <boxGeometry args={[2.82, 3.48, 0.035]} />
+      <mesh position={[0, 0, size.depth / 2 + 0.01]}>
+        <boxGeometry args={[glassWidth, glassHeight, 0.035]} />
         <meshPhysicalMaterial
           color="#dbeafe"
           opacity={0.17}
@@ -201,8 +266,8 @@ function CaseShell({
           transparent
         />
       </mesh>
-      <mesh position={[0, 0, 0.92]}>
-        <boxGeometry args={[2.94, 3.6, 0.025]} />
+      <mesh position={[0, 0, size.depth / 2 + 0.05]}>
+        <boxGeometry args={[Math.max(0.2, size.width - 0.14), Math.max(0.2, size.height - 0.18), 0.025]} />
         <meshStandardMaterial color={tone} opacity={highlighted ? 0.32 : 0.1} transparent />
       </mesh>
     </group>
@@ -210,28 +275,33 @@ function CaseShell({
 }
 
 function Motherboard({
-  color,
   highlighted,
+  part,
   tone,
 }: {
-  color: string;
   highlighted: boolean;
+  part?: Part;
   tone: string;
 }) {
+  const color = part?.color ?? "#111827";
+  const size = getMotherboardSceneBox(part);
+  const portY = size.height * 0.32;
+  const slotY = -size.height * 0.4;
+
   return (
     <group position={[-0.36, 0.08, -0.7]}>
       <mesh castShadow receiveShadow>
-        <boxGeometry args={[1.55, 2.15, 0.08]} />
+        <boxGeometry args={[size.width, size.height, size.depth]} />
         <meshStandardMaterial color={color} emissive={tone} emissiveIntensity={highlighted ? 0.22 : 0.02} metalness={0.25} roughness={0.52} />
       </mesh>
-      {[-0.56, -0.18, 0.2, 0.56].map((x) => (
-        <mesh key={x} position={[x, -0.86, 0.07]}>
-          <boxGeometry args={[0.24, 0.12, 0.05]} />
+      {[-0.36, -0.12, 0.12, 0.36].map((ratio) => (
+        <mesh key={ratio} position={[ratio * size.width, slotY, 0.07]}>
+          <boxGeometry args={[size.width * 0.15, 0.12, 0.05]} />
           <meshStandardMaterial color="#334155" metalness={0.45} roughness={0.5} />
         </mesh>
       ))}
-      <mesh position={[0.52, 0.7, 0.07]}>
-        <boxGeometry args={[0.32, 0.22, 0.08]} />
+      <mesh position={[size.width * 0.34, portY, 0.07]}>
+        <boxGeometry args={[size.width * 0.2, 0.22, 0.08]} />
         <meshStandardMaterial color="#64748b" metalness={0.7} roughness={0.32} />
       </mesh>
     </group>
@@ -262,42 +332,52 @@ function CpuBlock({
 }
 
 function Cooler({
-  color,
   highlighted,
-  radiator,
+  part,
   tone,
 }: {
-  color: string;
   highlighted: boolean;
-  radiator: boolean;
+  part?: Part;
   tone: string;
 }) {
+  const color = part?.color ?? "#94a3b8";
+  const radiator = Boolean(part?.radiatorMm);
+
   if (radiator) {
+    const radiatorSize = getRadiatorSceneBox(part);
+    const pumpSize = getPumpSceneBox(part);
+    const fanOffset = radiatorSize.width > 1.75 ? 0.48 : 0.36;
+
     return (
       <group>
         <mesh castShadow position={[0, 1.56, -0.15]}>
-          <boxGeometry args={[1.74, 0.22, 0.42]} />
+          <boxGeometry args={[radiatorSize.width, radiatorSize.height, radiatorSize.depth]} />
           <meshStandardMaterial color={color} emissive={tone} emissiveIntensity={highlighted ? 0.28 : 0.02} metalness={0.45} roughness={0.36} />
         </mesh>
-        <FanRotor color={tone} highlighted={highlighted} position={[-0.45, 1.57, 0.1]} scale={0.58} />
-        <FanRotor color={tone} highlighted={highlighted} position={[0.45, 1.57, 0.1]} scale={0.58} />
+        <FanRotor color={tone} highlighted={highlighted} position={[-fanOffset, 1.57, 0.1]} scale={0.58} />
+        <FanRotor color={tone} highlighted={highlighted} position={[fanOffset, 1.57, 0.1]} scale={0.58} />
+        {radiatorSize.width > 1.86 ? (
+          <FanRotor color={tone} highlighted={highlighted} position={[0, 1.57, 0.1]} scale={0.58} />
+        ) : null}
         <mesh castShadow position={[-0.42, 0.38, -0.42]}>
-          <cylinderGeometry args={[0.28, 0.28, 0.18, 48]} />
+          <cylinderGeometry args={[pumpSize.width / 2, pumpSize.width / 2, pumpSize.height, 48]} />
           <meshStandardMaterial color={color} emissive={tone} emissiveIntensity={highlighted ? 0.3 : 0.04} metalness={0.65} roughness={0.24} />
         </mesh>
       </group>
     );
   }
 
+  const towerSize = getAirCoolerSceneBox(part);
+
   return (
     <group position={[-0.42, 0.38, -0.42]}>
       <mesh castShadow>
-        <boxGeometry args={[0.74, 0.74, 0.48]} />
+        <boxGeometry args={[towerSize.width, towerSize.height, towerSize.depth]} />
         <meshStandardMaterial color={color} emissive={tone} emissiveIntensity={highlighted ? 0.3 : 0.03} metalness={0.55} roughness={0.4} />
       </mesh>
-      {[-0.24, -0.08, 0.08, 0.24].map((x) => (
-        <mesh key={x} position={[x, 0, 0.28]}>
-          <boxGeometry args={[0.05, 0.78, 0.06]} />
+      {[-0.32, -0.11, 0.11, 0.32].map((ratio) => (
+        <mesh key={ratio} position={[ratio * towerSize.width, 0, towerSize.depth / 2 + 0.04]}>
+          <boxGeometry args={[0.05, towerSize.height * 1.05, 0.06]} />
           <meshStandardMaterial color="#f8fafc" metalness={0.7} roughness={0.32} />
         </mesh>
       ))}
@@ -306,28 +386,31 @@ function Cooler({
 }
 
 function GpuCard({
-  color,
   highlighted,
-  length,
+  part,
   tone,
 }: {
-  color: string;
   highlighted: boolean;
-  length: number;
+  part?: Part;
   tone: string;
 }) {
-  const cardLength = Math.min(Math.max(length / 190, 1.24), 1.9);
+  const color = part?.color ?? "#76b900";
+  const size = getGpuSceneBox(part);
+  const fanOffset = size.width > 1.45 ? 0.34 : 0.22;
 
   return (
     <group position={[0.18, -0.52, -0.2]}>
       <mesh castShadow>
-        <boxGeometry args={[cardLength, 0.34, 0.58]} />
+        <boxGeometry args={[size.width, size.height, size.depth]} />
         <meshStandardMaterial color={color} emissive={tone} emissiveIntensity={highlighted ? 0.34 : 0.05} metalness={0.32} roughness={0.44} />
       </mesh>
-      <FanRotor color="#111827" highlighted={highlighted} position={[-0.36, 0.03, 0.32]} scale={0.42} />
-      <FanRotor color="#111827" highlighted={highlighted} position={[0.32, 0.03, 0.32]} scale={0.42} />
-      <mesh position={[-cardLength / 2 - 0.06, -0.01, 0]}>
-        <boxGeometry args={[0.08, 0.46, 0.68]} />
+      <FanRotor color="#111827" highlighted={highlighted} position={[-fanOffset, 0.03, size.depth / 2 + 0.03]} scale={0.42} />
+      <FanRotor color="#111827" highlighted={highlighted} position={[fanOffset, 0.03, size.depth / 2 + 0.03]} scale={0.42} />
+      {size.width > 1.7 ? (
+        <FanRotor color="#111827" highlighted={highlighted} position={[0, 0.03, size.depth / 2 + 0.03]} scale={0.42} />
+      ) : null}
+      <mesh position={[-size.width / 2 - 0.06, -0.01, 0]}>
+        <boxGeometry args={[0.08, size.height + 0.12, size.depth + 0.1]} />
         <meshStandardMaterial color="#e5e7eb" metalness={0.72} roughness={0.28} />
       </mesh>
     </group>
@@ -379,21 +462,24 @@ function Storage({
 }
 
 function PowerSupply({
-  color,
   highlighted,
+  part,
   tone,
 }: {
-  color: string;
   highlighted: boolean;
+  part?: Part;
   tone: string;
 }) {
+  const color = part?.color ?? "#f59e0b";
+  const size = getPsuSceneBox(part);
+
   return (
     <group position={[0.45, -1.34, -0.36]}>
       <mesh castShadow receiveShadow>
-        <boxGeometry args={[1.05, 0.58, 0.82]} />
+        <boxGeometry args={[size.width, size.height, size.depth]} />
         <meshStandardMaterial color={color} emissive={tone} emissiveIntensity={highlighted ? 0.24 : 0.03} metalness={0.55} roughness={0.42} />
       </mesh>
-      <mesh position={[-0.22, 0.01, 0.43]} rotation={[Math.PI / 2, 0, 0]}>
+      <mesh position={[-size.width * 0.2, 0.01, size.depth / 2 + 0.02]} rotation={[Math.PI / 2, 0, 0]}>
         <torusGeometry args={[0.19, 0.018, 12, 48]} />
         <meshStandardMaterial color="#e5e7eb" metalness={0.55} roughness={0.36} />
       </mesh>

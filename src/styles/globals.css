@@ -332,6 +332,11 @@ button {
   font-size: 12px;
 }
 
+.part-row .spec-line {
+  color: #145c52;
+  font-weight: 800;
+}
+
 .tag-line,
 .channel-box {
   display: flex;
