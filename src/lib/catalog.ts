@@ -41,6 +41,8 @@ export type PartModel = {
   slot: CategoryId;
   mount?: string;
   assetUrl?: string;
+  autoCenter?: boolean;
+  fitSize?: Vec3;
   position?: Vec3;
   rotation?: Vec3;
   scale?: number | Vec3;
@@ -349,7 +351,7 @@ export const catalog: Record<CategoryId, Part[]> = {
     },
   ],
   memory: [
-    {
+    withScrapedPart({
       id: "kingston-ddr5-32-6000",
       category: "memory",
       name: "FURY Beast DDR5 32GB 6000",
@@ -360,8 +362,8 @@ export const catalog: Record<CategoryId, Part[]> = {
       marketTags: ["京东自营", "D5", "甜点频率"],
       memoryType: "DDR5",
       metrics: { gaming: 84, creator: 78, ai: 76, quiet: 90 },
-    },
-    {
+    }),
+    withScrapedPart({
       id: "gskill-ddr5-64-6400",
       category: "memory",
       name: "Trident Z5 DDR5 64GB 6400",
@@ -372,8 +374,8 @@ export const catalog: Record<CategoryId, Part[]> = {
       marketTags: ["天猫旗舰", "D5", "创作容量"],
       memoryType: "DDR5",
       metrics: { gaming: 88, creator: 92, ai: 86, quiet: 86 },
-    },
-    {
+    }),
+    withScrapedPart({
       id: "asgard-ddr5-48-7200",
       category: "memory",
       name: "女武神 DDR5 48GB 7200",
@@ -384,7 +386,7 @@ export const catalog: Record<CategoryId, Part[]> = {
       marketTags: ["拼多多百亿补贴", "D5", "RGB"],
       memoryType: "DDR5",
       metrics: { gaming: 90, creator: 86, ai: 82, quiet: 78 },
-    },
+    }),
     {
       id: "gloway-ddr4-32-3600",
       category: "memory",

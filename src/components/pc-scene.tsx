@@ -8,7 +8,7 @@ import {
 } from "@react-three/drei";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { Suspense, useMemo, useRef, type ReactNode } from "react";
-import type { Group } from "three";
+import { Box3, Vector3, type Group } from "three";
 
 import {
   calculateBuild,
@@ -151,11 +151,13 @@ function PcRig({
           tone={tone}
         />
       </PartAsset>
-      <MemorySticks
-        color={part.memory?.color ?? "#f59e0b"}
-        highlighted={activeCategory === "memory"}
-        tone={tone}
-      />
+      <PartAsset part={part.memory}>
+        <MemorySticks
+          color={part.memory?.color ?? "#f59e0b"}
+          highlighted={activeCategory === "memory"}
+          tone={tone}
+        />
+      </PartAsset>
       <Storage
         color={part.storage?.color ?? "#2563eb"}
         highlighted={activeCategory === "storage"}
@@ -197,16 +199,57 @@ function PartAsset({
 
 function GltfPart({ model }: { model: PartModel }) {
   const gltf = useGLTF(model.assetUrl ?? "");
-  const clone = useMemo(() => gltf.scene.clone(true), [gltf.scene]);
+  const { clone, offset, scale } = useMemo(() => {
+    const scene = gltf.scene.clone(true);
+    scene.traverse((object) => {
+      if ("isMesh" in object && object.isMesh) {
+        object.castShadow = true;
+        object.receiveShadow = true;
+      }
+    });
+
+    const box = new Box3().setFromObject(scene);
+    const size = new Vector3();
+    const center = new Vector3();
+    box.getSize(size);
+    box.getCenter(center);
+
+    const fitScale = model.fitSize
+      ? new Vector3(
+          safeDivide(model.fitSize[0], size.x),
+          safeDivide(model.fitSize[1], size.y),
+          safeDivide(model.fitSize[2], size.z),
+        )
+      : new Vector3(1, 1, 1);
+    const userScale = Array.isArray(model.scale)
+      ? new Vector3(model.scale[0], model.scale[1], model.scale[2])
+      : new Vector3(model.scale ?? 1, model.scale ?? 1, model.scale ?? 1);
+    const finalScale = fitScale.multiply(userScale);
+    const localOffset =
+      model.autoCenter === false
+        ? new Vector3(0, 0, 0)
+        : center.clone().multiplyScalar(-1);
+
+    return {
+      clone: scene,
+      offset: localOffset,
+      scale: finalScale,
+    };
+  }, [gltf.scene, model]);
 
   return (
-    <primitive
-      object={clone}
+    <group
       position={model.position ?? [0, 0, 0]}
       rotation={model.rotation ?? [0, 0, 0]}
-      scale={model.scale ?? 1}
-    />
+      scale={scale}
+    >
+      <primitive object={clone} position={offset} />
+    </group>
   );
+}
+
+function safeDivide(target: number, source: number) {
+  return source === 0 ? 1 : target / source;
 }
 
 function CaseShell({
