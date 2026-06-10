@@ -260,7 +260,10 @@ button {
   display: grid;
   height: 100%;
   min-height: 0;
-  grid-template-columns: minmax(280px, 330px) minmax(420px, 1fr) minmax(310px, 370px);
+  grid-template-columns:
+    minmax(230px, 278px)
+    minmax(500px, 1.55fr)
+    minmax(250px, 300px);
   gap: 14px;
 }
 
@@ -1619,6 +1622,230 @@ button {
   border-color: rgba(20, 184, 166, 0.62);
   background: rgba(20, 184, 166, 0.18);
   color: #ffffff;
+}
+
+.scene-debug-tools {
+  position: absolute;
+  bottom: 16px;
+  left: 16px;
+  z-index: 3;
+  display: grid;
+  width: min(360px, calc(100% - 32px));
+  gap: 9px;
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  border-radius: 8px;
+  background: rgba(5, 7, 9, 0.82);
+  padding: 10px;
+  pointer-events: none;
+}
+
+.scene-debug-tools__header {
+  display: grid;
+  gap: 3px;
+}
+
+.scene-debug-tools__header span,
+.scene-debug-tools__flip span {
+  color: rgba(255, 255, 255, 0.58);
+  font-size: 10px;
+  font-weight: 900;
+}
+
+.scene-debug-tools__header strong {
+  max-width: 100%;
+  overflow: hidden;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 900;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.scene-debug-tools__list {
+  display: grid;
+  max-height: 186px;
+  gap: 6px;
+  overflow: auto;
+  pointer-events: auto;
+}
+
+.scene-debug-part {
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr);
+  min-height: 34px;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.04);
+  color: rgba(255, 255, 255, 0.78);
+  cursor: pointer;
+  padding: 5px 8px;
+  text-align: left;
+}
+
+.scene-debug-part span {
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.scene-debug-part strong {
+  overflow: hidden;
+  color: inherit;
+  font-size: 12px;
+  font-weight: 900;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.scene-debug-part.is-selected {
+  border-color: rgba(251, 191, 36, 0.72);
+  background: rgba(251, 191, 36, 0.14);
+  color: #ffffff;
+}
+
+.scene-debug-tools__flip {
+  display: grid;
+  grid-template-columns: auto repeat(3, minmax(0, 1fr));
+  align-items: center;
+  gap: 6px;
+  pointer-events: auto;
+}
+
+.scene-debug-tools__flip button {
+  min-height: 30px;
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.06);
+  color: #ffffff;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 950;
+}
+
+.scene-debug-tools__flip button:disabled {
+  color: rgba(255, 255, 255, 0.34);
+  cursor: not-allowed;
+}
+
+.scene-debug-tools__nudge {
+  display: grid;
+  grid-template-columns: 44px repeat(3, minmax(0, 1fr)) 42px 42px;
+  grid-template-areas:
+    "label . up . forward back"
+    "label left down right hint hint";
+  align-items: center;
+  gap: 6px;
+  pointer-events: auto;
+}
+
+.scene-debug-tools__nudge span {
+  grid-area: label;
+  color: rgba(255, 255, 255, 0.58);
+  font-size: 10px;
+  font-weight: 900;
+}
+
+.scene-debug-tools__nudge button {
+  min-height: 30px;
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.06);
+  color: #ffffff;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 950;
+}
+
+.scene-debug-tools__nudge button:disabled {
+  color: rgba(255, 255, 255, 0.34);
+  cursor: not-allowed;
+}
+
+.scene-debug-tools__nudge .is-up {
+  grid-area: up;
+}
+
+.scene-debug-tools__nudge .is-left {
+  grid-area: left;
+}
+
+.scene-debug-tools__nudge .is-right {
+  grid-area: right;
+}
+
+.scene-debug-tools__nudge .is-down {
+  grid-area: down;
+}
+
+.scene-debug-tools__nudge .is-forward {
+  grid-area: forward;
+}
+
+.scene-debug-tools__nudge .is-back {
+  grid-area: back;
+}
+
+.scene-debug-tools__nudge small {
+  grid-area: hint;
+  color: rgba(255, 255, 255, 0.52);
+  font-size: 10px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.scene-debug-export {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.scene-debug-export__button {
+  min-height: 34px;
+  border: 1px solid rgba(20, 184, 166, 0.58);
+  border-radius: 999px;
+  background: rgba(20, 184, 166, 0.2);
+  color: #ffffff;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 900;
+  padding: 0 12px;
+  pointer-events: auto;
+  white-space: nowrap;
+}
+
+.scene-debug-export__button:disabled {
+  border-color: rgba(255, 255, 255, 0.12);
+  background: rgba(10, 12, 14, 0.58);
+  color: rgba(255, 255, 255, 0.42);
+  cursor: not-allowed;
+}
+
+.scene-debug-export__status {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.62);
+  color: rgba(255, 255, 255, 0.74);
+  font-size: 11px;
+  font-weight: 800;
+  min-width: 0;
+  overflow: hidden;
+  padding: 7px 9px;
+  pointer-events: none;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.scene-debug-export__status.is-saved {
+  border-color: rgba(34, 197, 94, 0.38);
+  color: #bbf7d0;
+}
+
+.scene-debug-export__status.is-error {
+  border-color: rgba(248, 113, 113, 0.42);
+  color: #fecaca;
 }
 
 .anchor-debug-label {

@@ -361,7 +361,7 @@ export function PcBuilderApp() {
                         showAssemblyDebug ? "is-active" : ""
                       }`}
                       onClick={() => setShowAssemblyDebug((value) => !value)}
-                      title="切换装配调试"
+                      title="显示包围盒、anchor 点和坐标轴"
                       type="button"
                     >
                       <Bug size={14} />

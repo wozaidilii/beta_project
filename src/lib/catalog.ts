@@ -76,6 +76,7 @@ export type PartModel = {
   autoCenter?: boolean;
   anchorPoints?: Record<string, ModelAnchorPoint>;
   boundingBoxMm?: PhysicalDimensions;
+  fitMode?: "contain" | "stretch";
   fitSize?: Vec3;
   placement?: ModelPlacement;
   rotation?: Vec3;
