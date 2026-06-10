@@ -6,6 +6,7 @@
   "scripts": {
     "build": "next build",
     "dev": "next dev",
+    "download:sketchfab": "node scripts/download-sketchfab-models.mjs",
     "lint": "eslint . --max-warnings=0",
     "import:opendb": "node scripts/import-opendb-parts.mjs",
     "scrape:parts": "node scripts/scrape-core-parts.mjs",
