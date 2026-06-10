@@ -8,7 +8,7 @@ import {
   useGLTF,
 } from "@react-three/drei";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { Suspense, useMemo, useRef } from "react";
+import { Component, Suspense, useMemo, useRef, type ReactNode } from "react";
 import { Box3, Vector3, type Group } from "three";
 
 import {
@@ -105,11 +105,38 @@ function PcRig({
   return (
     <group ref={group} rotation={[0, -0.48, 0]} position={[0, -0.08, 0]} scale={0.78}>
       {Object.values(placements).map((placement) => (
-        <GltfPart key={placement.part.id} placement={placement} />
+        <ModelLoadBoundary
+          key={placement.part.id}
+          assetUrl={placement.model.assetUrl}
+        >
+          <GltfPart placement={placement} />
+        </ModelLoadBoundary>
       ))}
       {debug ? <DebugAssembly placements={Object.values(placements)} /> : null}
     </group>
   );
+}
+
+class ModelLoadBoundary extends Component<
+  { assetUrl: string; children: ReactNode },
+  { hasError: boolean }
+> {
+  state = { hasError: false };
+
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+
+  componentDidUpdate(previousProps: { assetUrl: string }) {
+    if (previousProps.assetUrl !== this.props.assetUrl && this.state.hasError) {
+      this.setState({ hasError: false });
+    }
+  }
+
+  render() {
+    if (this.state.hasError) return null;
+    return this.props.children;
+  }
 }
 
 function GltfPart({ placement }: { placement: AssemblyPlacement }) {
