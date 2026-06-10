@@ -20,6 +20,8 @@ import {
   ShoppingCart,
   SlidersHorizontal,
   Sparkles,
+  Star,
+  Upload,
   XCircle,
   Zap,
 } from "lucide-react";
@@ -61,8 +63,9 @@ const scenarioLabels = [
   { key: "quiet", label: "静音" },
 ] as const;
 
-type WorkspaceMode = "builder" | "products";
-type ShopCategoryId = "builds" | CategoryId;
+type WorkspaceMode = "builder" | "products" | "setups";
+type ShopCategoryId = CategoryId;
+type ProductVisualCategory = "builds" | CategoryId;
 type ShopFilters = {
   brands: string[];
   colors: string[];
@@ -75,6 +78,13 @@ type ShopFilterOptions = {
   sizes: string[];
   price: { min: number; max: number };
 };
+type SetupItem = {
+  id: string;
+  name: string;
+  useCase: string;
+  selection: Required<PartSelection>;
+  sourceLabel: string;
+};
 
 const primaryShopCategoryIds: ShopCategoryId[] = [
   "case",
@@ -86,7 +96,7 @@ const primaryShopCategoryIds: ShopCategoryId[] = [
   "psu",
   "cooling",
 ];
-const compactShopCategoryIds: ShopCategoryId[] = ["fans", "builds"];
+const compactShopCategoryIds: ShopCategoryId[] = ["fans"];
 const futureShopCategories = [
   "显示器",
   "键盘",
@@ -123,6 +133,8 @@ export function PcBuilderApp() {
     useState<ShopCategoryId>("case");
   const [shopFilters, setShopFilters] =
     useState<ShopFilters>(() => getDefaultShopFilters(getShopFilterOptions("case")));
+  const [uploadedSetups, setUploadedSetups] = useState<SetupItem[]>([]);
+  const [setupUploadError, setSetupUploadError] = useState("");
   const [activeScenario, setActiveScenario] =
     useState<(typeof scenarioLabels)[number]["key"]>("gaming");
 
@@ -135,34 +147,31 @@ export function PcBuilderApp() {
   );
   const shopParts = useMemo(
     () =>
-      activeShopCategory === "builds"
-        ? []
-        : catalog[activeShopCategory].filter((part) =>
-            partMatchesQuery(part, query) && partMatchesFilters(part, shopFilters),
-          ),
+      catalog[activeShopCategory].filter((part) =>
+        partMatchesQuery(part, query) && partMatchesFilters(part, shopFilters),
+      ),
     [activeShopCategory, query, shopFilters],
   );
-  const shopBuilds = useMemo(
+  const popularSetups = useMemo<SetupItem[]>(
     () =>
-      starterBuilds.filter(
-        (preset) =>
-          presetMatchesQuery(preset, query) &&
-          presetMatchesPriceFilter(preset, shopFilters),
-      ),
-    [query, shopFilters],
+      starterBuilds
+        .filter((preset) => presetMatchesQuery(preset, query))
+        .map((preset) => ({ ...preset, sourceLabel: "热门 Setup" })),
+    [query],
+  );
+  const visibleUploadedSetups = useMemo(
+    () => uploadedSetups.filter((setup) => presetMatchesQuery(setup, query)),
+    [query, uploadedSetups],
   );
   const shopFilterOptions = useMemo(
     () => getShopFilterOptions(activeShopCategory),
     [activeShopCategory],
   );
   const shopTotalCount = useMemo(
-    () =>
-      starterBuilds.length +
-      categoryIds.reduce((total, category) => total + catalog[category].length, 0),
+    () => categoryIds.reduce((total, category) => total + catalog[category].length, 0),
     [],
   );
-  const activeShopCount =
-    activeShopCategory === "builds" ? shopBuilds.length : shopParts.length;
+  const activeShopCount = shopParts.length;
 
   const setPart = (part: Part) => {
     setSelection((current) => ({ ...current, [part.category]: part.id }));
@@ -170,6 +179,26 @@ export function PcBuilderApp() {
   const setShopCategory = (category: ShopCategoryId) => {
     setActiveShopCategory(category);
     setShopFilters(getDefaultShopFilters(getShopFilterOptions(category)));
+  };
+  const applySetup = (setup: SetupItem) => {
+    setSelection(setup.selection);
+    setActiveWorkspace("builder");
+  };
+  const handleSetupUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    try {
+      const payload = JSON.parse(await file.text()) as unknown;
+      const setup = normalizeUploadedSetup(payload, file.name);
+      setUploadedSetups((current) => [setup, ...current]);
+      setSelection(setup.selection);
+      setSetupUploadError("");
+    } catch {
+      setSetupUploadError("Setup 文件格式不匹配");
+    } finally {
+      event.target.value = "";
+    }
   };
 
   return (
@@ -232,6 +261,17 @@ export function PcBuilderApp() {
             >
               <ShoppingCart size={20} />
               <span>产品</span>
+            </button>
+            <button
+              aria-pressed={activeWorkspace === "setups"}
+              className={`workspace-nav__button ${
+                activeWorkspace === "setups" ? "is-active" : ""
+              }`}
+              onClick={() => setActiveWorkspace("setups")}
+              type="button"
+            >
+              <Sparkles size={20} />
+              <span>预设 Set</span>
             </button>
           </nav>
         </aside>
@@ -306,20 +346,6 @@ export function PcBuilderApp() {
                   </div>
                 </div>
                 <PcScene activeCategory={activeCategory} selection={selection} />
-                <div className="preset-strip" aria-label="装机预设">
-                  {starterBuilds.map((preset) => (
-                    <button
-                      className="preset-chip"
-                      key={preset.id}
-                      onClick={() => setSelection(preset.selection)}
-                      type="button"
-                    >
-                      <Sparkles size={15} />
-                      <span>{preset.name}</span>
-                      <small>{preset.useCase}</small>
-                    </button>
-                  ))}
-                </div>
               </section>
 
               <aside className="panel summary-panel" aria-label="装机清单">
@@ -389,7 +415,7 @@ export function PcBuilderApp() {
                 </div>
               </aside>
             </section>
-          ) : (
+          ) : activeWorkspace === "products" ? (
             <section className="shop-page" aria-label="产品商城">
               <div className="shop-header">
                 <div>
@@ -434,49 +460,103 @@ export function PcBuilderApp() {
                       <strong>没有符合条件的产品</strong>
                       <span>调整左侧筛选条件或重置价格范围后再查看。</span>
                     </div>
-                  ) : activeShopCategory === "builds"
-                    ? shopBuilds.map((preset) => {
-                        const presetSummary = calculateBuild(preset.selection);
-                        return (
-                          <button
-                            className="shop-card shop-card--build"
-                            key={preset.id}
-                            onClick={() => setSelection(preset.selection)}
-                            type="button"
-                          >
-                            <ProductVisual
-                              category="builds"
-                              color="#e6462f"
-                              label={preset.name}
-                            />
-                            <span className="shop-card__body">
-                              <span className="shop-card__brand">整机方案</span>
-                              <strong>{preset.name}</strong>
-                              <small>{preset.useCase}</small>
-                              <span className="shop-card__tags">
-                                <span>{presetSummary.powerDraw}W 峰值</span>
-                                <span>{presetSummary.recommendedPsu}W 电源</span>
-                                <span>{scoreLabel(presetSummary.scores[activeScenario])}</span>
-                              </span>
-                            </span>
-                            <span className="shop-card__footer">
-                              <strong>{formatCny(presetSummary.totalPrice)}</strong>
-                              <span>装入方案</span>
-                            </span>
-                          </button>
-                        );
-                      })
-                    : shopParts.map((part) => (
-                        <ShopProductCard
-                          isSelected={selection[part.category] === part.id}
-                          key={part.id}
-                          onSelect={() => {
-                            setActiveCategory(part.category);
-                            setPart(part);
-                          }}
-                          part={part}
+                  ) : shopParts.map((part) => (
+                    <ShopProductCard
+                      isSelected={selection[part.category] === part.id}
+                      key={part.id}
+                      onSelect={() => {
+                        setActiveCategory(part.category);
+                        setPart(part);
+                      }}
+                      part={part}
+                    />
+                  ))}
+                </div>
+              </div>
+            </section>
+          ) : (
+            <section className="setups-page" aria-label="预设 Set">
+              <div className="setups-header">
+                <div>
+                  <span className="eyebrow">预设 Set</span>
+                  <h1>热门 Setup</h1>
+                  <p>
+                    {popularSetups.length + visibleUploadedSetups.length} 个完成方案 / 当前方案{" "}
+                    {formatCny(summary.totalPrice)}
+                  </p>
+                </div>
+                <label className="shop-search">
+                  <Search size={18} />
+                  <input
+                    onChange={(event) => setQuery(event.target.value)}
+                    placeholder="搜索 setup、用途"
+                    value={query}
+                  />
+                </label>
+              </div>
+
+              <div className="setups-layout">
+                <aside className="setup-upload-panel">
+                  <div className="setup-upload-panel__heading">
+                    <Upload size={20} />
+                    <div>
+                      <span className="eyebrow">我的 Setup</span>
+                      <strong>上传配置</strong>
+                    </div>
+                  </div>
+                  <label className="setup-upload-button">
+                    <Upload size={17} />
+                    <span>上传 Setup JSON</span>
+                    <input
+                      accept="application/json,.json"
+                      onChange={handleSetupUpload}
+                      type="file"
+                    />
+                  </label>
+                  {setupUploadError ? (
+                    <span className="setup-upload-error">{setupUploadError}</span>
+                  ) : null}
+                  <div className="setup-current-card">
+                    <span>当前方案</span>
+                    <strong>{formatCny(summary.totalPrice)}</strong>
+                    <small>{summary.powerDraw}W 峰值 / {summary.recommendedPsu}W 电源</small>
+                  </div>
+                </aside>
+
+                <div className="setup-list">
+                  {visibleUploadedSetups.length > 0 ? (
+                    <section className="setup-section">
+                      <div className="setup-section__heading">
+                        <span>我的上传</span>
+                        <strong>{visibleUploadedSetups.length}</strong>
+                      </div>
+                      <div className="setup-grid">
+                        {visibleUploadedSetups.map((setup) => (
+                          <SetupCard
+                            key={setup.id}
+                            onApply={() => applySetup(setup)}
+                            setup={setup}
+                          />
+                        ))}
+                      </div>
+                    </section>
+                  ) : null}
+
+                  <section className="setup-section">
+                    <div className="setup-section__heading">
+                      <span>热门完成方案</span>
+                      <strong>{popularSetups.length}</strong>
+                    </div>
+                    <div className="setup-grid">
+                      {popularSetups.map((setup) => (
+                        <SetupCard
+                          key={setup.id}
+                          onApply={() => applySetup(setup)}
+                          setup={setup}
                         />
                       ))}
+                    </div>
+                  </section>
                 </div>
               </div>
             </section>
@@ -499,7 +579,7 @@ function partMatchesQuery(part: Part, query: string) {
 }
 
 function presetMatchesQuery(
-  preset: (typeof starterBuilds)[number],
+  preset: { name: string; useCase: string },
   query: string,
 ) {
   const keyword = query.trim().toLowerCase();
@@ -525,13 +605,6 @@ function partMatchesFilters(part: Part, filters: ShopFilters) {
   return priceWithin(part.price, filters);
 }
 
-function presetMatchesPriceFilter(
-  preset: (typeof starterBuilds)[number],
-  filters: ShopFilters,
-) {
-  return priceWithin(calculateBuild(preset.selection).totalPrice, filters);
-}
-
 function priceWithin(price: number, filters: ShopFilters) {
   const [min, max] = filters.priceRange;
   if (price < min) return false;
@@ -539,37 +612,24 @@ function priceWithin(price: number, filters: ShopFilters) {
   return true;
 }
 
-function getShopCategoryLabel(category: ShopCategoryId) {
+function getShopCategoryLabel(category: ProductVisualCategory) {
   return category === "builds" ? "整机" : categoryMeta[category].label;
 }
 
-function getShopCategoryTone(category: ShopCategoryId) {
+function getShopCategoryTone(category: ProductVisualCategory) {
   return category === "builds" ? "#e6462f" : categoryMeta[category].tone;
 }
 
-function getShopCategoryIcon(category: ShopCategoryId) {
+function getShopCategoryIcon(category: ProductVisualCategory) {
   return category === "builds" ? Sparkles : categoryIcons[category];
 }
 
 function getShopCategoryCount(category: ShopCategoryId) {
-  return category === "builds" ? starterBuilds.length : catalog[category].length;
+  return catalog[category].length;
 }
 
 function getShopFilterOptions(category: ShopCategoryId): ShopFilterOptions {
-  const prices =
-    category === "builds"
-      ? starterBuilds.map((preset) => calculateBuild(preset.selection).totalPrice)
-      : catalog[category].map((part) => part.price);
-
-  if (category === "builds") {
-    return {
-      brands: [],
-      colors: [],
-      sizes: [],
-      price: getPriceBounds(prices),
-    };
-  }
-
+  const prices = catalog[category].map((part) => part.price);
   const parts = catalog[category];
   const colorMap = new Map<ColorFamily, { value: string; label: string; swatch: string }>();
 
@@ -625,6 +685,48 @@ function getPricePercent(value: number, bounds: ShopFilterOptions["price"]) {
   const span = bounds.max - bounds.min;
   if (span <= 0) return 0;
   return ((value - bounds.min) / span) * 100;
+}
+
+function normalizeUploadedSetup(payload: unknown, fileName: string): SetupItem {
+  if (!isRecord(payload)) {
+    throw new Error("Invalid setup payload");
+  }
+
+  const selectionPayload = isRecord(payload.selection) ? payload.selection : payload;
+  const selection = normalizeSetupSelection(selectionPayload);
+  const fallbackName = fileName.replace(/\.json$/i, "") || "我的 Setup";
+
+  return {
+    id: `uploaded-${Date.now()}-${Math.random().toString(16).slice(2)}`,
+    name: typeof payload.name === "string" ? payload.name : fallbackName,
+    useCase: typeof payload.useCase === "string" ? payload.useCase : "自定义上传",
+    selection,
+    sourceLabel: "我的上传",
+  };
+}
+
+function normalizeSetupSelection(payload: Record<string, unknown>) {
+  const selection = {} as Required<PartSelection>;
+
+  for (const category of categoryIds) {
+    const partId = payload[category];
+    if (typeof partId !== "string") {
+      throw new Error(`Missing ${category}`);
+    }
+
+    const exists = catalog[category].some((part) => part.id === partId);
+    if (!exists) {
+      throw new Error(`Unknown ${category}`);
+    }
+
+    selection[category] = partId;
+  }
+
+  return selection;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
 function getPriceBounds(prices: number[]) {
@@ -1015,6 +1117,45 @@ function ShopFilterSidebar({
   );
 }
 
+function SetupCard({
+  onApply,
+  setup,
+}: {
+  onApply: () => void;
+  setup: SetupItem;
+}) {
+  const setupSummary = calculateBuild(setup.selection);
+  const selectedParts = setupSummary.selectedParts;
+  const keyParts = (["cpu", "gpu", "case", "psu"] as const)
+    .flatMap((category) => {
+      const part = selectedParts[category];
+      return part ? [part] : [];
+    });
+
+  return (
+    <button className="setup-card" onClick={onApply} type="button">
+      <ProductVisual category="builds" color="#e6462f" label={setup.name} />
+      <span className="setup-card__body">
+        <span className="setup-card__source">
+          <Star size={14} />
+          {setup.sourceLabel}
+        </span>
+        <strong>{setup.name}</strong>
+        <small>{setup.useCase}</small>
+        <span className="setup-card__parts">
+          {keyParts.map((part) => (
+            <span key={part.id}>{part.name}</span>
+          ))}
+        </span>
+      </span>
+      <span className="setup-card__footer">
+        <strong>{formatCny(setupSummary.totalPrice)}</strong>
+        <span>{setupSummary.powerDraw}W / {scoreLabel(setupSummary.scores.gaming)}</span>
+      </span>
+    </button>
+  );
+}
+
 function ShopProductCard({
   isSelected,
   onSelect,
@@ -1056,7 +1197,7 @@ function ProductVisual({
   color,
   label,
 }: {
-  category: ShopCategoryId;
+  category: ProductVisualCategory;
   color: string;
   label: string;
 }) {
