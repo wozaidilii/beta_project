@@ -139,3 +139,36 @@ Fixed default fan visual placement by aligning retained case and fan assets to t
 ### Next Steps
 
 - None - task complete
+
+
+## Session 5: Fix case stretch distortion
+
+**Date**: 2026-06-11
+**Task**: Fix case stretch distortion
+**Branch**: `codex/calibration-asset-intake-validation`
+
+### Summary
+
+Removed non-uniform stretch from the calibrated case, recalibrated front fan anchors to the uniform rendered case bounds, tightened render-bounds/model validation, and documented the case stretch lesson.
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `d482b66` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
