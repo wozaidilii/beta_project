@@ -5,7 +5,7 @@ import {
   type AssemblyFanInstallation,
   type InstalledPartInstance,
 } from "~/lib/assembly-layout";
-import { catalog, defaultSelection, type CategoryId } from "~/lib/catalog";
+import { calibrationSelection, catalog, type CategoryId } from "~/lib/catalog";
 
 const expectedOrder: CategoryId[] = [
   "case",
@@ -21,7 +21,7 @@ const expectedOrder: CategoryId[] = [
   "fans",
 ];
 
-const plan = getAssemblyPlan(defaultSelection);
+const plan = getAssemblyPlan(calibrationSelection);
 
 assert.deepEqual(
   plan.instances.map((instance) => instance.category),
@@ -106,7 +106,7 @@ assert.equal(gpu.mount.secondaryTargets?.[0]?.slotKind, "expansionSlot");
 assert.deepEqual(gpu.debug.secondaryTargetSlotIds, ["expansion.rear"]);
 
 const removedGpuPlan = getAssemblyPlan({
-  ...defaultSelection,
+  ...calibrationSelection,
   gpu: undefined,
 });
 assert.equal(
@@ -131,7 +131,7 @@ assert.equal(storage.mount.target?.instanceId, motherboard.instanceId);
 assert.equal(storage.mount.mode, "attached");
 
 const removedStoragePlan = getAssemblyPlan({
-  ...defaultSelection,
+  ...calibrationSelection,
   storage: undefined,
 });
 assert.equal(
@@ -153,14 +153,14 @@ assert.ok(
 );
 
 const defaultMotherboardPart = catalog.motherboard.find(
-  (part) => part.id === defaultSelection.motherboard,
+  (part) => part.id === calibrationSelection.motherboard,
 );
 assert.ok(defaultMotherboardPart?.model, "default motherboard fixture should exist");
 const originalMotherboardMountSlots = defaultMotherboardPart.model.mountSlots;
 defaultMotherboardPart.model.mountSlots =
   originalMotherboardMountSlots?.filter((slot) => slot.kind !== "m2Slot") ?? [];
 try {
-  const noM2StoragePlan = getAssemblyPlan(defaultSelection);
+  const noM2StoragePlan = getAssemblyPlan(calibrationSelection);
   assert.equal(
     noM2StoragePlan.instancesByCategory.storage,
     undefined,
@@ -168,7 +168,7 @@ try {
   );
   assert.ok(
     noM2StoragePlan.validationIssues.some(
-      (issue) => issue.id === "storage:sn850x-2tb:missing-parent-mount",
+      (issue) => issue.id === "storage:calibration-m2-storage:missing-parent-mount",
     ),
     "missing motherboard M.2 slot should report an instance-scoped storage conflict",
   );
@@ -184,7 +184,7 @@ assert.equal(psu.mount.target?.instanceId, pcCase.instanceId);
 assert.equal(psu.mount.mode, "attached");
 
 const removedPsuPlan = getAssemblyPlan({
-  ...defaultSelection,
+  ...calibrationSelection,
   psu: undefined,
 });
 assert.equal(
@@ -206,7 +206,7 @@ assert.ok(
 );
 
 const removedCoolingPlan = getAssemblyPlan({
-  ...defaultSelection,
+  ...calibrationSelection,
   cooling: undefined,
 });
 assert.equal(
@@ -241,7 +241,7 @@ for (const fan of fans) {
   assert.equal(fan.mount.mode, "attached");
   assert.equal(
     fan.position[0],
-    0.84,
+    1.18,
     "front fans should mount inside the case front panel instead of outside the chassis",
   );
   assert.equal(
@@ -256,11 +256,11 @@ for (const fan of fans) {
   );
 }
 
-const singleFanPlan = getAssemblyPlan(defaultSelection, {
+const singleFanPlan = getAssemblyPlan(calibrationSelection, {
   fanInstallations: [
     {
       instanceId: "fans:single-front-middle",
-      partId: "thermalright-tl-c12c-3",
+      partId: "calibration-120mm-fan",
       slotId: "fan.front.120.2",
     },
   ],
@@ -277,7 +277,7 @@ const middleFan = fans.find(
   (fan) => fan.mount.target?.slotId === "fan.front.120.2",
 );
 assert.ok(middleFan, "default fan pack should include the middle front fan");
-const uncalibratedFanPlan = getAssemblyPlan(defaultSelection, {
+const uncalibratedFanPlan = getAssemblyPlan(calibrationSelection, {
   fanInstallations: fanState.map((fan) =>
     fan.slotId === "fan.front.120.2"
       ? { ...fan, partId: "lianli-sl-inf-3" }
@@ -295,7 +295,7 @@ assert.equal(
 );
 assert.ok(uncalibratedFanIssue);
 
-const removedPlan = getAssemblyPlan(defaultSelection, {
+const removedPlan = getAssemblyPlan(calibrationSelection, {
   fanInstallations: fanState.filter((fan) => fan.slotId !== "fan.front.120.2"),
 });
 const remainingFanSlots = removedPlan.instances
@@ -307,12 +307,12 @@ assert.deepEqual(
   "removing one fan should preserve the other installed fan instances",
 );
 
-const tooManyFanPlan = getAssemblyPlan(defaultSelection, {
+const tooManyFanPlan = getAssemblyPlan(calibrationSelection, {
   fanInstallations: [
     ...fanState,
     {
       instanceId: "fans:invalid-side-slot",
-      partId: "thermalright-tl-c12c-3",
+      partId: "calibration-120mm-fan",
       slotId: "fan.side.120.1",
     },
   ],

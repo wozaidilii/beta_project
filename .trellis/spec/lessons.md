@@ -69,3 +69,10 @@
 - 根因：关键调试工具面板通过 drei `Html` 渲染在 Three.js Canvas/Suspense 内部，容易受模型加载、Canvas 层级和 Html bridge 行为影响。
 - 修复：把调试工具面板改成普通 React DOM，作为 Canvas 的 sibling 渲染在 scene panel 内；只保留 anchor/slot 标签继续使用 Canvas 内的 `Html`。
 - 预防：退出、选择、导出这类关键调试控制不应依赖 Canvas 内部渲染；Canvas 内只放 3D 场景和非关键场景标签。
+
+## Keep real commerce data separate from calibration models
+
+- 问题：真实商品如 `lianli-o11-air-mini` 被绑定到 generic GLB，导致用户以为看到的是对应真实机箱模型。
+- 根因：早期把 scraped product data、local model overrides 和 trusted 3D installability 混在一起，`hasModelAsset` 又被产品页当成商品可见性门槛。
+- 修复：真实商品不再从 scraped 数据注入 `model`，`local-model-assets.json` 只保留 `calibration-*` 可信资产，产品页改用 commerce predicate。
+- 预防：普通商品数据只能提供规格、价格、图片和购买链接；3D installability 必须来自经过 intake validation 的模型资产记录。

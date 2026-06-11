@@ -91,7 +91,10 @@ function main() {
   const assets = readJsonArray(assetsFile);
   const catalogSource = fs.readFileSync(catalogFile, "utf8");
   const catalogIds = extractCatalogIds(catalogSource);
-  const defaultSelectionIds = extractDefaultSelectionIds(catalogSource);
+  const calibrationSelectionIds = extractSelectionIds(
+    catalogSource,
+    "calibrationSelection",
+  );
   const assetIds = new Set();
   const categories = new Map();
 
@@ -104,10 +107,10 @@ function main() {
     }
   }
 
-  for (const [category, id] of Object.entries(defaultSelectionIds)) {
+  for (const [category, id] of Object.entries(calibrationSelectionIds)) {
     if (!assetIds.has(id)) {
       errors.push(
-        `defaultSelection.${category}=${id} is missing from local-model-assets.json`,
+        `calibrationSelection.${category}=${id} is missing from local-model-assets.json`,
       );
     }
   }
@@ -400,12 +403,12 @@ function extractCatalogIds(source) {
   );
 }
 
-function extractDefaultSelectionIds(source) {
+function extractSelectionIds(source, exportName) {
   const match = source.match(
-    /export const defaultSelection:[\s\S]*?=\s*\{([\s\S]*?)\};/,
+    new RegExp(`export const ${exportName}:[\\s\\S]*?=\\s*\\{([\\s\\S]*?)\\};`),
   );
   if (!match) {
-    warnings.push("could not locate defaultSelection in src/lib/catalog.ts");
+    warnings.push(`could not locate ${exportName} in src/lib/catalog.ts`);
     return {};
   }
 

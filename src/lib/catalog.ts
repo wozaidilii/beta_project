@@ -152,6 +152,7 @@ export type Part = {
   openDbSource?: PartSource;
   dimensions?: PhysicalDimensions;
   model?: PartModel;
+  isCalibrationOnly?: boolean;
   scrapedSpecs?: Record<string, string | number | boolean | string[]>;
   openDbSpecs?: Record<string, string | number | boolean | string[]>;
 };
@@ -277,7 +278,6 @@ function withScrapedPart<T extends Part>(part: T): T {
         externalIds: mergeExternalIds(part.externalIds, scraped.externalIds),
         source: scraped.source,
         dimensions: scraped.dimensions,
-        model: scraped.model,
         scrapedSpecs: scraped.scrapedSpecs,
       }
     : part;
@@ -395,6 +395,21 @@ export const categoryMeta: Record<
 export const catalog: Record<CategoryId, Part[]> = {
   cpu: [
     withScrapedPart({
+      id: "calibration-cpu",
+      category: "cpu",
+      name: "CPU 装配校准件",
+      brand: "Assembly Lab",
+      series: "AM5 Anchor Fixture",
+      price: 0,
+      color: "#f97316",
+      marketTags: ["校准模型", "不可购买"],
+      socket: "AM5",
+      wattage: 120,
+      tdp: 120,
+      metrics: { gaming: 70, creator: 70, ai: 70, quiet: 70 },
+      isCalibrationOnly: true,
+    }),
+    withScrapedPart({
       id: "amd-7800x3d",
       category: "cpu",
       name: "Ryzen 7 7800X3D",
@@ -452,6 +467,22 @@ export const catalog: Record<CategoryId, Part[]> = {
     }),
   ],
   motherboard: [
+    withScrapedPart({
+      id: "calibration-atx-motherboard",
+      category: "motherboard",
+      name: "ATX 主板装配校准件",
+      brand: "Assembly Lab",
+      series: "ATX Anchor Fixture",
+      price: 0,
+      color: "#14b8a6",
+      marketTags: ["校准模型", "不可购买"],
+      socket: "AM5",
+      memoryType: "DDR5",
+      formFactor: "ATX",
+      m2Slots: 2,
+      metrics: { gaming: 70, creator: 70, ai: 70, quiet: 70 },
+      isCalibrationOnly: true,
+    }),
     withScrapedPart({
       id: "msi-b850m-mortar",
       category: "motherboard",
@@ -515,6 +546,22 @@ export const catalog: Record<CategoryId, Part[]> = {
   ],
   gpu: [
     withScrapedPart({
+      id: "calibration-gpu",
+      category: "gpu",
+      name: "显卡装配校准件",
+      brand: "Assembly Lab",
+      series: "PCIe x16 Anchor Fixture",
+      price: 0,
+      color: "#7c3aed",
+      marketTags: ["校准模型", "不可购买"],
+      wattage: 285,
+      lengthMm: 304,
+      caseExpansionSlotWidth: 3,
+      totalSlotWidth: 3,
+      metrics: { gaming: 70, creator: 70, ai: 70, quiet: 70 },
+      isCalibrationOnly: true,
+    }),
+    withScrapedPart({
       id: "rtx-5070-ti",
       category: "gpu",
       name: "GeForce RTX 5070 Ti 16G",
@@ -577,6 +624,19 @@ export const catalog: Record<CategoryId, Part[]> = {
   ],
   memory: [
     withScrapedPart({
+      id: "calibration-memory",
+      category: "memory",
+      name: "内存装配校准件",
+      brand: "Assembly Lab",
+      series: "DDR5 DIMM Anchor Fixture",
+      price: 0,
+      color: "#f59e0b",
+      marketTags: ["校准模型", "不可购买"],
+      memoryType: "DDR5",
+      metrics: { gaming: 70, creator: 70, ai: 70, quiet: 70 },
+      isCalibrationOnly: true,
+    }),
+    withScrapedPart({
       id: "kingston-ddr5-32-6000",
       category: "memory",
       name: "FURY Beast DDR5 32GB 6000",
@@ -627,6 +687,18 @@ export const catalog: Record<CategoryId, Part[]> = {
   ],
   storage: [
     withScrapedPart({
+      id: "calibration-m2-storage",
+      category: "storage",
+      name: "M.2 硬盘装配校准件",
+      brand: "Assembly Lab",
+      series: "M.2 Anchor Fixture",
+      price: 0,
+      color: "#2563eb",
+      marketTags: ["校准模型", "不可购买"],
+      metrics: { gaming: 70, creator: 70, ai: 70, quiet: 70 },
+      isCalibrationOnly: true,
+    }),
+    withScrapedPart({
       id: "sn850x-2tb",
       category: "storage",
       name: "WD_BLACK SN850X 2TB",
@@ -661,6 +733,20 @@ export const catalog: Record<CategoryId, Part[]> = {
     }),
   ],
   cooling: [
+    withScrapedPart({
+      id: "calibration-air-cooler",
+      category: "cooling",
+      name: "风冷装配校准件",
+      brand: "Assembly Lab",
+      series: "CPU Socket Anchor Fixture",
+      price: 0,
+      color: "#06b6d4",
+      marketTags: ["校准模型", "不可购买"],
+      coolingTdp: 220,
+      heightMm: 155,
+      metrics: { gaming: 70, creator: 70, ai: 70, quiet: 70 },
+      isCalibrationOnly: true,
+    }),
     withScrapedPart({
       id: "pa120-se",
       category: "cooling",
@@ -702,6 +788,21 @@ export const catalog: Record<CategoryId, Part[]> = {
     }),
   ],
   psu: [
+    withScrapedPart({
+      id: "calibration-atx-psu",
+      category: "psu",
+      name: "ATX 电源装配校准件",
+      brand: "Assembly Lab",
+      series: "PSU Bay Anchor Fixture",
+      price: 0,
+      color: "#22c55e",
+      marketTags: ["校准模型", "不可购买"],
+      psuWattage: 850,
+      psuFormFactor: "ATX",
+      dimensions: { lengthMm: 140, widthMm: 150, heightMm: 86 },
+      metrics: { gaming: 70, creator: 70, ai: 70, quiet: 70 },
+      isCalibrationOnly: true,
+    }),
     withScrapedPart({
       id: "huntkey-650-gold",
       category: "psu",
@@ -776,6 +877,7 @@ export const catalog: Record<CategoryId, Part[]> = {
       maxPsuLengthMm: 240,
       supportedPsuFormFactors: ["ATX", "SFX", "SFX-L"],
       metrics: { gaming: 70, creator: 70, ai: 70, quiet: 70 },
+      isCalibrationOnly: true,
     }),
     withScrapedPart({
       id: "jonsbo-d31",
@@ -852,6 +954,19 @@ export const catalog: Record<CategoryId, Part[]> = {
   ],
   fans: [
     withScrapedPart({
+      id: "calibration-120mm-fan",
+      category: "fans",
+      name: "120mm 风扇三联装配校准件",
+      brand: "Assembly Lab",
+      series: "120mm Fan Anchor Fixture / 3 pack",
+      price: 0,
+      color: "#ec4899",
+      marketTags: ["校准模型", "不可购买"],
+      wattage: 9,
+      metrics: { gaming: 70, creator: 70, ai: 70, quiet: 70 },
+      isCalibrationOnly: true,
+    }),
+    withScrapedPart({
       id: "thermalright-tl-c12c-3",
       category: "fans",
       name: "TL-C12C 三联包",
@@ -890,7 +1005,19 @@ export const catalog: Record<CategoryId, Part[]> = {
   ],
 };
 
-export const defaultSelection: Required<PartSelection> = {
+export const calibrationSelection: Required<PartSelection> = {
+  cpu: "calibration-cpu",
+  motherboard: "calibration-atx-motherboard",
+  gpu: "calibration-gpu",
+  memory: "calibration-memory",
+  storage: "calibration-m2-storage",
+  cooling: "calibration-air-cooler",
+  psu: "calibration-atx-psu",
+  case: "calibration-open-frame",
+  fans: "calibration-120mm-fan",
+};
+
+export const commerceDefaultSelection: Required<PartSelection> = {
   cpu: "amd-7800x3d",
   motherboard: "msi-b850m-mortar",
   gpu: "rtx-5070-ti",
@@ -902,6 +1029,8 @@ export const defaultSelection: Required<PartSelection> = {
   fans: "thermalright-tl-c12c-3",
 };
 
+export const defaultSelection: Required<PartSelection> = calibrationSelection;
+
 export const starterBuilds: Array<{
   id: string;
   name: string;
@@ -912,7 +1041,7 @@ export const starterBuilds: Array<{
     id: "balanced-2k",
     name: "2K 电竞均衡",
     useCase: "高刷网游 / 3A",
-    selection: defaultSelection,
+    selection: commerceDefaultSelection,
   },
   {
     id: "creator-quiet",
@@ -975,6 +1104,10 @@ export function hasModelAsset(
   part?: Part,
 ): part is Part & { model: PartModel & { kind: "glb"; assetUrl: string } } {
   return part?.model?.kind === "glb" && Boolean(part.model.assetUrl);
+}
+
+export function isCommercePart(part?: Part): part is Part {
+  return Boolean(part && !part.isCalibrationOnly);
 }
 
 export function getSelectedParts(selection: PartSelection) {

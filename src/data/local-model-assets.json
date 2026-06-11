@@ -1,11 +1,11 @@
 [
   {
-    "id": "amd-7800x3d",
+    "id": "calibration-cpu",
     "model": {
       "kind": "glb",
       "slot": "cpu",
       "mount": "socket-am5",
-      "assetUrl": "/models/sketchfab/sketchfab_cpu_amd_7800x3d/scene.gltf",
+      "assetUrl": "/models/calibration/cpu-package/scene.gltf",
       "fitSize": [
         0.52,
         0.52,
@@ -46,22 +46,21 @@
       }
     },
     "externalIds": {
-      "modelAssetId": "sketchfab_cpu_amd_7800x3d"
+      "modelAssetId": "calibration_cpu_package"
     },
-    "productImageUrl": "https://media.sketchfab.com/models/209c4aada00e4b1790d8d274bac98779/thumbnails/474d33581c194122937ce987ba230173/c3ac0ec0a9c54d168928f877f21607d9.jpeg",
     "modelSource": {
-      "sourceName": "Sketchfab: AMD Ryzen 7 7800X3D",
-      "sourceUrl": "https://sketchfab.com/3d-models/amd-ryzen-7-7800x3d-209c4aada00e4b1790d8d274bac98779",
-      "scrapedAt": "2026-06-10T00:00:00.000Z"
+      "sourceName": "Generated calibration GLTF: CPU package",
+      "sourceUrl": "/models/calibration/cpu-package/scene.gltf",
+      "scrapedAt": "2026-06-11T00:00:00.000Z"
     }
   },
   {
-    "id": "msi-b850m-mortar",
+    "id": "calibration-atx-motherboard",
     "model": {
       "kind": "glb",
       "slot": "motherboard",
       "mount": "case-standoffs",
-      "assetUrl": "/models/msi_b550_gaming_plus.glb",
+      "assetUrl": "/models/calibration/atx-motherboard/scene.gltf",
       "fitSize": [
         1.55,
         0.08,
@@ -79,7 +78,7 @@
         "forward": "+z"
       },
       "boundingBoxMm": {
-        "lengthMm": 244,
+        "lengthMm": 305,
         "widthMm": 244,
         "heightMm": 18
       },
@@ -119,9 +118,9 @@
         "m2Slot": {
           "label": "m2Slot",
           "position": [
-            -0.46,
-            -0.46,
-            0.2
+            -0.22,
+            -0.18,
+            0.12
           ]
         }
       },
@@ -136,40 +135,38 @@
         {
           "id": "m2.primary",
           "kind": "m2Slot",
-          "label": "M.2 2280 主插槽",
+          "label": "M.2 主槽",
           "anchor": "m2Slot",
           "group": "internal",
-          "priority": 1,
-          "count": 1,
+          "priority": 10,
           "sizeMm": {
             "lengthMm": 80,
             "widthMm": 22,
-            "heightMm": 3.5
+            "heightMm": 3
           }
         }
       ]
     },
     "externalIds": {
-      "modelAssetId": "msi_b550_gaming_plus"
+      "modelAssetId": "calibration_atx_motherboard"
     },
-    "productImageUrl": "https://media.sketchfab.com/models/3eba5f45bed74fbeb2647de38047000f/thumbnails/9000d47f582644f6b53e1a972ef570f2/bbbfc8adcb374871943fbfa66efb8aee.jpeg",
     "modelSource": {
-      "sourceName": "Local GLB: MSI B550 Gaming Plus",
-      "sourceUrl": "/models/msi_b550_gaming_plus.glb",
-      "scrapedAt": "2026-06-10T00:00:00.000Z"
+      "sourceName": "Generated calibration GLTF: ATX motherboard",
+      "sourceUrl": "/models/calibration/atx-motherboard/scene.gltf",
+      "scrapedAt": "2026-06-11T00:00:00.000Z"
     }
   },
   {
-    "id": "rtx-5070-ti",
+    "id": "calibration-gpu",
     "model": {
       "kind": "glb",
       "slot": "gpu",
       "mount": "pcie-x16",
-      "assetUrl": "/models/sketchfab/sketchfab_gpu_msi_rtx_3080_trio/scene.gltf",
+      "assetUrl": "/models/calibration/gpu-card/scene.gltf",
       "fitSize": [
-        1.73,
-        0.52,
-        0.62
+        1.6,
+        0.42,
+        0.58
       ],
       "rotation": [
         0,
@@ -185,7 +182,7 @@
       "boundingBoxMm": {
         "lengthMm": 304,
         "heightMm": 140,
-        "thicknessMm": 62.5
+        "thicknessMm": 60
       },
       "anchorPoints": {
         "pcieConnector": {
@@ -206,26 +203,25 @@
       }
     },
     "externalIds": {
-      "modelAssetId": "sketchfab_gpu_msi_rtx_3080_trio"
+      "modelAssetId": "calibration_gpu_card"
     },
-    "productImageUrl": "https://media.sketchfab.com/models/e5356746dcec48f9868164bb9674ab9a/thumbnails/4e983ebc778a4ac29a792cad27a64eda/dd54e35bba4a47e18893b59b3e747668.jpeg",
     "modelSource": {
-      "sourceName": "Sketchfab: MSI GeForce RTX 3080 Gaming X Trio",
-      "sourceUrl": "https://sketchfab.com/3d-models/msi-geforce-rtx-3080-gaming-x-trio-now-free-e5356746dcec48f9868164bb9674ab9a",
-      "scrapedAt": "2026-06-10T00:00:00.000Z"
+      "sourceName": "Generated calibration GLTF: GPU card",
+      "sourceUrl": "/models/calibration/gpu-card/scene.gltf",
+      "scrapedAt": "2026-06-11T00:00:00.000Z"
     }
   },
   {
-    "id": "kingston-ddr5-32-6000",
+    "id": "calibration-memory",
     "model": {
       "kind": "glb",
       "slot": "memory",
       "mount": "dimm-slots",
-      "assetUrl": "/models/xpg_d41_dual_kit_ram.glb",
+      "assetUrl": "/models/calibration/memory-kit/scene.gltf",
       "fitSize": [
-        0.3,
-        0.86,
-        0.18
+        0.38,
+        0.82,
+        0.28
       ],
       "rotation": [
         0,
@@ -239,9 +235,9 @@
         "forward": "+z"
       },
       "boundingBoxMm": {
-        "lengthMm": 133.35,
+        "lengthMm": 133,
         "widthMm": 8,
-        "heightMm": 45
+        "heightMm": 42
       },
       "anchorPoints": {
         "dimmSeat": {
@@ -262,30 +258,30 @@
       }
     },
     "externalIds": {
-      "modelAssetId": "xpg_d41_dual_kit_ram"
+      "modelAssetId": "calibration_memory_kit"
     },
     "modelSource": {
-      "sourceName": "Local GLB: XPG D41 Dual Kit RAM",
-      "sourceUrl": "/models/xpg_d41_dual_kit_ram.glb",
-      "scrapedAt": "2026-06-10T00:00:00.000Z"
+      "sourceName": "Generated calibration GLTF: memory kit",
+      "sourceUrl": "/models/calibration/memory-kit/scene.gltf",
+      "scrapedAt": "2026-06-11T00:00:00.000Z"
     }
   },
   {
-    "id": "sn850x-2tb",
+    "id": "calibration-m2-storage",
     "model": {
       "kind": "glb",
       "slot": "storage",
       "mount": "m2-slot",
-      "assetUrl": "/models/sketchfab/sketchfab_storage_wd_sn7100/scene.gltf",
+      "assetUrl": "/models/calibration/m2-storage/scene.gltf",
       "fitSize": [
-        0.22,
-        0.88,
-        0.06
+        0.58,
+        0.04,
+        0.16
       ],
       "rotation": [
         0,
         0,
-        -0.08
+        0
       ],
       "scale": 1,
       "assetAxis": {
@@ -296,7 +292,7 @@
       "boundingBoxMm": {
         "lengthMm": 80,
         "widthMm": 22,
-        "heightMm": 3.5
+        "heightMm": 3
       },
       "anchorPoints": {
         "m2Connector": {
@@ -317,22 +313,21 @@
       }
     },
     "externalIds": {
-      "modelAssetId": "sketchfab_storage_wd_sn7100"
+      "modelAssetId": "calibration_m2_storage"
     },
-    "productImageUrl": "https://media.sketchfab.com/models/8287dfa4fd644cb4a044d4dce57968ae/thumbnails/80913e3980cc4c378eb762e3bfdf726b/6afd8df85779482e841b949eca3ac47e.jpeg",
     "modelSource": {
-      "sourceName": "Sketchfab: SSD - WD SN7100",
-      "sourceUrl": "https://sketchfab.com/3d-models/ssd-wd-sn7100-8287dfa4fd644cb4a044d4dce57968ae",
-      "scrapedAt": "2026-06-10T00:00:00.000Z"
+      "sourceName": "Generated calibration GLTF: M.2 storage",
+      "sourceUrl": "/models/calibration/m2-storage/scene.gltf",
+      "scrapedAt": "2026-06-11T00:00:00.000Z"
     }
   },
   {
-    "id": "pa120-se",
+    "id": "calibration-air-cooler",
     "model": {
       "kind": "glb",
       "slot": "cooling",
       "mount": "cpu-cooler",
-      "assetUrl": "/models/sketchfab/sketchfab_cooling_cooler_master_cpu/scene.gltf",
+      "assetUrl": "/models/calibration/air-cooler/scene.gltf",
       "fitSize": [
         0.74,
         0.86,
@@ -350,8 +345,8 @@
         "forward": "+z"
       },
       "boundingBoxMm": {
-        "lengthMm": 135,
-        "widthMm": 125,
+        "lengthMm": 125,
+        "widthMm": 135,
         "heightMm": 155
       },
       "anchorPoints": {
@@ -373,26 +368,25 @@
       }
     },
     "externalIds": {
-      "modelAssetId": "sketchfab_cooling_cooler_master_cpu"
+      "modelAssetId": "calibration_air_cooler"
     },
-    "productImageUrl": "https://media.sketchfab.com/models/e54651982f524644a2144b52a6b36e89/thumbnails/dc580967bc1548c481d40b2653ec8973/af6638da7cf74167aeccc0df53c75460.jpeg",
     "modelSource": {
-      "sourceName": "Sketchfab: Cooler Master CPU Cooler",
-      "sourceUrl": "https://sketchfab.com/3d-models/cooler-master-cpu-cooler-e54651982f524644a2144b52a6b36e89",
-      "scrapedAt": "2026-06-10T00:00:00.000Z"
+      "sourceName": "Generated calibration GLTF: air cooler",
+      "sourceUrl": "/models/calibration/air-cooler/scene.gltf",
+      "scrapedAt": "2026-06-11T00:00:00.000Z"
     }
   },
   {
-    "id": "seasonic-850-atx3",
+    "id": "calibration-atx-psu",
     "model": {
       "kind": "glb",
       "slot": "psu",
       "mount": "psu-bay",
-      "assetUrl": "/models/sketchfab/sketchfab_psu_power_supply_unit/scene.gltf",
+      "assetUrl": "/models/calibration/atx-psu/scene.gltf",
       "fitSize": [
-        1.08,
+        1.05,
         0.58,
-        0.88
+        0.82
       ],
       "rotation": [
         0,
@@ -415,7 +409,7 @@
           "label": "mountFace",
           "position": [
             0,
-            -1.04,
+            0,
             0
           ]
         }
@@ -429,22 +423,21 @@
       }
     },
     "externalIds": {
-      "modelAssetId": "sketchfab_psu_power_supply_unit"
+      "modelAssetId": "calibration_atx_psu"
     },
-    "productImageUrl": "https://media.sketchfab.com/models/69ccd1be3a77497cb2acc9e39e7c52b3/thumbnails/ec3f5ca1988343dea2a0269986730cdd/d9ff05c5a4b0440b92553be652770402.jpeg",
     "modelSource": {
-      "sourceName": "Sketchfab: PSU Power Supply Unit",
-      "sourceUrl": "https://sketchfab.com/3d-models/psu-power-supply-unit-69ccd1be3a77497cb2acc9e39e7c52b3",
-      "scrapedAt": "2026-06-10T00:00:00.000Z"
+      "sourceName": "Generated calibration GLTF: ATX PSU",
+      "sourceUrl": "/models/calibration/atx-psu/scene.gltf",
+      "scrapedAt": "2026-06-11T00:00:00.000Z"
     }
   },
   {
-    "id": "lianli-o11-air-mini",
+    "id": "calibration-open-frame",
     "model": {
       "kind": "glb",
       "slot": "case",
       "mount": "root",
-      "assetUrl": "/models/gaming_pc_case.glb",
+      "assetUrl": "/models/calibration/open-frame-case/scene.gltf",
       "fitSize": [
         3.08,
         3.78,
@@ -480,29 +473,29 @@
           "position": [
             -0.36,
             0.08,
-            -0.7
+            -0.68
           ]
         },
         "psuBay": {
           "label": "psuBay",
           "position": [
-            0.45,
-            -1.34,
-            -0.36
+            0.48,
+            -1.18,
+            -0.34
           ]
         },
         "topRadiator": {
           "label": "topRadiator",
           "position": [
             0,
-            0.94,
-            -0.28
+            1.18,
+            -0.26
           ]
         },
         "frontFanMount": {
           "label": "frontFanMount",
           "position": [
-            0.84,
+            1.18,
             0,
             0.14
           ]
@@ -510,7 +503,7 @@
         "frontFanMountTop": {
           "label": "frontFanMountTop",
           "position": [
-            0.84,
+            1.18,
             0.52,
             0.14
           ]
@@ -518,7 +511,7 @@
         "frontFanMountMiddle": {
           "label": "frontFanMountMiddle",
           "position": [
-            0.84,
+            1.18,
             0,
             0.14
           ]
@@ -526,7 +519,7 @@
         "frontFanMountBottom": {
           "label": "frontFanMountBottom",
           "position": [
-            0.84,
+            1.18,
             -0.52,
             0.14
           ]
@@ -543,24 +536,24 @@
           "label": "topFanMountLeft",
           "position": [
             -0.42,
-            0.94,
-            -0.28
+            1.18,
+            -0.27
           ]
         },
         "topFanMountRight": {
           "label": "topFanMountRight",
           "position": [
             0.42,
-            0.94,
-            -0.28
+            1.18,
+            -0.27
           ]
         },
         "expansionSlots": {
           "label": "expansionSlots",
           "position": [
             0.34,
-            -0.52,
-            -0.82
+            -0.48,
+            -0.84
           ]
         },
         "storageBay": {
@@ -626,6 +619,7 @@
           "anchor": "frontFanMountTop",
           "group": "front",
           "priority": 40,
+          "normal": "-x",
           "supportedFanSizesMm": [
             120
           ]
@@ -637,6 +631,7 @@
           "anchor": "frontFanMountMiddle",
           "group": "front",
           "priority": 41,
+          "normal": "-x",
           "supportedFanSizesMm": [
             120
           ]
@@ -648,6 +643,7 @@
           "anchor": "frontFanMountBottom",
           "group": "front",
           "priority": 42,
+          "normal": "-x",
           "supportedFanSizesMm": [
             120
           ]
@@ -659,6 +655,7 @@
           "anchor": "rearFanMount",
           "group": "rear",
           "priority": 50,
+          "normal": "+x",
           "supportedFanSizesMm": [
             120
           ]
@@ -670,6 +667,7 @@
           "anchor": "topFanMountLeft",
           "group": "top",
           "priority": 60,
+          "normal": "-y",
           "supportedFanSizesMm": [
             120
           ]
@@ -681,6 +679,7 @@
           "anchor": "topFanMountRight",
           "group": "top",
           "priority": 61,
+          "normal": "-y",
           "supportedFanSizesMm": [
             120
           ]
@@ -710,28 +709,26 @@
       ]
     },
     "externalIds": {
-      "modelAssetId": "gaming_pc_case"
+      "modelAssetId": "calibration_open_frame_case"
     },
-    "productImageUrl": "https://media.sketchfab.com/models/5f9261fef2874bf9ae39dd0f4029e978/thumbnails/1c57bc786db7482f8d6e793b4d569bbd/79251b59e8c5467d9bb6f97278584199.jpeg",
     "modelSource": {
-      "sourceName": "Local GLB: Gaming PC Case",
-      "sourceUrl": "/models/gaming_pc_case.glb",
-      "scrapedAt": "2026-06-10T00:00:00.000Z"
+      "sourceName": "Generated calibration GLTF: open frame case",
+      "sourceUrl": "/models/calibration/open-frame-case/scene.gltf",
+      "scrapedAt": "2026-06-11T00:00:00.000Z"
     }
   },
   {
-    "id": "thermalright-tl-c12c-3",
+    "id": "calibration-120mm-fan",
     "model": {
       "kind": "glb",
       "slot": "fans",
       "mount": "front-fan",
-      "assetUrl": "/models/sketchfab/sketchfab_fan_computer_fan_temoor/scene.gltf",
+      "assetUrl": "/models/calibration/120mm-fan/scene.gltf",
       "fitSize": [
         0.72,
         0.72,
         0.12
       ],
-      "fitMode": "stretch",
       "rotation": [
         0,
         1.5708,
@@ -767,13 +764,12 @@
       }
     },
     "externalIds": {
-      "modelAssetId": "sketchfab_fan_computer_fan_temoor"
+      "modelAssetId": "calibration_120mm_fan"
     },
-    "productImageUrl": "https://media.sketchfab.com/models/5360bd331c5848eeb9338b4f894e78e5/thumbnails/0aa3ee9d31b949e1a9a642fe9d96b17b/5cffe65909524b2b82711d26385a2187.jpeg",
     "modelSource": {
-      "sourceName": "Sketchfab: computer fan",
-      "sourceUrl": "https://sketchfab.com/3d-models/computer-fan-5360bd331c5848eeb9338b4f894e78e5",
-      "scrapedAt": "2026-06-10T00:00:00.000Z"
+      "sourceName": "Generated calibration GLTF: 120mm fan",
+      "sourceUrl": "/models/calibration/120mm-fan/scene.gltf",
+      "scrapedAt": "2026-06-11T00:00:00.000Z"
     }
   }
 ]

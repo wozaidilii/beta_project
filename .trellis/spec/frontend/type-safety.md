@@ -36,7 +36,7 @@ Questions to answer:
 
 #### 1. Scope / Trigger
 
-- Trigger: any change to `src/data/local-model-assets.json`, model asset paths under `public/models/`, or default build ids in `src/lib/catalog.ts`.
+- Trigger: any change to `src/data/local-model-assets.json`, model asset paths under `public/models/`, or `calibrationSelection` ids in `src/lib/catalog.ts`.
 - Reason: the builder treats local model asset records as the trusted 3D installability layer. Catalog products may exist without 3D models, but a model record must be usable by anchor-based assembly.
 
 #### 2. Signatures
@@ -67,13 +67,14 @@ Each trusted model asset record must include:
 - `model.placement.anchor`: local anchor name.
 - `model.placement.attachTo`: required for non-case parts and must target the expected parent anchor.
 - `model.mountSlots`: required for parent parts that expose install positions, especially case and motherboard.
+- Scraped product data may not inject `model` metadata into catalog parts. Only `src/data/local-model-assets.json` should make a part 3D installable.
 
 #### 4. Validation & Error Matrix
 
 - Missing local file -> validation error.
 - Duplicate model id -> validation error.
 - Model id not in catalog -> validation error.
-- Missing default build model id -> validation error.
+- Missing `calibrationSelection` model id -> validation error.
 - Missing category-required anchor -> validation error.
 - Mount slot references a missing anchor -> validation error.
 - Missing case/motherboard required slot kind -> validation error.
@@ -83,7 +84,9 @@ Each trusted model asset record must include:
 #### 5. Good/Base/Bad Cases
 
 - Good: one validated record per core category with real local file references, explicit anchors, placement and slot metadata.
-- Base: catalog product exists without `local-model-assets.json` entry; it remains purchasable/listable but is not trusted as a 3D installable part.
+- Base: real commerce catalog product exists without `local-model-assets.json` entry; it remains purchasable/listable but is not trusted as a 3D installable part.
+- Bad: binding a real product id such as `lianli-o11-air-mini` to a generic or unrelated GLB just to make the default build render.
+- Bad: preserving a stale `model` field in scraped real-product data and importing it through `withScrapedPart`.
 - Bad: adding a downloaded GLB path without `assetAxis`, `boundingBoxMm`, anchor points and placement metadata.
 
 #### 6. Tests Required
@@ -103,11 +106,11 @@ Wrong:
 
 ```json
 {
-  "id": "some-gpu",
+  "id": "lianli-o11-air-mini",
   "model": {
     "kind": "glb",
-    "slot": "gpu",
-    "assetUrl": "/models/vendor-gpu.glb"
+    "slot": "case",
+    "assetUrl": "/models/generic-gaming-case.glb"
   }
 }
 ```
@@ -116,11 +119,11 @@ Correct:
 
 ```json
 {
-  "id": "some-gpu",
+  "id": "calibration-gpu",
   "model": {
     "kind": "glb",
     "slot": "gpu",
-    "assetUrl": "/models/vendor-gpu.glb",
+    "assetUrl": "/models/calibration/gpu-card/scene.gltf",
     "assetAxis": { "right": "+x", "up": "+y", "forward": "+z" },
     "boundingBoxMm": { "lengthMm": 304, "heightMm": 140, "thicknessMm": 62.5 },
     "anchorPoints": {

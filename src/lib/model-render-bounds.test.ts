@@ -14,7 +14,7 @@ import {
 
 import { getAssemblyPlan } from "~/lib/assembly-layout";
 import {
-  defaultSelection,
+  calibrationSelection,
   type PartModel,
   type Vec3,
 } from "~/lib/catalog";
@@ -65,7 +65,7 @@ globalThis.fetch = async (input, init) => {
   return nativeFetch(input, init);
 };
 
-const plan = getAssemblyPlan(defaultSelection);
+const plan = getAssemblyPlan(calibrationSelection);
 const pcCase = plan.instancesByCategory.case;
 const fans = plan.instances.filter((instance) => instance.category === "fans");
 
