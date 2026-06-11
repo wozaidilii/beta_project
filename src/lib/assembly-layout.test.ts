@@ -251,8 +251,8 @@ for (const fan of fans) {
   );
   assert.equal(
     fan.rotation[0],
-    0.7854,
-    "front fan models should compensate the source asset roll instead of rendering as a 45-degree diamond",
+    0,
+    "front fan models should not ship an unverified roll guess; use debug calibration to export the correct asset rotation",
   );
 }
 

@@ -3,6 +3,7 @@
 import {
   ContactShadows,
   Environment,
+  Grid,
   Html,
   OrbitControls,
   TransformControls,
@@ -67,6 +68,7 @@ type DebugModelPatch = {
 };
 
 type FlipAxis = "x" | "y" | "z";
+type RotationDirection = -1 | 1;
 type NudgeDirection = "left" | "right" | "up" | "down" | "forward" | "back";
 
 type DebugSlotTarget = {
@@ -92,6 +94,8 @@ const rigScale = 1.2;
 const debugRigScale = 1.48;
 const nudgeStep = 0.04;
 const fastNudgeMultiplier = 5;
+const rotationStep = Math.PI / 36;
+const fastRotationMultiplier = 3;
 export function PcScene({
   selection,
   activeCategory,
@@ -188,6 +192,30 @@ export function PcScene({
     [placementList, selectedInstanceId],
   );
 
+  const rotateSelectedPart = useCallback(
+    (axis: FlipAxis, direction: RotationDirection, multiplier = 1) => {
+      if (!selectedInstanceId) return;
+
+      const placement = placementList.find(
+        (item) => item.instanceId === selectedInstanceId,
+      );
+      if (!placement) return;
+
+      setDebugRotations((current) => {
+        const base = current[selectedInstanceId] ?? placement.rotation;
+        return {
+          ...current,
+          [selectedInstanceId]: rotateByStep(base, axis, direction, multiplier),
+        };
+      });
+      setExportStatus({
+        kind: "dirty",
+        message: "有未导出的旋转校准",
+      });
+    },
+    [placementList, selectedInstanceId],
+  );
+
   useEffect(() => {
     if (!debug || !selectedInstanceId) return;
 
@@ -195,18 +223,29 @@ export function PcScene({
       if (isEditableTarget(event.target)) return;
 
       const direction = getArrowNudgeDirection(event.key);
-      if (!direction) return;
+      if (direction) {
+        event.preventDefault();
+        nudgeSelectedPart(
+          direction,
+          event.shiftKey ? fastNudgeMultiplier : 1,
+        );
+        return;
+      }
+
+      const rotationShortcut = getRotationShortcut(event.key);
+      if (!rotationShortcut) return;
 
       event.preventDefault();
-      nudgeSelectedPart(
-        direction,
-        event.shiftKey ? fastNudgeMultiplier : 1,
+      rotateSelectedPart(
+        rotationShortcut.axis,
+        rotationShortcut.direction,
+        event.shiftKey ? fastRotationMultiplier : 1,
       );
     };
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [debug, nudgeSelectedPart, selectedInstanceId]);
+  }, [debug, nudgeSelectedPart, rotateSelectedPart, selectedInstanceId]);
 
   return (
     <Canvas
@@ -227,6 +266,7 @@ export function PcScene({
           position={[2.8, 4.8, 3.2]}
         />
         <pointLight color={tone} intensity={7} position={activePosition} />
+        <WorkbenchGrid debug={debug} />
         <PcRig
           debugPositions={debugPositions}
           debugRotations={debugRotations}
@@ -270,6 +310,8 @@ export function PcScene({
         />
         {debug ? (
           <DebugExportOverlay
+            debugPositions={debugPositions}
+            debugRotations={debugRotations}
             onFlip={(axis) => {
               if (!selectedInstanceId) return;
 
@@ -297,6 +339,7 @@ export function PcScene({
               });
             }}
             onNudge={nudgeSelectedPart}
+            onRotate={rotateSelectedPart}
             onSelect={selectInstance}
             onSelectSlot={selectSlot}
             placements={placementList}
@@ -308,6 +351,29 @@ export function PcScene({
         ) : null}
       </Suspense>
     </Canvas>
+  );
+}
+
+function WorkbenchGrid({ debug }: { debug: boolean }) {
+  return (
+    <group position={[0, -2.34, 0]}>
+      <mesh receiveShadow rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.012, 0]}>
+        <planeGeometry args={[8.4, 8.4]} />
+        <meshStandardMaterial color="#070b0d" metalness={0.12} roughness={0.92} />
+      </mesh>
+      <Grid
+        args={[8.4, 8.4]}
+        cellColor={debug ? "#25414c" : "#1d3038"}
+        cellSize={0.2}
+        cellThickness={0.38}
+        fadeDistance={6.8}
+        fadeStrength={1.35}
+        infiniteGrid={false}
+        sectionColor={debug ? "#5eead4" : "#33515d"}
+        sectionSize={0.8}
+        sectionThickness={debug ? 1.15 : 0.78}
+      />
+    </group>
   );
 }
 
@@ -656,10 +722,13 @@ function getDebugInstanceBadge(placement: AssemblyPlacement) {
 }
 
 function DebugExportOverlay({
+  debugPositions,
+  debugRotations,
   movedCount,
   onFlip,
   onExport,
   onNudge,
+  onRotate,
   onSelect,
   onSelectSlot,
   placements,
@@ -668,10 +737,17 @@ function DebugExportOverlay({
   slotTargets,
   status,
 }: {
+  debugPositions: Record<string, Vec3>;
+  debugRotations: Record<string, Vec3>;
   movedCount: number;
   onFlip: (axis: FlipAxis) => void;
   onExport: () => Promise<void>;
   onNudge: (direction: NudgeDirection, multiplier?: number) => void;
+  onRotate: (
+    axis: FlipAxis,
+    direction: RotationDirection,
+    multiplier?: number,
+  ) => void;
   onSelect: (instanceId: string) => void;
   onSelectSlot: (slotId: string) => void;
   placements: AssemblyPlacement[];
@@ -688,6 +764,14 @@ function DebugExportOverlay({
   const selectedTitle =
     selectedPlacement?.part.name ??
     (selectedSlot ? `安装位：${selectedSlot.slot.label}` : "未选中");
+  const selectedTransform = selectedPlacement
+    ? {
+        position:
+          debugPositions[selectedPlacement.instanceId] ?? selectedPlacement.position,
+        rotation:
+          debugRotations[selectedPlacement.instanceId] ?? selectedPlacement.rotation,
+      }
+    : undefined;
 
   return (
     <Html fullscreen pointerEvents="none">
@@ -701,6 +785,20 @@ function DebugExportOverlay({
             </small>
           ) : null}
         </div>
+        <div className="scene-debug-tools__guide">
+          <strong>风扇校准流程</strong>
+          <span>从下方列表选中风扇，不依赖点选模型。</span>
+          <span>先用 X/Y/Z 旋转让风扇框对齐机箱安装位，再用方向键微调位置。</span>
+          <span>确认 bbox、anchor 和 slot 标签重合后，导出资产校准 patch。</span>
+        </div>
+        {selectedTransform ? (
+          <div className="scene-debug-tools__readout">
+            <span>当前读数</span>
+            <code>pos {formatVec(selectedTransform.position)}</code>
+            <code>rot {formatRotationDegrees(selectedTransform.rotation)}</code>
+            <small>导出写回使用弧度；界面显示角度便于人工判断。</small>
+          </div>
+        ) : null}
         <div className="scene-debug-tools__section">
           <span>部件实例</span>
           <div className="scene-debug-tools__list">
@@ -754,6 +852,28 @@ function DebugExportOverlay({
               {axis.toUpperCase()}
             </button>
           ))}
+        </div>
+        <div className="scene-debug-tools__rotate">
+          <span>旋转微调</span>
+          {(["x", "y", "z"] as const).map((axis) => (
+            <div key={axis}>
+              <button
+                disabled={!selectedInstanceId}
+                onClick={() => onRotate(axis, -1)}
+                type="button"
+              >
+                {axis.toUpperCase()} -5°
+              </button>
+              <button
+                disabled={!selectedInstanceId}
+                onClick={() => onRotate(axis, 1)}
+                type="button"
+              >
+                {axis.toUpperCase()} +5°
+              </button>
+            </div>
+          ))}
+          <small>[ ] 调 X，; &apos; 调 Y，, . 调 Z，Shift 加速</small>
         </div>
         <div className="scene-debug-tools__nudge">
           <span>部件位移</span>
@@ -822,10 +942,10 @@ function DebugExportOverlay({
             }}
             type="button"
           >
-            {status.kind === "saving" ? "写入中..." : "导出调试配置"}
+            {status.kind === "saving" ? "写入中..." : "导出资产校准"}
           </button>
           <span className={`scene-debug-export__status is-${status.kind}`}>
-            {status.message || "移动或翻转后可写回模型配置"}
+            {status.message || "旋转、移动或翻转后可写回模型配置"}
           </span>
         </div>
       </div>
@@ -989,6 +1109,18 @@ function getArrowNudgeDirection(key: string): NudgeDirection | undefined {
   return undefined;
 }
 
+function getRotationShortcut(
+  key: string,
+): { axis: FlipAxis; direction: RotationDirection } | undefined {
+  if (key === "[") return { axis: "x", direction: -1 };
+  if (key === "]") return { axis: "x", direction: 1 };
+  if (key === ";") return { axis: "y", direction: -1 };
+  if (key === "'") return { axis: "y", direction: 1 };
+  if (key === ",") return { axis: "z", direction: -1 };
+  if (key === ".") return { axis: "z", direction: 1 };
+  return undefined;
+}
+
 function isEditableTarget(target: EventTarget | null) {
   if (!(target instanceof HTMLElement)) return false;
   const tagName = target.tagName.toLowerCase();
@@ -1007,9 +1139,27 @@ function vectorToVec3(vector: Vector3): Vec3 {
 
 function flipRotation(rotation: Vec3, axis: FlipAxis): Vec3 {
   const next: Vec3 = [...rotation];
-  const index = axis === "x" ? 0 : axis === "y" ? 1 : 2;
+  const index = getAxisIndex(axis);
   next[index] = normalizeRadians(next[index] + Math.PI);
   return roundVec(next);
+}
+
+function rotateByStep(
+  rotation: Vec3,
+  axis: FlipAxis,
+  direction: RotationDirection,
+  multiplier: number,
+): Vec3 {
+  const next: Vec3 = [...rotation];
+  const index = getAxisIndex(axis);
+  next[index] = normalizeRadians(
+    next[index] + rotationStep * direction * multiplier,
+  );
+  return roundVec(next);
+}
+
+function getAxisIndex(axis: FlipAxis) {
+  return axis === "x" ? 0 : axis === "y" ? 1 : 2;
 }
 
 function normalizeRadians(value: number) {
@@ -1026,6 +1176,16 @@ function getTransformObjectPosition(controls: TransformControlsImpl | null) {
 
 function roundVec(vector: Vec3): Vec3 {
   return vector.map((value) => Number(value.toFixed(4))) as Vec3;
+}
+
+function formatVec(vector: Vec3) {
+  return vector.map((value) => value.toFixed(3)).join(" / ");
+}
+
+function formatRotationDegrees(vector: Vec3) {
+  return vector
+    .map((value) => `${((value * 180) / Math.PI).toFixed(1)}°`)
+    .join(" / ");
 }
 
 function getFitScale(
