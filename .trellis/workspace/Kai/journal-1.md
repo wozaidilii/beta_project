@@ -238,3 +238,36 @@ Reverted the unverified fan roll guess, added manual debug rotation controls and
 ### Next Steps
 
 - None - task complete
+
+
+## Session 8: Fix debug mode overlay controls
+
+**Date**: 2026-06-11
+**Task**: Fix debug mode overlay controls
+**Branch**: `codex/calibration-asset-intake-validation`
+
+### Summary
+
+Moved critical debug controls out of the Three.js Canvas so the exit button and part list remain visible and interactive; recorded a lesson about keeping debug controls outside Canvas-rendered Html.
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `0237eed` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
