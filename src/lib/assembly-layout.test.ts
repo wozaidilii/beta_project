@@ -249,6 +249,11 @@ for (const fan of fans) {
     1.5708,
     "front fan models should face the case front fan mount plane",
   );
+  assert.equal(
+    fan.rotation[0],
+    0.7854,
+    "front fan models should compensate the source asset roll instead of rendering as a 45-degree diamond",
+  );
 }
 
 const singleFanPlan = getAssemblyPlan(defaultSelection, {

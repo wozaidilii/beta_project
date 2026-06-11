@@ -48,3 +48,10 @@
 - 根因：复杂 GLB 机箱通常有子 mesh 旋转、局部变换或非轴对齐面；在父级 group 上做非等比 scale 会产生明显视觉变形。
 - 修复：移除机箱 `fitMode: "stretch"`，保持默认等比 `contain`；把前风扇 mount anchors 从旧坐标 `x=1.18` 重新校准到等比机箱 bounds 内的 `x=0.84`，并让 render-bounds 测试禁止复杂 case 使用 stretch。
 - 预防：机箱/机壳类复杂模型优先保持等比缩放；如果风扇或其他部件跑出机箱，先重标父级 anchors/slots 到实际 render bounds，而不是拉伸机箱。
+
+## Fan roll is separate from fan mount position
+
+- 问题：风扇已经安装在正确的 front fan slots，但画面里仍然以 45 度菱形姿态斜着显示。
+- 根因：`rotation[1] = 1.5708` 只让风扇法线朝向机箱前面板；Sketchfab 风扇源资产还有面内 roll 偏差，bbox containment 测试也无法判断方形模型是否水平/垂直对齐。
+- 修复：给当前风扇资产增加 `rotation[0] = 0.7854` 的 roll 校准，并在 assembly 测试中断言这个补偿值。
+- 预防：校准风扇、冷排、面板这类平面资产时，要分别校验“法线朝向”和“面内 roll”；不要把 slot 命中或 bbox 在机箱内当成视觉朝向正确。

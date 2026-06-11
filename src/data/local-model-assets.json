@@ -733,7 +733,7 @@
       ],
       "fitMode": "stretch",
       "rotation": [
-        0,
+        0.7854,
         1.5708,
         0
       ],

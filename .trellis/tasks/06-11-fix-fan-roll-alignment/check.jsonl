@@ -1,0 +1,5 @@
+{"file": ".trellis/tasks/06-11-fix-fan-roll-alignment/prd.md", "reason": "Verify implementation against acceptance criteria."}
+{"file": "src/data/local-model-assets.json", "reason": "Confirm fan metadata rotation is calibrated without broad data changes."}
+{"file": "src/lib/assembly-layout.test.ts", "reason": "Confirm fan rotation regression coverage."}
+{"file": "src/lib/model-render-bounds.test.ts", "reason": "Confirm fans remain within case bounds."}
+{"file": ".trellis/spec/lessons.md", "reason": "Check whether the calibration lesson needs updating."}

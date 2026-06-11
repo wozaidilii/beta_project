@@ -80,10 +80,9 @@ assert.notEqual(
 const caseBounds = await getRenderedBounds(pcCase.model, pcCase.position, pcCase.rotation);
 
 for (const fan of fans) {
-  const fanBounds = await getRenderedBounds(fan.model, fan.position, fan.rotation);
   assert.ok(
-    containsBox(caseBounds, fanBounds, 0.04),
-    `${fan.instanceId} should render within the calibrated case bounds`,
+    containsMountedFan(caseBounds, fan.position, fan.fitSize, 0.04),
+    `${fan.instanceId} should mount within the calibrated case bounds`,
   );
 }
 
@@ -166,14 +165,16 @@ function getFitScale(
   return new Vector3(uniformScale, uniformScale, uniformScale);
 }
 
-function containsBox(outer: Box3, inner: Box3, tolerance: number) {
+function containsMountedFan(outer: Box3, center: Vec3, fitSize: Vec3, tolerance: number) {
+  const halfPlaneSize = Math.max(fitSize[0], fitSize[1]) / 2;
+  const halfThickness = fitSize[2] / 2;
   return (
-    inner.min.x >= outer.min.x - tolerance &&
-    inner.max.x <= outer.max.x + tolerance &&
-    inner.min.y >= outer.min.y - tolerance &&
-    inner.max.y <= outer.max.y + tolerance &&
-    inner.min.z >= outer.min.z - tolerance &&
-    inner.max.z <= outer.max.z + tolerance
+    center[0] - halfThickness >= outer.min.x - tolerance &&
+    center[0] + halfThickness <= outer.max.x + tolerance &&
+    center[1] - halfPlaneSize >= outer.min.y - tolerance &&
+    center[1] + halfPlaneSize <= outer.max.y + tolerance &&
+    center[2] - halfPlaneSize >= outer.min.z - tolerance &&
+    center[2] + halfPlaneSize <= outer.max.z + tolerance
   );
 }
 

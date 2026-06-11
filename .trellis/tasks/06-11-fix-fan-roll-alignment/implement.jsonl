@@ -1,0 +1,5 @@
+{"file": "docs/CONTEXT.md", "reason": "Defines assembly source of truth and asset calibration responsibilities."}
+{"file": ".trellis/spec/frontend/type-safety.md", "reason": "Contains model asset fitMode and validation contract."}
+{"file": "src/data/local-model-assets.json", "reason": "Fan model rotation metadata is calibrated here."}
+{"file": "src/lib/assembly-layout.test.ts", "reason": "Assembly metadata regression should assert the fan roll correction."}
+{"file": "src/lib/model-render-bounds.test.ts", "reason": "Render-bounds still verifies fan containment after rotation changes."}
