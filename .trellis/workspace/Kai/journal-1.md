@@ -172,3 +172,36 @@ Removed non-uniform stretch from the calibrated case, recalibrated front fan anc
 ### Next Steps
 
 - None - task complete
+
+
+## Session 6: Fix fan roll alignment
+
+**Date**: 2026-06-11
+**Task**: Fix fan roll alignment
+**Branch**: `codex/calibration-asset-intake-validation`
+
+### Summary
+
+Calibrated the current fan asset roll so front fans align with case mounts, updated assembly and render-bounds regressions, and recorded the fan roll lesson.
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `e76693ed4ab1e5b0d8dc8acd727f62afd3a81d5d` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
