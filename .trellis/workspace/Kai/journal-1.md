@@ -205,3 +205,36 @@ Calibrated the current fan asset roll so front fans align with case mounts, upda
 ### Next Steps
 
 - None - task complete
+
+
+## Session 7: Improve builder debug calibration
+
+**Date**: 2026-06-11
+**Task**: Improve builder debug calibration
+**Branch**: `codex/calibration-asset-intake-validation`
+
+### Summary
+
+Reverted the unverified fan roll guess, added manual debug rotation controls and calibration instructions, replaced the builder background with a grid workbench, and recorded the 3D orientation lesson.
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `79d2cccb85c0e64ec358cec0f9146a2236dec269` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete

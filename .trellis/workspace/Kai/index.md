@@ -8,7 +8,7 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 6
+- **Total Sessions**: 7
 - **Last Active**: 2026-06-11
 <!-- @@@/auto:current-status -->
 
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~207 | Active |
+| `journal-1.md` | ~240 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,6 +29,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 7 | 2026-06-11 | Improve builder debug calibration | `79d2cccb85c0e64ec358cec0f9146a2236dec269` | `codex/calibration-asset-intake-validation` |
 | 6 | 2026-06-11 | Fix fan roll alignment | `e76693ed4ab1e5b0d8dc8acd727f62afd3a81d5d` | `codex/calibration-asset-intake-validation` |
 | 5 | 2026-06-11 | Fix case stretch distortion | `d482b66` | `codex/calibration-asset-intake-validation` |
 | 4 | 2026-06-11 | Fix calibrated fan placement | `9260d45` | `codex/calibration-asset-intake-validation` |
