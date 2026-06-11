@@ -1649,9 +1649,73 @@
         "frontFanMount": {
           "label": "frontFanMount",
           "position": [
-            1.48,
+            1.18,
             0,
             0.14
+          ]
+        },
+        "frontFanMountTop": {
+          "label": "frontFanMountTop",
+          "position": [
+            1.18,
+            0.52,
+            0.14
+          ]
+        },
+        "frontFanMountMiddle": {
+          "label": "frontFanMountMiddle",
+          "position": [
+            1.18,
+            0,
+            0.14
+          ]
+        },
+        "frontFanMountBottom": {
+          "label": "frontFanMountBottom",
+          "position": [
+            1.18,
+            -0.52,
+            0.14
+          ]
+        },
+        "rearFanMount": {
+          "label": "rearFanMount",
+          "position": [
+            -1.18,
+            0.42,
+            -0.36
+          ]
+        },
+        "topFanMountLeft": {
+          "label": "topFanMountLeft",
+          "position": [
+            -0.42,
+            0.94,
+            -0.28
+          ]
+        },
+        "topFanMountRight": {
+          "label": "topFanMountRight",
+          "position": [
+            0.42,
+            0.94,
+            -0.28
+          ]
+        },
+        "expansionSlots": {
+          "label": "expansionSlots",
+          "position": [
+            0.34,
+            -0.52,
+            -0.82
+          ]
+        },
+        "storageBay": {
+          "label": "storageBay",
+          "position": [
+            0.82,
+            -0.62,
+            -0.34
           ]
         }
       },
@@ -1662,7 +1726,135 @@
           0,
           0
         ]
-      }
+      },
+      "mountSlots": [
+        {
+          "id": "motherboard-tray.main",
+          "kind": "motherboardTray",
+          "label": "主板托盘",
+          "anchor": "motherboardTray",
+          "group": "internal",
+          "priority": 10,
+          "supportedFormFactors": [
+            "ATX",
+            "Micro-ATX",
+            "Mini-ITX"
+          ]
+        },
+        {
+          "id": "psu-bay.main",
+          "kind": "psuBay",
+          "label": "电源仓",
+          "anchor": "psuBay",
+          "group": "internal",
+          "priority": 20,
+          "supportedFormFactors": [
+            "ATX",
+            "SFX-L",
+            "SFX"
+          ]
+        },
+        {
+          "id": "radiator.top",
+          "kind": "radiatorMount",
+          "label": "顶部冷排位",
+          "anchor": "topRadiator",
+          "group": "top",
+          "priority": 30,
+          "supportedRadiatorMm": [
+            240,
+            360
+          ]
+        },
+        {
+          "id": "fan.front.120.1",
+          "kind": "fanMount",
+          "label": "前部风扇位 1",
+          "anchor": "frontFanMountTop",
+          "group": "front",
+          "priority": 40,
+          "supportedFanSizesMm": [
+            120
+          ]
+        },
+        {
+          "id": "fan.front.120.2",
+          "kind": "fanMount",
+          "label": "前部风扇位 2",
+          "anchor": "frontFanMountMiddle",
+          "group": "front",
+          "priority": 41,
+          "supportedFanSizesMm": [
+            120
+          ]
+        },
+        {
+          "id": "fan.front.120.3",
+          "kind": "fanMount",
+          "label": "前部风扇位 3",
+          "anchor": "frontFanMountBottom",
+          "group": "front",
+          "priority": 42,
+          "supportedFanSizesMm": [
+            120
+          ]
+        },
+        {
+          "id": "fan.rear.120.1",
+          "kind": "fanMount",
+          "label": "后部风扇位",
+          "anchor": "rearFanMount",
+          "group": "rear",
+          "priority": 50,
+          "supportedFanSizesMm": [
+            120
+          ]
+        },
+        {
+          "id": "fan.top.120.1",
+          "kind": "fanMount",
+          "label": "顶部风扇位 1",
+          "anchor": "topFanMountLeft",
+          "group": "top",
+          "priority": 60,
+          "supportedFanSizesMm": [
+            120
+          ]
+        },
+        {
+          "id": "fan.top.120.2",
+          "kind": "fanMount",
+          "label": "顶部风扇位 2",
+          "anchor": "topFanMountRight",
+          "group": "top",
+          "priority": 61,
+          "supportedFanSizesMm": [
+            120
+          ]
+        },
+        {
+          "id": "expansion.rear",
+          "kind": "expansionSlot",
+          "label": "后部扩展槽",
+          "anchor": "expansionSlots",
+          "group": "rear",
+          "priority": 70,
+          "count": 4
+        },
+        {
+          "id": "storage.internal.1",
+          "kind": "storageBay",
+          "label": "内部存储位",
+          "anchor": "storageBay",
+          "group": "internal",
+          "priority": 80,
+          "sizeMm": {
+            "lengthMm": 100,
+            "widthMm": 70,
+            "heightMm": 10
+          }
+        }
+      ]
     },
     "externalIds": {
       "modelAssetId": "sketchfab_case_gaming_pc_case"
@@ -1738,9 +1930,73 @@
         "frontFanMount": {
           "label": "frontFanMount",
           "position": [
-            1.48,
+            1.18,
             0,
             0.14
+          ]
+        },
+        "frontFanMountTop": {
+          "label": "frontFanMountTop",
+          "position": [
+            1.18,
+            0.52,
+            0.14
+          ]
+        },
+        "frontFanMountMiddle": {
+          "label": "frontFanMountMiddle",
+          "position": [
+            1.18,
+            0,
+            0.14
+          ]
+        },
+        "frontFanMountBottom": {
+          "label": "frontFanMountBottom",
+          "position": [
+            1.18,
+            -0.52,
+            0.14
+          ]
+        },
+        "rearFanMount": {
+          "label": "rearFanMount",
+          "position": [
+            -1.18,
+            0.42,
+            -0.36
+          ]
+        },
+        "topFanMountLeft": {
+          "label": "topFanMountLeft",
+          "position": [
+            -0.42,
+            0.94,
+            -0.28
+          ]
+        },
+        "topFanMountRight": {
+          "label": "topFanMountRight",
+          "position": [
+            0.42,
+            0.94,
+            -0.28
+          ]
+        },
+        "expansionSlots": {
+          "label": "expansionSlots",
+          "position": [
+            0.34,
+            -0.52,
+            -0.82
+          ]
+        },
+        "storageBay": {
+          "label": "storageBay",
+          "position": [
+            0.82,
+            -0.62,
+            -0.34
           ]
         }
       },
@@ -1751,7 +2007,135 @@
           0,
           0
         ]
-      }
+      },
+      "mountSlots": [
+        {
+          "id": "motherboard-tray.main",
+          "kind": "motherboardTray",
+          "label": "主板托盘",
+          "anchor": "motherboardTray",
+          "group": "internal",
+          "priority": 10,
+          "supportedFormFactors": [
+            "ATX",
+            "Micro-ATX",
+            "Mini-ITX"
+          ]
+        },
+        {
+          "id": "psu-bay.main",
+          "kind": "psuBay",
+          "label": "电源仓",
+          "anchor": "psuBay",
+          "group": "internal",
+          "priority": 20,
+          "supportedFormFactors": [
+            "ATX",
+            "SFX-L",
+            "SFX"
+          ]
+        },
+        {
+          "id": "radiator.top",
+          "kind": "radiatorMount",
+          "label": "顶部冷排位",
+          "anchor": "topRadiator",
+          "group": "top",
+          "priority": 30,
+          "supportedRadiatorMm": [
+            240,
+            360
+          ]
+        },
+        {
+          "id": "fan.front.120.1",
+          "kind": "fanMount",
+          "label": "前部风扇位 1",
+          "anchor": "frontFanMountTop",
+          "group": "front",
+          "priority": 40,
+          "supportedFanSizesMm": [
+            120
+          ]
+        },
+        {
+          "id": "fan.front.120.2",
+          "kind": "fanMount",
+          "label": "前部风扇位 2",
+          "anchor": "frontFanMountMiddle",
+          "group": "front",
+          "priority": 41,
+          "supportedFanSizesMm": [
+            120
+          ]
+        },
+        {
+          "id": "fan.front.120.3",
+          "kind": "fanMount",
+          "label": "前部风扇位 3",
+          "anchor": "frontFanMountBottom",
+          "group": "front",
+          "priority": 42,
+          "supportedFanSizesMm": [
+            120
+          ]
+        },
+        {
+          "id": "fan.rear.120.1",
+          "kind": "fanMount",
+          "label": "后部风扇位",
+          "anchor": "rearFanMount",
+          "group": "rear",
+          "priority": 50,
+          "supportedFanSizesMm": [
+            120
+          ]
+        },
+        {
+          "id": "fan.top.120.1",
+          "kind": "fanMount",
+          "label": "顶部风扇位 1",
+          "anchor": "topFanMountLeft",
+          "group": "top",
+          "priority": 60,
+          "supportedFanSizesMm": [
+            120
+          ]
+        },
+        {
+          "id": "fan.top.120.2",
+          "kind": "fanMount",
+          "label": "顶部风扇位 2",
+          "anchor": "topFanMountRight",
+          "group": "top",
+          "priority": 61,
+          "supportedFanSizesMm": [
+            120
+          ]
+        },
+        {
+          "id": "expansion.rear",
+          "kind": "expansionSlot",
+          "label": "后部扩展槽",
+          "anchor": "expansionSlots",
+          "group": "rear",
+          "priority": 70,
+          "count": 7
+        },
+        {
+          "id": "storage.internal.1",
+          "kind": "storageBay",
+          "label": "内部存储位",
+          "anchor": "storageBay",
+          "group": "internal",
+          "priority": 80,
+          "sizeMm": {
+            "lengthMm": 100,
+            "widthMm": 70,
+            "heightMm": 10
+          }
+        }
+      ]
     },
     "externalIds": {
       "modelAssetId": "gaming_pc_case"
@@ -1827,9 +2211,73 @@
         "frontFanMount": {
           "label": "frontFanMount",
           "position": [
-            1.48,
+            1.18,
             0,
             0.14
+          ]
+        },
+        "frontFanMountTop": {
+          "label": "frontFanMountTop",
+          "position": [
+            1.18,
+            0.52,
+            0.14
+          ]
+        },
+        "frontFanMountMiddle": {
+          "label": "frontFanMountMiddle",
+          "position": [
+            1.18,
+            0,
+            0.14
+          ]
+        },
+        "frontFanMountBottom": {
+          "label": "frontFanMountBottom",
+          "position": [
+            1.18,
+            -0.52,
+            0.14
+          ]
+        },
+        "rearFanMount": {
+          "label": "rearFanMount",
+          "position": [
+            -1.18,
+            0.42,
+            -0.36
+          ]
+        },
+        "topFanMountLeft": {
+          "label": "topFanMountLeft",
+          "position": [
+            -0.42,
+            0.94,
+            -0.28
+          ]
+        },
+        "topFanMountRight": {
+          "label": "topFanMountRight",
+          "position": [
+            0.42,
+            0.94,
+            -0.28
+          ]
+        },
+        "expansionSlots": {
+          "label": "expansionSlots",
+          "position": [
+            0.34,
+            -0.52,
+            -0.82
+          ]
+        },
+        "storageBay": {
+          "label": "storageBay",
+          "position": [
+            0.82,
+            -0.62,
+            -0.34
           ]
         }
       },
@@ -1840,7 +2288,135 @@
           0,
           0
         ]
-      }
+      },
+      "mountSlots": [
+        {
+          "id": "motherboard-tray.main",
+          "kind": "motherboardTray",
+          "label": "主板托盘",
+          "anchor": "motherboardTray",
+          "group": "internal",
+          "priority": 10,
+          "supportedFormFactors": [
+            "ATX",
+            "Micro-ATX",
+            "Mini-ITX"
+          ]
+        },
+        {
+          "id": "psu-bay.main",
+          "kind": "psuBay",
+          "label": "电源仓",
+          "anchor": "psuBay",
+          "group": "internal",
+          "priority": 20,
+          "supportedFormFactors": [
+            "ATX",
+            "SFX-L",
+            "SFX"
+          ]
+        },
+        {
+          "id": "radiator.top",
+          "kind": "radiatorMount",
+          "label": "顶部冷排位",
+          "anchor": "topRadiator",
+          "group": "top",
+          "priority": 30,
+          "supportedRadiatorMm": [
+            120,
+            240
+          ]
+        },
+        {
+          "id": "fan.front.120.1",
+          "kind": "fanMount",
+          "label": "前部风扇位 1",
+          "anchor": "frontFanMountTop",
+          "group": "front",
+          "priority": 40,
+          "supportedFanSizesMm": [
+            120
+          ]
+        },
+        {
+          "id": "fan.front.120.2",
+          "kind": "fanMount",
+          "label": "前部风扇位 2",
+          "anchor": "frontFanMountMiddle",
+          "group": "front",
+          "priority": 41,
+          "supportedFanSizesMm": [
+            120
+          ]
+        },
+        {
+          "id": "fan.front.120.3",
+          "kind": "fanMount",
+          "label": "前部风扇位 3",
+          "anchor": "frontFanMountBottom",
+          "group": "front",
+          "priority": 42,
+          "supportedFanSizesMm": [
+            120
+          ]
+        },
+        {
+          "id": "fan.rear.120.1",
+          "kind": "fanMount",
+          "label": "后部风扇位",
+          "anchor": "rearFanMount",
+          "group": "rear",
+          "priority": 50,
+          "supportedFanSizesMm": [
+            120
+          ]
+        },
+        {
+          "id": "fan.top.120.1",
+          "kind": "fanMount",
+          "label": "顶部风扇位 1",
+          "anchor": "topFanMountLeft",
+          "group": "top",
+          "priority": 60,
+          "supportedFanSizesMm": [
+            120
+          ]
+        },
+        {
+          "id": "fan.top.120.2",
+          "kind": "fanMount",
+          "label": "顶部风扇位 2",
+          "anchor": "topFanMountRight",
+          "group": "top",
+          "priority": 61,
+          "supportedFanSizesMm": [
+            120
+          ]
+        },
+        {
+          "id": "expansion.rear",
+          "kind": "expansionSlot",
+          "label": "后部扩展槽",
+          "anchor": "expansionSlots",
+          "group": "rear",
+          "priority": 70,
+          "count": 4
+        },
+        {
+          "id": "storage.internal.1",
+          "kind": "storageBay",
+          "label": "内部存储位",
+          "anchor": "storageBay",
+          "group": "internal",
+          "priority": 80,
+          "sizeMm": {
+            "lengthMm": 100,
+            "widthMm": 70,
+            "heightMm": 10
+          }
+        }
+      ]
     },
     "externalIds": {
       "modelAssetId": "sketchfab_case_gaming_pc_case"
@@ -1916,9 +2492,73 @@
         "frontFanMount": {
           "label": "frontFanMount",
           "position": [
-            1.48,
+            1.18,
             0,
             0.14
+          ]
+        },
+        "frontFanMountTop": {
+          "label": "frontFanMountTop",
+          "position": [
+            1.18,
+            0.52,
+            0.14
+          ]
+        },
+        "frontFanMountMiddle": {
+          "label": "frontFanMountMiddle",
+          "position": [
+            1.18,
+            0,
+            0.14
+          ]
+        },
+        "frontFanMountBottom": {
+          "label": "frontFanMountBottom",
+          "position": [
+            1.18,
+            -0.52,
+            0.14
+          ]
+        },
+        "rearFanMount": {
+          "label": "rearFanMount",
+          "position": [
+            -1.18,
+            0.42,
+            -0.36
+          ]
+        },
+        "topFanMountLeft": {
+          "label": "topFanMountLeft",
+          "position": [
+            -0.42,
+            0.94,
+            -0.28
+          ]
+        },
+        "topFanMountRight": {
+          "label": "topFanMountRight",
+          "position": [
+            0.42,
+            0.94,
+            -0.28
+          ]
+        },
+        "expansionSlots": {
+          "label": "expansionSlots",
+          "position": [
+            0.34,
+            -0.52,
+            -0.82
+          ]
+        },
+        "storageBay": {
+          "label": "storageBay",
+          "position": [
+            0.82,
+            -0.62,
+            -0.34
           ]
         }
       },
@@ -1929,7 +2569,135 @@
           0,
           0
         ]
-      }
+      },
+      "mountSlots": [
+        {
+          "id": "motherboard-tray.main",
+          "kind": "motherboardTray",
+          "label": "主板托盘",
+          "anchor": "motherboardTray",
+          "group": "internal",
+          "priority": 10,
+          "supportedFormFactors": [
+            "ATX",
+            "Micro-ATX",
+            "Mini-ITX"
+          ]
+        },
+        {
+          "id": "psu-bay.main",
+          "kind": "psuBay",
+          "label": "电源仓",
+          "anchor": "psuBay",
+          "group": "internal",
+          "priority": 20,
+          "supportedFormFactors": [
+            "ATX",
+            "SFX-L",
+            "SFX"
+          ]
+        },
+        {
+          "id": "radiator.top",
+          "kind": "radiatorMount",
+          "label": "顶部冷排位",
+          "anchor": "topRadiator",
+          "group": "top",
+          "priority": 30,
+          "supportedRadiatorMm": [
+            120,
+            240
+          ]
+        },
+        {
+          "id": "fan.front.120.1",
+          "kind": "fanMount",
+          "label": "前部风扇位 1",
+          "anchor": "frontFanMountTop",
+          "group": "front",
+          "priority": 40,
+          "supportedFanSizesMm": [
+            120
+          ]
+        },
+        {
+          "id": "fan.front.120.2",
+          "kind": "fanMount",
+          "label": "前部风扇位 2",
+          "anchor": "frontFanMountMiddle",
+          "group": "front",
+          "priority": 41,
+          "supportedFanSizesMm": [
+            120
+          ]
+        },
+        {
+          "id": "fan.front.120.3",
+          "kind": "fanMount",
+          "label": "前部风扇位 3",
+          "anchor": "frontFanMountBottom",
+          "group": "front",
+          "priority": 42,
+          "supportedFanSizesMm": [
+            120
+          ]
+        },
+        {
+          "id": "fan.rear.120.1",
+          "kind": "fanMount",
+          "label": "后部风扇位",
+          "anchor": "rearFanMount",
+          "group": "rear",
+          "priority": 50,
+          "supportedFanSizesMm": [
+            120
+          ]
+        },
+        {
+          "id": "fan.top.120.1",
+          "kind": "fanMount",
+          "label": "顶部风扇位 1",
+          "anchor": "topFanMountLeft",
+          "group": "top",
+          "priority": 60,
+          "supportedFanSizesMm": [
+            120
+          ]
+        },
+        {
+          "id": "fan.top.120.2",
+          "kind": "fanMount",
+          "label": "顶部风扇位 2",
+          "anchor": "topFanMountRight",
+          "group": "top",
+          "priority": 61,
+          "supportedFanSizesMm": [
+            120
+          ]
+        },
+        {
+          "id": "expansion.rear",
+          "kind": "expansionSlot",
+          "label": "后部扩展槽",
+          "anchor": "expansionSlots",
+          "group": "rear",
+          "priority": 70,
+          "count": 7
+        },
+        {
+          "id": "storage.internal.1",
+          "kind": "storageBay",
+          "label": "内部存储位",
+          "anchor": "storageBay",
+          "group": "internal",
+          "priority": 80,
+          "sizeMm": {
+            "lengthMm": 100,
+            "widthMm": 70,
+            "heightMm": 10
+          }
+        }
+      ]
     },
     "externalIds": {
       "modelAssetId": "sketchfab_case_fractal_meshify_c"
@@ -1955,7 +2723,7 @@
       ],
       "rotation": [
         0,
-        0,
+        1.5708,
         0
       ],
       "scale": 1,
@@ -2011,7 +2779,7 @@
       ],
       "rotation": [
         0,
-        0,
+        1.5708,
         0
       ],
       "scale": 1,
@@ -2067,7 +2835,7 @@
       ],
       "rotation": [
         0,
-        0,
+        1.5708,
         0
       ],
       "scale": 1,

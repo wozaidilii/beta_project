@@ -78,9 +78,9 @@ const activePositions: Record<CategoryId, [number, number, number]> = {
   fans: [1.28, 0.18, 0.14],
 };
 
-const cameraTarget: Vec3 = [0, -0.04, 0];
-const rigPosition: Vec3 = [0, -0.04, 0];
-const rigScale = 1.08;
+const cameraTarget: Vec3 = [0, -0.08, 0];
+const rigPosition: Vec3 = [0, -0.08, 0];
+const rigScale = 1.2;
 const nudgeStep = 0.04;
 const fastNudgeMultiplier = 5;
 export function PcScene({ selection, activeCategory, debug = false }: PcSceneProps) {
@@ -167,7 +167,7 @@ export function PcScene({ selection, activeCategory, debug = false }: PcScenePro
 
   return (
     <Canvas
-      camera={{ position: [4, 2.15, 5.15], fov: 40 }}
+      camera={{ position: [3.7, 2.05, 4.65], fov: 38 }}
       dpr={[1, 1.8]}
       gl={{ antialias: true, alpha: true }}
       shadows
@@ -205,8 +205,8 @@ export function PcScene({ selection, activeCategory, debug = false }: PcScenePro
           blur={2.6}
           far={9}
           opacity={0.36}
-          position={[0, -2.12, 0]}
-          scale={7}
+          position={[0, -2.28, 0]}
+          scale={7.6}
         />
         <Environment preset="city" />
         <OrbitControls
@@ -216,9 +216,9 @@ export function PcScene({ selection, activeCategory, debug = false }: PcScenePro
           enableDamping
           enablePan={false}
           enableRotate
-          maxDistance={7}
+          maxDistance={7.4}
           maxPolarAngle={Math.PI / 2.05}
-          minDistance={2.6}
+          minDistance={2.25}
           minPolarAngle={Math.PI / 5}
           rotateSpeed={0.72}
           target={cameraTarget}
@@ -523,6 +523,30 @@ function DebugAssembly({
               </Html>
             </group>
           ))}
+          {placement.mountSlots.map((slot) => {
+            const anchor = placement.model.anchorPoints?.[slot.anchor];
+            const slotPosition = anchor
+              ? addVec(currentPosition, anchor.position)
+              : currentPosition;
+
+            return (
+              <group key={slot.id} position={slotPosition}>
+                <mesh>
+                  <boxGeometry args={[0.06, 0.06, 0.06]} />
+                  <meshBasicMaterial
+                    color={slot.anchorResolved ? "#5eead4" : "#ff8a78"}
+                    opacity={0.82}
+                    transparent
+                  />
+                </mesh>
+                <Html center distanceFactor={7} pointerEvents="none">
+                  <span className="anchor-debug-label">
+                    {slot.kind}.{slot.label}
+                  </span>
+                </Html>
+              </group>
+            );
+          })}
         </group>
         );
       })}

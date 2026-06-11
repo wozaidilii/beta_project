@@ -42,6 +42,24 @@ const cpu = requireInstance("cpu");
 const gpu = requireInstance("gpu");
 const storage = requireInstance("storage");
 const psu = requireInstance("psu");
+const fans = requireInstance("fans");
+
+assert.equal(
+  plan.validationIssues.length,
+  0,
+  "default build model metadata should not report mount slot validation issues",
+);
+assert.ok(
+  pcCase.mountSlots.length >= 8,
+  "case should expose a structured mount inventory",
+);
+assertCaseSlot("motherboardTray", "motherboard-tray.main");
+assertCaseSlot("psuBay", "psu-bay.main");
+assertCaseSlot("radiatorMount", "radiator.top");
+assertCaseSlot("fanMount", "fan.front.120.1");
+assertCaseSlot("fanMount", "fan.front.120.2");
+assertCaseSlot("fanMount", "fan.front.120.3");
+assertCaseSlot("expansionSlot", "expansion.rear");
 
 assert.equal(motherboard.mount.target?.category, "case");
 assert.equal(motherboard.mount.target?.anchor, "motherboardTray");
@@ -68,8 +86,32 @@ assert.equal(psu.mount.target?.anchor, "psuBay");
 assert.equal(psu.mount.target?.instanceId, pcCase.instanceId);
 assert.equal(psu.mount.mode, "attached");
 
+assert.equal(fans.mount.target?.category, "case");
+assert.equal(fans.mount.target?.anchor, "frontFanMountMiddle");
+assert.equal(fans.mount.target?.slotId, "fan.front.120.2");
+assert.equal(fans.mount.target?.slotKind, "fanMount");
+assert.equal(fans.mount.target?.instanceId, pcCase.instanceId);
+assert.equal(fans.mount.mode, "attached");
+assert.equal(
+  fans.position[0],
+  1.18,
+  "front fan should mount inside the case front panel instead of outside the chassis",
+);
+assert.equal(
+  fans.rotation[1],
+  1.5708,
+  "front fan model should face the case front fan mount plane",
+);
+
 function requireInstance(category: CategoryId) {
   const instance = plan.instancesByCategory[category];
   assert.ok(instance, `${category} instance should exist`);
   return instance;
+}
+
+function assertCaseSlot(kind: string, id: string) {
+  const slot = pcCase.mountSlots.find((item) => item.id === id);
+  assert.ok(slot, `case should expose ${id}`);
+  assert.equal(slot.kind, kind);
+  assert.equal(slot.anchorResolved, true, `${id} should resolve to an anchor`);
 }

@@ -58,6 +58,29 @@ export type ModelAnchorPoint = {
   label?: string;
 };
 
+export type ModelMountSlotKind =
+  | "motherboardTray"
+  | "psuBay"
+  | "fanMount"
+  | "radiatorMount"
+  | "storageBay"
+  | "expansionSlot";
+
+export type ModelMountSlot = {
+  id: string;
+  kind: ModelMountSlotKind;
+  label: string;
+  anchor: string;
+  group?: "front" | "top" | "bottom" | "rear" | "side" | "internal";
+  normal?: AxisDirection;
+  priority?: number;
+  count?: number;
+  supportedFanSizesMm?: number[];
+  supportedRadiatorMm?: number[];
+  supportedFormFactors?: string[];
+  sizeMm?: PhysicalDimensions;
+};
+
 export type ModelPlacement = {
   anchor: string;
   attachTo?: {
@@ -75,6 +98,7 @@ export type PartModel = {
   assetAxis?: AssetAxis;
   autoCenter?: boolean;
   anchorPoints?: Record<string, ModelAnchorPoint>;
+  mountSlots?: ModelMountSlot[];
   boundingBoxMm?: PhysicalDimensions;
   fitMode?: "contain" | "stretch";
   fitSize?: Vec3;
