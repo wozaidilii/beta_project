@@ -31,6 +31,7 @@ import {
 import {
   getAssemblyPlan,
   type AssemblyOptions,
+  type AssemblyMountSlot,
   type AssemblyPlacement,
 } from "~/lib/assembly-layout";
 
@@ -68,6 +69,11 @@ type DebugModelPatch = {
 type FlipAxis = "x" | "y" | "z";
 type NudgeDirection = "left" | "right" | "up" | "down" | "forward" | "back";
 
+type DebugSlotTarget = {
+  slot: AssemblyMountSlot;
+  parent: AssemblyPlacement;
+};
+
 const activePositions: Record<CategoryId, [number, number, number]> = {
   cpu: [-0.42, 0.38, -0.65],
   motherboard: [-0.34, 0.08, -0.72],
@@ -83,6 +89,7 @@ const activePositions: Record<CategoryId, [number, number, number]> = {
 const cameraTarget: Vec3 = [0, -0.08, 0];
 const rigPosition: Vec3 = [0, -0.08, 0];
 const rigScale = 1.2;
+const debugRigScale = 1.48;
 const nudgeStep = 0.04;
 const fastNudgeMultiplier = 5;
 export function PcScene({
@@ -96,7 +103,14 @@ export function PcScene({
     () => getAssemblyPlan(selection, assemblyOptions),
     [assemblyOptions, selection],
   );
-  const placementList = assemblyPlan.instances;
+  const placementList = useMemo(
+    () => assemblyPlan.instances.filter((instance) => instance.visible),
+    [assemblyPlan.instances],
+  );
+  const debugSlotTargets = useMemo(
+    () => getDebugSlotTargets(placementList),
+    [placementList],
+  );
   const [debugPositions, setDebugPositions] = useState<Record<string, Vec3>>({});
   const [debugRotations, setDebugRotations] = useState<Record<string, Vec3>>({});
   const [exportStatus, setExportStatus] = useState<DebugExportStatus>({
@@ -105,6 +119,7 @@ export function PcScene({
   });
   const [isTransforming, setIsTransforming] = useState(false);
   const [selectedInstanceId, setSelectedInstanceId] = useState<string | null>(null);
+  const [selectedSlotId, setSelectedSlotId] = useState<string | null>(null);
   const tone = categoryMeta[activeCategory].tone;
 
   useEffect(() => {
@@ -114,13 +129,31 @@ export function PcScene({
       setDebugPositions({});
       setDebugRotations({});
       setExportStatus({ kind: "idle", message: "" });
+      setSelectedSlotId(null);
       return;
     }
 
     setSelectedInstanceId(
-      assemblyPlan.instancesByCategory[activeCategory]?.instanceId ?? null,
+      placementList.find(
+        (placement) =>
+          placement.instanceId ===
+          assemblyPlan.instancesByCategory[activeCategory]?.instanceId,
+      )?.instanceId ??
+        placementList[0]?.instanceId ??
+        null,
     );
-  }, [activeCategory, assemblyPlan.instancesByCategory, debug]);
+    setSelectedSlotId(null);
+  }, [activeCategory, assemblyPlan.instancesByCategory, debug, placementList]);
+
+  const selectInstance = useCallback((instanceId: string) => {
+    setSelectedInstanceId(instanceId);
+    setSelectedSlotId(null);
+  }, []);
+
+  const selectSlot = useCallback((slotId: string) => {
+    setSelectedSlotId(slotId);
+    setSelectedInstanceId(null);
+  }, []);
 
   useEffect(() => {
     setDebugPositions({});
@@ -201,6 +234,7 @@ export function PcScene({
           isTransforming={isTransforming}
           placements={placementList}
           selectedInstanceId={selectedInstanceId}
+          selectedSlotId={selectedSlotId}
           setDebugPosition={(instanceId, position) => {
             setDebugPositions((current) => ({
               ...current,
@@ -209,7 +243,8 @@ export function PcScene({
             setExportStatus({ kind: "dirty", message: "有未导出的调试偏移" });
           }}
           setIsTransforming={setIsTransforming}
-          setSelectedInstanceId={setSelectedInstanceId}
+          setSelectedInstanceId={selectInstance}
+          setSelectedSlotId={selectSlot}
         />
         <ContactShadows
           blur={2.6}
@@ -262,9 +297,12 @@ export function PcScene({
               });
             }}
             onNudge={nudgeSelectedPart}
-            onSelect={setSelectedInstanceId}
+            onSelect={selectInstance}
+            onSelectSlot={selectSlot}
             placements={placementList}
             selectedInstanceId={selectedInstanceId}
+            selectedSlotId={selectedSlotId}
+            slotTargets={debugSlotTargets}
             status={exportStatus}
           />
         ) : null}
@@ -280,9 +318,11 @@ function PcRig({
   isTransforming,
   placements,
   selectedInstanceId,
+  selectedSlotId,
   setDebugPosition,
   setIsTransforming,
   setSelectedInstanceId,
+  setSelectedSlotId,
 }: {
   debug: boolean;
   debugPositions: Record<string, Vec3>;
@@ -290,9 +330,11 @@ function PcRig({
   isTransforming: boolean;
   placements: AssemblyPlacement[];
   selectedInstanceId: string | null;
+  selectedSlotId: string | null;
   setDebugPosition: (instanceId: string, position: Vec3) => void;
   setIsTransforming: (value: boolean) => void;
-  setSelectedInstanceId: (instanceId: string | null) => void;
+  setSelectedInstanceId: (instanceId: string) => void;
+  setSelectedSlotId: (slotId: string) => void;
 }) {
   const group = useRef<Group>(null);
 
@@ -302,7 +344,12 @@ function PcRig({
   });
 
   return (
-    <group ref={group} rotation={[0, -0.48, 0]} position={rigPosition} scale={rigScale}>
+    <group
+      ref={group}
+      rotation={[0, -0.48, 0]}
+      position={rigPosition}
+      scale={debug ? debugRigScale : rigScale}
+    >
       {Object.values(placements).map((placement) => (
         <ModelLoadBoundary
           key={placement.instanceId}
@@ -328,8 +375,10 @@ function PcRig({
           debugPositions={debugPositions}
           debugRotations={debugRotations}
           onSelect={setSelectedInstanceId}
+          onSelectSlot={setSelectedSlotId}
           placements={Object.values(placements)}
           selectedInstanceId={selectedInstanceId}
+          selectedSlotId={selectedSlotId}
         />
       ) : null}
     </group>
@@ -469,14 +518,18 @@ function DebugAssembly({
   debugPositions,
   debugRotations,
   onSelect,
+  onSelectSlot,
   placements,
   selectedInstanceId,
+  selectedSlotId,
 }: {
   debugPositions: Record<string, Vec3>;
   debugRotations: Record<string, Vec3>;
   onSelect: (instanceId: string) => void;
+  onSelectSlot: (slotId: string) => void;
   placements: AssemblyPlacement[];
   selectedInstanceId: string | null;
+  selectedSlotId: string | null;
 }) {
   return (
     <group>
@@ -538,19 +591,37 @@ function DebugAssembly({
             const slotPosition = anchor
               ? addVec(currentPosition, anchor.position)
               : currentPosition;
+            const isSelectedSlot = selectedSlotId === slot.id;
 
             return (
               <group key={slot.id} position={slotPosition}>
-                <mesh>
-                  <boxGeometry args={[0.06, 0.06, 0.06]} />
+                <mesh
+                  onPointerDown={(event) => {
+                    event.stopPropagation();
+                    onSelectSlot(slot.id);
+                  }}
+                >
+                  <boxGeometry
+                    args={isSelectedSlot ? [0.1, 0.1, 0.1] : [0.06, 0.06, 0.06]}
+                  />
                   <meshBasicMaterial
-                    color={slot.anchorResolved ? "#5eead4" : "#ff8a78"}
-                    opacity={0.82}
+                    color={
+                      isSelectedSlot
+                        ? "#fbbf24"
+                        : slot.anchorResolved
+                          ? "#5eead4"
+                          : "#ff8a78"
+                    }
+                    opacity={isSelectedSlot ? 1 : 0.82}
                     transparent
                   />
                 </mesh>
                 <Html center distanceFactor={7} pointerEvents="none">
-                  <span className="anchor-debug-label">
+                  <span
+                    className={`anchor-debug-label ${
+                      isSelectedSlot ? "is-selected" : ""
+                    }`}
+                  >
                     {slot.kind}.{slot.label}
                   </span>
                 </Html>
@@ -568,14 +639,33 @@ function safeDivide(target: number, source: number) {
   return source === 0 ? 1 : target / source;
 }
 
+function getDebugSlotTargets(placements: AssemblyPlacement[]): DebugSlotTarget[] {
+  return placements.flatMap((placement) =>
+    placement.mountSlots.map((slot) => ({
+      parent: placement,
+      slot,
+    })),
+  );
+}
+
+function getDebugInstanceBadge(placement: AssemblyPlacement) {
+  if (placement.role === "aio-radiator") return "冷排";
+  if (placement.role === "aio-pump") return "泵头";
+  if (placement.category === "fans") return "风扇";
+  return categoryMeta[placement.category].shortLabel;
+}
+
 function DebugExportOverlay({
   movedCount,
   onFlip,
   onExport,
   onNudge,
   onSelect,
+  onSelectSlot,
   placements,
   selectedInstanceId,
+  selectedSlotId,
+  slotTargets,
   status,
 }: {
   movedCount: number;
@@ -583,36 +673,74 @@ function DebugExportOverlay({
   onExport: () => Promise<void>;
   onNudge: (direction: NudgeDirection, multiplier?: number) => void;
   onSelect: (instanceId: string) => void;
+  onSelectSlot: (slotId: string) => void;
   placements: AssemblyPlacement[];
   selectedInstanceId: string | null;
+  selectedSlotId: string | null;
+  slotTargets: DebugSlotTarget[];
   status: DebugExportStatus;
 }) {
   const disabled = movedCount === 0 || status.kind === "saving";
   const selectedPlacement = placements.find(
     (placement) => placement.instanceId === selectedInstanceId,
   );
+  const selectedSlot = slotTargets.find((target) => target.slot.id === selectedSlotId);
+  const selectedTitle =
+    selectedPlacement?.part.name ??
+    (selectedSlot ? `安装位：${selectedSlot.slot.label}` : "未选中");
 
   return (
     <Html fullscreen pointerEvents="none">
       <div className="scene-debug-tools">
         <div className="scene-debug-tools__header">
-          <span>可移动部件</span>
-          <strong>{selectedPlacement?.part.name ?? "未选中"}</strong>
+          <span>调试目标</span>
+          <strong>{selectedTitle}</strong>
+          {selectedSlot ? (
+            <small>
+              {selectedSlot.parent.part.name} · {selectedSlot.slot.kind}
+            </small>
+          ) : null}
         </div>
-        <div className="scene-debug-tools__list">
-          {placements.map((placement) => (
-            <button
-              className={`scene-debug-part ${
-                placement.instanceId === selectedInstanceId ? "is-selected" : ""
-              }`}
-              key={placement.instanceId}
-              onClick={() => onSelect(placement.instanceId)}
-              type="button"
-            >
-              <span>{categoryMeta[placement.category].shortLabel}</span>
-              <strong>{placement.part.name}</strong>
-            </button>
-          ))}
+        <div className="scene-debug-tools__section">
+          <span>部件实例</span>
+          <div className="scene-debug-tools__list">
+            {placements.map((placement) => (
+              <button
+                aria-pressed={placement.instanceId === selectedInstanceId}
+                className={`scene-debug-part ${
+                  placement.instanceId === selectedInstanceId ? "is-selected" : ""
+                }`}
+                data-debug-instance-id={placement.instanceId}
+                key={placement.instanceId}
+                onClick={() => onSelect(placement.instanceId)}
+                type="button"
+              >
+                <span>{getDebugInstanceBadge(placement)}</span>
+                <strong>{placement.part.name}</strong>
+              </button>
+            ))}
+          </div>
+        </div>
+        <div className="scene-debug-tools__section">
+          <span>机箱安装位</span>
+          <div className="scene-debug-tools__slot-list">
+            {slotTargets.map(({ parent, slot }) => (
+              <button
+                aria-pressed={slot.id === selectedSlotId}
+                className={`scene-debug-slot ${
+                  slot.id === selectedSlotId ? "is-selected" : ""
+                }`}
+                data-debug-slot-id={slot.id}
+                key={`${parent.instanceId}:${slot.id}`}
+                onClick={() => onSelectSlot(slot.id)}
+                type="button"
+              >
+                <span>{slot.kind}</span>
+                <strong>{slot.label}</strong>
+                <small>{parent.part.name}</small>
+              </button>
+            ))}
+          </div>
         </div>
         <div className="scene-debug-tools__flip">
           <span>翻转</span>
@@ -628,7 +756,7 @@ function DebugExportOverlay({
           ))}
         </div>
         <div className="scene-debug-tools__nudge">
-          <span>位移</span>
+          <span>部件位移</span>
           <button
             aria-label="向上移动"
             className="is-up"
@@ -770,14 +898,14 @@ function createDebugModelPatches(
     const currentPosition =
       debugPositions[placement.instanceId] ?? placement.position;
     const anchorPoints = placement.model.anchorPoints ?? {};
-    const attachTo = placement.model.placement?.attachTo;
+    const mountTarget = placement.mount.target;
 
     if (debugPositions[placement.instanceId]) {
-      if (attachTo) {
-        const targetAnchor = currentAnchors.get(attachTo.category)?.[
-          attachTo.anchor
+      if (mountTarget?.resolved) {
+        const targetAnchor = currentAnchors.get(mountTarget.category)?.[
+          mountTarget.anchor
         ];
-        const ownAnchorName = placement.model.placement?.anchor ?? "origin";
+        const ownAnchorName = placement.mount.ownAnchor;
 
         if (targetAnchor) {
           patches.push({

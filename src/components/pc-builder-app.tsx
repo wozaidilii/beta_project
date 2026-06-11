@@ -34,6 +34,7 @@ import {
   getAssemblyPlan,
   type AssemblyFanInstallation,
   type AssemblyOptions,
+  type AssemblyValidationIssue,
   type InstalledPartInstance,
 } from "~/lib/assembly-layout";
 import {
@@ -93,6 +94,13 @@ type SetupItem = {
   useCase: string;
   selection: Required<PartSelection>;
   sourceLabel: string;
+};
+type DisplayCompatibilityIssue = {
+  id: string;
+  severity: Severity;
+  title: string;
+  detail: string;
+  meta?: string[];
 };
 
 const primaryShopCategoryIds: ShopCategoryId[] = [
@@ -163,17 +171,20 @@ export function PcBuilderApp() {
     () => getAssemblyPlan(selection, assemblyOptions),
     [assemblyOptions, selection],
   );
-  const compatibilityIssues = useMemo(() => {
+  const compatibilityIssues = useMemo<DisplayCompatibilityIssue[]>(() => {
     const assemblyIssues = assemblyPlan.validationIssues.map((issue) => ({
       detail: issue.message,
       id: `assembly-${issue.id}`,
+      meta: getAssemblyIssueMeta(issue),
       severity: issue.severity satisfies Severity,
       title: `${categoryMeta[issue.category].label}装配冲突`,
-    }));
-    const catalogIssues =
+    })) satisfies DisplayCompatibilityIssue[];
+    const catalogIssues: DisplayCompatibilityIssue[] =
       assemblyIssues.length > 0
-        ? summary.compatibility.filter((issue) => issue.severity !== "ok")
-        : summary.compatibility;
+        ? summary.compatibility
+            .filter((issue) => issue.severity !== "ok")
+            .map((issue) => ({ ...issue }))
+        : summary.compatibility.map((issue) => ({ ...issue }));
 
     return [...catalogIssues, ...assemblyIssues];
   }, [assemblyPlan.validationIssues, summary.compatibility]);
@@ -295,7 +306,7 @@ export function PcBuilderApp() {
   };
 
   return (
-    <main className="app-shell">
+    <main className={`app-shell ${showAssemblyDebug ? "is-debug-mode" : ""}`}>
       <header className="topbar">
         <div className="brand-lockup">
           <div className="brand-mark">
@@ -371,7 +382,12 @@ export function PcBuilderApp() {
 
         <section className="workspace-main">
           {activeWorkspace === "builder" ? (
-            <section className="builder-grid" aria-label="3D Builder">
+            <section
+              className={`builder-grid ${
+                showAssemblyDebug ? "is-debug-mode" : ""
+              }`}
+              aria-label="3D Builder"
+            >
               <BuilderDynamicBackground />
 
               <aside className="panel picker-panel" aria-label="配件库">
@@ -474,6 +490,20 @@ export function PcBuilderApp() {
                     </button>
                   </div>
                 </div>
+                {showAssemblyDebug ? (
+                  <div className="scene-debug-focus-bar">
+                    <div>
+                      <span>Debug Workspace</span>
+                      <strong>3D 装配调试</strong>
+                    </div>
+                    <button
+                      onClick={() => setShowAssemblyDebug(false)}
+                      type="button"
+                    >
+                      退出调试
+                    </button>
+                  </div>
+                ) : null}
                 <PcScene
                   activeCategory={activeCategory}
                   assemblyOptions={assemblyOptions}
@@ -515,6 +545,13 @@ export function PcBuilderApp() {
                       <div>
                         <strong>{issue.title}</strong>
                         <span>{issue.detail}</span>
+                        {issue.meta?.length ? (
+                          <small className="issue-row__meta">
+                            {issue.meta.map((item) => (
+                              <span key={item}>{item}</span>
+                            ))}
+                          </small>
+                        ) : null}
                       </div>
                     </div>
                   ))}
@@ -1594,6 +1631,14 @@ function SpecLine({ part }: { part: Part }) {
   if (specs.length === 0) return null;
 
   return <small className="spec-line">{specs.slice(0, 3).join(" / ")}</small>;
+}
+
+function getAssemblyIssueMeta(issue: AssemblyValidationIssue) {
+  return [
+    `实例 ${issue.instanceId}`,
+    issue.slotId ? `安装位 ${issue.slotLabel ?? issue.slotId}` : undefined,
+    issue.slotKind ? `类型 ${issue.slotKind}` : undefined,
+  ].filter((item): item is string => Boolean(item));
 }
 
 function ScoreBar({

@@ -69,6 +69,29 @@ button {
   flex-direction: column;
 }
 
+.app-shell.is-debug-mode {
+  min-height: 100dvh;
+  overflow: hidden;
+}
+
+.app-shell.is-debug-mode .topbar,
+.app-shell.is-debug-mode .workspace-sidebar,
+.app-shell.is-debug-mode .picker-panel,
+.app-shell.is-debug-mode .summary-panel,
+.app-shell.is-debug-mode .scene-toolbar {
+  display: none;
+}
+
+.app-shell.is-debug-mode .workspace-shell {
+  display: block;
+  min-height: 100dvh;
+  padding: 0;
+}
+
+.app-shell.is-debug-mode .workspace-main {
+  height: 100dvh;
+}
+
 .topbar {
   position: sticky;
   top: 0;
@@ -267,6 +290,17 @@ button {
     minmax(500px, 1.55fr)
     minmax(250px, 300px);
   gap: 14px;
+}
+
+.builder-grid.is-debug-mode {
+  height: 100dvh;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0;
+}
+
+.builder-grid.is-debug-mode .builder-tech-bg {
+  inset: 0;
+  border-radius: 0;
 }
 
 .builder-grid > :not(.builder-tech-bg) {
@@ -1935,6 +1969,14 @@ button {
   background-size: 44px 44px;
 }
 
+.builder-grid.is-debug-mode .scene-panel {
+  height: 100dvh;
+  min-height: 100dvh;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+
 .scene-panel::before,
 .scene-panel::after {
   position: absolute;
@@ -1994,6 +2036,56 @@ button {
   line-height: 1.2;
 }
 
+.scene-debug-focus-bar {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid rgba(94, 234, 212, 0.26);
+  border-radius: 8px;
+  background: rgba(5, 7, 9, 0.74);
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.34);
+  padding: 8px;
+  backdrop-filter: blur(16px);
+}
+
+.scene-debug-focus-bar span,
+.scene-debug-focus-bar strong {
+  display: block;
+  min-width: 0;
+}
+
+.scene-debug-focus-bar span {
+  color: rgba(244, 246, 248, 0.56);
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.scene-debug-focus-bar strong {
+  margin-top: 2px;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 950;
+  line-height: 1.1;
+}
+
+.scene-debug-focus-bar button {
+  min-height: 36px;
+  border: 1px solid rgba(94, 234, 212, 0.34);
+  border-radius: 8px;
+  background: rgba(20, 184, 166, 0.18);
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 900;
+  padding: 0 12px;
+  white-space: nowrap;
+}
+
 .scene-toolbar .eyebrow {
   color: rgba(255, 255, 255, 0.62);
 }
@@ -2046,13 +2138,30 @@ button {
   left: 16px;
   z-index: 3;
   display: grid;
-  width: min(360px, calc(100% - 32px));
+  width: min(420px, calc(100% - 32px));
+  max-height: calc(100% - 32px);
   gap: 9px;
   border: 1px solid rgba(255, 255, 255, 0.13);
   border-radius: 8px;
   background: rgba(5, 7, 9, 0.82);
+  overflow: auto;
   padding: 10px;
-  pointer-events: none;
+  pointer-events: auto;
+}
+
+.app-shell.is-debug-mode .scene-debug-tools {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  bottom: 16px;
+  left: auto;
+  align-content: start;
+  width: min(380px, calc(100% - 32px));
+  max-height: none;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 12px;
+  scrollbar-gutter: stable;
 }
 
 .scene-debug-tools__header {
@@ -2077,17 +2186,56 @@ button {
   white-space: nowrap;
 }
 
-.scene-debug-tools__list {
-  display: grid;
-  max-height: 186px;
-  gap: 6px;
-  overflow: auto;
-  pointer-events: auto;
+.scene-debug-tools__header small {
+  max-width: 100%;
+  overflow: hidden;
+  color: rgba(251, 191, 36, 0.88);
+  font-size: 11px;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.scene-debug-part {
+.scene-debug-tools__section {
   display: grid;
-  grid-template-columns: 42px minmax(0, 1fr);
+  gap: 6px;
+  min-width: 0;
+}
+
+.scene-debug-tools__section > span {
+  color: rgba(255, 255, 255, 0.58);
+  font-size: 10px;
+  font-weight: 900;
+}
+
+.scene-debug-tools__list {
+  display: grid;
+  max-height: 156px;
+  gap: 6px;
+  overflow: auto;
+}
+
+.app-shell.is-debug-mode .scene-debug-tools__list {
+  max-height: min(22dvh, 210px);
+  overscroll-behavior: contain;
+}
+
+.scene-debug-tools__slot-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  max-height: 148px;
+  gap: 6px;
+  overflow: auto;
+}
+
+.app-shell.is-debug-mode .scene-debug-tools__slot-list {
+  max-height: min(34dvh, 320px);
+  overscroll-behavior: contain;
+}
+
+.scene-debug-part,
+.scene-debug-slot {
+  display: grid;
   min-height: 34px;
   align-items: center;
   gap: 8px;
@@ -2100,13 +2248,30 @@ button {
   text-align: left;
 }
 
-.scene-debug-part span {
+.scene-debug-part {
+  grid-template-columns: 42px minmax(0, 1fr);
+}
+
+.scene-debug-slot {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.scene-debug-part span,
+.scene-debug-slot span,
+.scene-debug-slot small {
   color: rgba(255, 255, 255, 0.55);
   font-size: 11px;
   font-weight: 900;
 }
 
-.scene-debug-part strong {
+.scene-debug-slot small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.scene-debug-part strong,
+.scene-debug-slot strong {
   overflow: hidden;
   color: inherit;
   font-size: 12px;
@@ -2115,7 +2280,8 @@ button {
   white-space: nowrap;
 }
 
-.scene-debug-part.is-selected {
+.scene-debug-part.is-selected,
+.scene-debug-slot.is-selected {
   border-color: rgba(251, 191, 36, 0.72);
   background: rgba(251, 191, 36, 0.14);
   color: #ffffff;
@@ -2279,6 +2445,12 @@ button {
   pointer-events: none;
 }
 
+.anchor-debug-label.is-selected {
+  border-color: rgba(251, 191, 36, 0.72);
+  background: rgba(88, 55, 8, 0.86);
+  color: #fff7ed;
+}
+
 .summary-panel {
   gap: 14px;
 }
@@ -2409,6 +2581,26 @@ button {
   color: rgba(244, 246, 248, 0.72);
   font-size: 12px;
   line-height: 1.45;
+}
+
+.issue-row__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 8px;
+}
+
+.issue-row__meta span {
+  display: inline-flex;
+  margin-top: 0;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.055);
+  color: rgba(244, 246, 248, 0.68);
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 1;
+  padding: 5px 7px;
 }
 
 .severity-ok {
@@ -2703,6 +2895,28 @@ button {
     flex-direction: column;
   }
 
+  .scene-debug-tools {
+    inset: auto 10px 10px;
+    width: auto;
+    max-height: min(58vh, 520px);
+  }
+
+  .app-shell.is-debug-mode .scene-debug-tools {
+    inset: auto 10px 10px;
+    width: auto;
+    max-height: min(46dvh, 420px);
+    overflow-y: auto;
+  }
+
+  .app-shell.is-debug-mode .scene-debug-tools__list,
+  .app-shell.is-debug-mode .scene-debug-tools__slot-list {
+    max-height: 128px;
+  }
+
+  .scene-debug-tools__slot-list {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
   .selected-list {
     grid-template-columns: 1fr;
   }
@@ -2859,6 +3073,14 @@ button {
 
   .scene-toolbar__badges {
     justify-content: flex-start;
+  }
+
+  .scene-debug-tools__nudge {
+    grid-template-columns: 40px repeat(3, minmax(0, 1fr));
+    grid-template-areas:
+      "label . up ."
+      "label left down right"
+      "label forward hint back";
   }
 
   .price-block strong {
