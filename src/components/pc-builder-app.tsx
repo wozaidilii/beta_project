@@ -22,13 +22,20 @@ import {
   SlidersHorizontal,
   Sparkles,
   Star,
+  Trash2,
   Upload,
   XCircle,
   Zap,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { PcScene } from "~/components/pc-scene";
+import {
+  getAssemblyPlan,
+  type AssemblyFanInstallation,
+  type AssemblyOptions,
+  type InstalledPartInstance,
+} from "~/lib/assembly-layout";
 import {
   calculateBuild,
   catalog,
@@ -138,10 +145,43 @@ export function PcBuilderApp() {
   const [uploadedSetups, setUploadedSetups] = useState<SetupItem[]>([]);
   const [setupUploadError, setSetupUploadError] = useState("");
   const [showAssemblyDebug, setShowAssemblyDebug] = useState(false);
+  const [fanInstallations, setFanInstallations] = useState<
+    AssemblyFanInstallation[] | undefined
+  >();
+  const [selectedFanInstanceId, setSelectedFanInstanceId] = useState<string | null>(
+    null,
+  );
   const [activeScenario, setActiveScenario] =
     useState<(typeof scenarioLabels)[number]["key"]>("gaming");
 
+  const assemblyOptions = useMemo<AssemblyOptions>(
+    () => ({ fanInstallations }),
+    [fanInstallations],
+  );
   const summary = useMemo(() => calculateBuild(selection), [selection]);
+  const assemblyPlan = useMemo(
+    () => getAssemblyPlan(selection, assemblyOptions),
+    [assemblyOptions, selection],
+  );
+  const compatibilityIssues = useMemo(() => {
+    const assemblyIssues = assemblyPlan.validationIssues.map((issue) => ({
+      detail: issue.message,
+      id: `assembly-${issue.id}`,
+      severity: issue.severity satisfies Severity,
+      title: `${categoryMeta[issue.category].label}装配冲突`,
+    }));
+    const catalogIssues =
+      assemblyIssues.length > 0
+        ? summary.compatibility.filter((issue) => issue.severity !== "ok")
+        : summary.compatibility;
+
+    return [...catalogIssues, ...assemblyIssues];
+  }, [assemblyPlan.validationIssues, summary.compatibility]);
+  const installedFans = useMemo(
+    () => assemblyPlan.instances.filter(isFanInstance),
+    [assemblyPlan.instances],
+  );
+  const fanPartOptions = useMemo(() => catalog.fans.filter(hasModelAsset), []);
   const selectedPart = summary.selectedParts[activeCategory];
   const activeOptions = useMemo(
     () =>
@@ -186,7 +226,18 @@ export function PcBuilderApp() {
   const activeShopCount = shopParts.length;
 
   const setPart = (part: Part) => {
+    if (part.category === "fans" || part.category === "case") {
+      setFanInstallations(undefined);
+      setSelectedFanInstanceId(null);
+    }
     setSelection((current) => ({ ...current, [part.category]: part.id }));
+  };
+  const removePart = (category: CategoryId) => {
+    setSelection((current) => {
+      const next = { ...current };
+      delete next[category];
+      return next;
+    });
   };
   const setShopCategory = (category: ShopCategoryId) => {
     setActiveShopCategory(category);
@@ -194,6 +245,8 @@ export function PcBuilderApp() {
   };
   const applySetup = (setup: SetupItem) => {
     setSelection(setup.selection);
+    setFanInstallations(undefined);
+    setSelectedFanInstanceId(null);
     setActiveWorkspace("builder");
   };
   const handleSetupUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -205,12 +258,40 @@ export function PcBuilderApp() {
       const setup = normalizeUploadedSetup(payload, file.name);
       setUploadedSetups((current) => [setup, ...current]);
       setSelection(setup.selection);
+      setFanInstallations(undefined);
+      setSelectedFanInstanceId(null);
       setSetupUploadError("");
     } catch {
       setSetupUploadError("Setup 文件格式不匹配");
     } finally {
       event.target.value = "";
     }
+  };
+
+  useEffect(() => {
+    setSelectedFanInstanceId((current) =>
+      installedFans.some((fan) => fan.instanceId === current)
+        ? current
+        : installedFans[0]?.instanceId ?? null,
+    );
+  }, [installedFans]);
+
+  const removeFanInstance = (instanceId: string) => {
+    setFanInstallations(
+      toFanInstallationState(installedFans).filter(
+        (installation) => installation.instanceId !== instanceId,
+      ),
+    );
+  };
+
+  const replaceFanInstance = (instanceId: string, partId: string) => {
+    setFanInstallations(
+      toFanInstallationState(installedFans).map((installation) =>
+        installation.instanceId === instanceId
+          ? { ...installation, partId }
+          : installation,
+      ),
+    );
   };
 
   return (
@@ -334,6 +415,28 @@ export function PcBuilderApp() {
                   })}
                 </div>
 
+                {activeCategory === "fans" ? (
+                  <FanInstallationPanel
+                    fanParts={fanPartOptions}
+                    installedFans={installedFans}
+                    onRemove={removeFanInstance}
+                    onReplace={replaceFanInstance}
+                    onReset={() => {
+                      setFanInstallations(undefined);
+                      setSelectedFanInstanceId(null);
+                    }}
+                    onSelect={setSelectedFanInstanceId}
+                    selectedInstanceId={selectedFanInstanceId}
+                  />
+                ) : null}
+
+                {activeCategory === "psu" ? (
+                  <InstalledPsuPanel
+                    installedPsu={assemblyPlan.instancesByCategory.psu}
+                    onRemove={() => removePart("psu")}
+                  />
+                ) : null}
+
                 <div className="part-list">
                   {activeOptions.map((part) => (
                     <PartRow
@@ -373,6 +476,7 @@ export function PcBuilderApp() {
                 </div>
                 <PcScene
                   activeCategory={activeCategory}
+                  assemblyOptions={assemblyOptions}
                   debug={showAssemblyDebug}
                   selection={selection}
                 />
@@ -405,7 +509,7 @@ export function PcBuilderApp() {
                 </div>
 
                 <div className="compatibility-box">
-                  {summary.compatibility.map((issue) => (
+                  {compatibilityIssues.map((issue) => (
                     <div className={`issue-row severity-${issue.severity}`} key={issue.id}>
                       <IssueIcon severity={issue.severity} />
                       <div>
@@ -885,6 +989,141 @@ function getSizeLabel(part: Part) {
   }
   if (part.category === "fans") return part.series.match(/\d+mm/i)?.[0] ?? "机箱风扇";
   return undefined;
+}
+
+function isFanInstance(instance: InstalledPartInstance) {
+  return instance.category === "fans";
+}
+
+function toFanInstallationState(
+  installedFans: InstalledPartInstance[],
+): AssemblyFanInstallation[] {
+  return installedFans.flatMap((fan) => {
+    const slotId = fan.mount.target?.slotId;
+    if (!slotId) return [];
+    return [
+      {
+        instanceId: fan.instanceId,
+        partId: fan.partId,
+        slotId,
+      },
+    ];
+  });
+}
+
+function FanInstallationPanel({
+  fanParts,
+  installedFans,
+  onRemove,
+  onReplace,
+  onReset,
+  onSelect,
+  selectedInstanceId,
+}: {
+  fanParts: Array<Part & { model: NonNullable<Part["model"]> }>;
+  installedFans: InstalledPartInstance[];
+  onRemove: (instanceId: string) => void;
+  onReplace: (instanceId: string, partId: string) => void;
+  onReset: () => void;
+  onSelect: (instanceId: string) => void;
+  selectedInstanceId: string | null;
+}) {
+  return (
+    <section className="fan-instance-panel" aria-label="已安装风扇">
+      <div className="fan-instance-panel__header">
+        <div>
+          <span className="eyebrow">Fan Slots</span>
+          <strong>已安装风扇</strong>
+          <small>{installedFans.length} 个实例</small>
+        </div>
+        <button onClick={onReset} type="button">
+          <RotateCcw size={14} />
+          <span>重置</span>
+        </button>
+      </div>
+
+      {installedFans.length === 0 ? (
+        <div className="fan-instance-empty">
+          <Fan size={17} />
+          <span>当前没有安装风扇实例</span>
+        </div>
+      ) : (
+        <div className="fan-instance-list">
+          {installedFans.map((fan, index) => {
+            const slotLabel = fan.mount.target?.slotLabel ?? fan.mount.target?.slotId;
+            const isSelected = fan.instanceId === selectedInstanceId;
+
+            return (
+              <article
+                className={`fan-instance-card ${isSelected ? "is-selected" : ""}`}
+                key={fan.instanceId}
+              >
+                <button
+                  aria-pressed={isSelected}
+                  className="fan-instance-card__select"
+                  onClick={() => onSelect(fan.instanceId)}
+                  type="button"
+                >
+                  <span>{slotLabel ?? `风扇位 ${index + 1}`}</span>
+                  <strong>{fan.part.name}</strong>
+                </button>
+                <label className="fan-instance-card__replace">
+                  <span>替换</span>
+                  <select
+                    onChange={(event) => onReplace(fan.instanceId, event.target.value)}
+                    value={fan.partId}
+                  >
+                    {fanParts.map((part) => (
+                      <option key={part.id} value={part.id}>
+                        {part.name}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <button
+                  aria-label={`移除 ${slotLabel ?? fan.part.name}`}
+                  className="fan-instance-card__remove"
+                  onClick={() => onRemove(fan.instanceId)}
+                  type="button"
+                >
+                  <Trash2 size={14} />
+                  <span>移除</span>
+                </button>
+              </article>
+            );
+          })}
+        </div>
+      )}
+    </section>
+  );
+}
+
+function InstalledPsuPanel({
+  installedPsu,
+  onRemove,
+}: {
+  installedPsu?: InstalledPartInstance;
+  onRemove: () => void;
+}) {
+  const slotLabel = installedPsu?.mount.target?.slotLabel ?? "电源仓";
+
+  return (
+    <section className="installed-psu-panel" aria-label="已安装电源">
+      <div>
+        <span className="eyebrow">PSU Bay</span>
+        <strong>{installedPsu?.part.name ?? "未安装电源"}</strong>
+        <small>
+          {installedPsu
+            ? `${slotLabel} / ${installedPsu.part.psuFormFactor ?? "未知规格"}`
+            : "选择下方电源后会自动安装到机箱电源仓"}
+        </small>
+      </div>
+      <button disabled={!installedPsu} onClick={onRemove} type="button">
+        <Trash2 size={14} />
+        <span>移除</span>
+      </button>
+    </section>
+  );
 }
 
 function ShopCategoryMenu({

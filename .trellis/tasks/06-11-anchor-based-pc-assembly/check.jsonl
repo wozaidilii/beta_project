@@ -1,0 +1,6 @@
+{"file": ".trellis/spec/frontend/index.md", "reason": "Frontend quality checklist for review."}
+{"file": ".trellis/spec/frontend/quality-guidelines.md", "reason": "Post-change checks must cover accessibility, responsive behavior and maintainability."}
+{"file": ".trellis/spec/frontend/type-safety.md", "reason": "Review should verify typed assembly contracts remain consistent."}
+{"file": ".trellis/spec/guides/cross-layer-thinking-guide.md", "reason": "Review should check data/model/rendering boundaries."}
+{"file": ".trellis/spec/lessons.md", "reason": "Known project lessons should inform validation and avoid repeated workflow mistakes."}
+{"file": ".trellis/tasks/06-11-anchor-based-pc-assembly/research/issue-breakdown.md", "reason": "Review against task acceptance criteria and slice boundaries."}

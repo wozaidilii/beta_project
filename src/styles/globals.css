@@ -566,6 +566,195 @@ button {
   padding: 0 14px 14px;
 }
 
+.fan-instance-panel {
+  display: grid;
+  gap: 10px;
+  margin: 0 14px 12px;
+  border: 1px solid rgba(236, 72, 153, 0.22);
+  border-radius: 8px;
+  background: rgba(236, 72, 153, 0.07);
+  padding: 10px;
+}
+
+.fan-instance-panel__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.fan-instance-panel__header strong,
+.fan-instance-panel__header small {
+  display: block;
+}
+
+.fan-instance-panel__header strong {
+  margin-top: 2px;
+  font-size: 13px;
+  line-height: 1.2;
+}
+
+.fan-instance-panel__header small {
+  margin-top: 3px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.fan-instance-panel__header button,
+.fan-instance-card__remove {
+  display: inline-flex;
+  min-height: 32px;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: rgba(255, 255, 255, 0.055);
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 800;
+  padding: 0 9px;
+}
+
+.fan-instance-empty {
+  display: flex;
+  min-height: 42px;
+  align-items: center;
+  gap: 8px;
+  border-radius: 7px;
+  background: rgba(255, 255, 255, 0.045);
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+  padding: 10px;
+}
+
+.fan-instance-empty svg {
+  color: #f472b6;
+}
+
+.fan-instance-list {
+  display: grid;
+  gap: 8px;
+}
+
+.fan-instance-card {
+  display: grid;
+  gap: 8px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(5, 6, 7, 0.56);
+  padding: 9px;
+}
+
+.fan-instance-card.is-selected {
+  border-color: rgba(236, 72, 153, 0.72);
+  background: rgba(236, 72, 153, 0.13);
+}
+
+.fan-instance-card__select {
+  display: grid;
+  min-width: 0;
+  gap: 3px;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  padding: 0;
+  text-align: left;
+}
+
+.fan-instance-card__select span,
+.fan-instance-card__replace span {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.fan-instance-card__select strong {
+  overflow-wrap: anywhere;
+  font-size: 13px;
+  line-height: 1.25;
+}
+
+.fan-instance-card__replace {
+  display: grid;
+  gap: 5px;
+}
+
+.fan-instance-card__replace select {
+  width: 100%;
+  min-height: 34px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: #0c0f12;
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 800;
+  padding: 0 8px;
+}
+
+.fan-instance-card__remove {
+  width: 100%;
+  color: #ff8a78;
+}
+
+.installed-psu-panel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin: 0 14px 12px;
+  border: 1px solid rgba(34, 197, 94, 0.24);
+  border-radius: 8px;
+  background: rgba(34, 197, 94, 0.08);
+  padding: 11px;
+}
+
+.installed-psu-panel > div {
+  display: grid;
+  min-width: 0;
+  gap: 3px;
+}
+
+.installed-psu-panel strong,
+.installed-psu-panel small {
+  display: block;
+  min-width: 0;
+}
+
+.installed-psu-panel strong {
+  overflow-wrap: anywhere;
+  font-size: 13px;
+  line-height: 1.25;
+}
+
+.installed-psu-panel small {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.installed-psu-panel button {
+  display: inline-flex;
+  min-height: 34px;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: rgba(255, 255, 255, 0.055);
+  color: #ff8a78;
+  font-size: 12px;
+  font-weight: 800;
+  padding: 0 9px;
+}
+
+.installed-psu-panel button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
 .part-row {
   display: grid;
   grid-template-columns: 12px minmax(0, 1fr) auto;

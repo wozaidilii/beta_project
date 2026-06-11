@@ -30,12 +30,14 @@ import {
 } from "~/lib/catalog";
 import {
   getAssemblyPlan,
+  type AssemblyOptions,
   type AssemblyPlacement,
 } from "~/lib/assembly-layout";
 
 type PcSceneProps = {
   selection: PartSelection;
   activeCategory: CategoryId;
+  assemblyOptions?: AssemblyOptions;
   debug?: boolean;
 };
 
@@ -83,9 +85,17 @@ const rigPosition: Vec3 = [0, -0.08, 0];
 const rigScale = 1.2;
 const nudgeStep = 0.04;
 const fastNudgeMultiplier = 5;
-export function PcScene({ selection, activeCategory, debug = false }: PcSceneProps) {
+export function PcScene({
+  selection,
+  activeCategory,
+  assemblyOptions,
+  debug = false,
+}: PcSceneProps) {
   const activePosition = activePositions[activeCategory];
-  const assemblyPlan = useMemo(() => getAssemblyPlan(selection), [selection]);
+  const assemblyPlan = useMemo(
+    () => getAssemblyPlan(selection, assemblyOptions),
+    [assemblyOptions, selection],
+  );
   const placementList = assemblyPlan.instances;
   const [debugPositions, setDebugPositions] = useState<Record<string, Vec3>>({});
   const [debugRotations, setDebugRotations] = useState<Record<string, Vec3>>({});
@@ -116,7 +126,7 @@ export function PcScene({ selection, activeCategory, debug = false }: PcScenePro
     setDebugPositions({});
     setDebugRotations({});
     setExportStatus({ kind: "idle", message: "" });
-  }, [selection]);
+  }, [assemblyOptions, selection]);
 
   const movedCount = new Set([
     ...Object.keys(debugPositions),

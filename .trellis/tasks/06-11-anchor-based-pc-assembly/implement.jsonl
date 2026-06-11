@@ -1,0 +1,7 @@
+{"file": ".trellis/spec/frontend/index.md", "reason": "Frontend entry checklist and quality gates for implementation."}
+{"file": ".trellis/spec/frontend/component-guidelines.md", "reason": "Builder UI changes must follow component composition rules."}
+{"file": ".trellis/spec/frontend/state-management.md", "reason": "Installed part replacement/removal affects local state and derived assembly state."}
+{"file": ".trellis/spec/frontend/type-safety.md", "reason": "Assembly instances, slots and options should remain strongly typed."}
+{"file": ".trellis/spec/guides/cross-layer-thinking-guide.md", "reason": "Assembly changes cross catalog data, asset metadata, compatibility and rendering."}
+{"file": ".trellis/spec/guides/code-reuse-thinking-guide.md", "reason": "Reuse existing assembly helpers instead of creating parallel placement logic."}
+{"file": ".trellis/tasks/06-11-anchor-based-pc-assembly/research/issue-breakdown.md", "reason": "Task slice order, acceptance criteria and dependencies from the PRD breakdown."}
