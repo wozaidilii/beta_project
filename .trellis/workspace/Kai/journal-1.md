@@ -73,3 +73,36 @@ Revalidated the anchor-based PC assembly task, confirmed task context is valid a
 ### Next Steps
 
 - None - task complete
+
+
+## Session 3: Calibration asset intake validation
+
+**Date**: 2026-06-11
+**Task**: Calibration asset intake validation
+**Branch**: `codex/calibration-asset-intake-validation`
+
+### Summary
+
+Cleared untrusted model asset records down to a 9-record calibrated core set, added model asset intake validator scripts, updated assembly tests, and documented the model asset contract in frontend type-safety spec.
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `2b85cff` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
