@@ -38,3 +38,38 @@ Implemented Builder installed-parts list and full-screen inventory picker with s
 ### Next Steps
 
 - None - task complete
+
+
+## Session 2: Finish anchor-based PC assembly task
+
+**Date**: 2026-06-11
+**Task**: Finish anchor-based PC assembly task
+**Branch**: `main`
+
+### Summary
+
+Revalidated the anchor-based PC assembly task, confirmed task context is valid and the working tree is clean, then archived the task after typecheck, lint, assembly tests, build, and GitNexus detect-changes.
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `9f5932a` | (see git log) |
+| `822a58f` | (see git log) |
+| `9a3150c` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
