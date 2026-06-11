@@ -1,0 +1,5 @@
+{"file": ".trellis/spec/frontend/type-safety.md", "reason": "Review runtime validation coverage and typed model field assumptions."}
+{"file": ".trellis/spec/guides/cross-layer-thinking-guide.md", "reason": "Check that catalog products, model overrides and assembly output still agree."}
+{"file": ".trellis/spec/guides/code-reuse-thinking-guide.md", "reason": "Ensure validation reuses the existing model metadata contract instead of duplicating assembly rules unnecessarily."}
+{"file": "docs/CONTEXT.md", "reason": "Verify the implementation preserves the project language around 3D installable parts and asset calibration."}
+{"file": ".trellis/tasks/06-11-calibration-asset-intake-validation/prd.md", "reason": "Check implementation against this task's acceptance criteria."}

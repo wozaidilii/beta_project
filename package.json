@@ -11,7 +11,9 @@
     "import:opendb": "node scripts/import-opendb-parts.mjs",
     "scrape:parts": "node scripts/scrape-core-parts.mjs",
     "test:assembly": "tsx src/lib/assembly-layout.test.ts",
+    "test:models": "node scripts/validate-model-assets.mjs",
     "upload:models:blob": "node scripts/upload-models-to-vercel-blob.mjs",
+    "validate:models": "node scripts/validate-model-assets.mjs",
     "start": "next start",
     "typecheck": "tsc --noEmit"
   },

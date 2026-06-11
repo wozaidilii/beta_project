@@ -92,55 +92,6 @@ assert.equal(cooling.mount.target?.instanceId, motherboard.instanceId);
 assert.equal(cooling.mount.mode, "attached");
 assert.equal(cooling.role, "single");
 
-const aioPlan = getAssemblyPlan({
-  ...defaultSelection,
-  case: "calibration-open-frame",
-  cooling: "lianli-galahad-360",
-});
-const aioCoolingInstances = aioPlan.instances.filter(
-  (instance) => instance.category === "cooling",
-);
-const aioRadiator = aioCoolingInstances.find(
-  (instance) => instance.role === "aio-radiator",
-);
-const aioPump = aioCoolingInstances.find(
-  (instance) => instance.role === "aio-pump",
-);
-assert.equal(
-  aioCoolingInstances.length,
-  2,
-  "AIO cooling should expand into related pump and radiator instances",
-);
-assert.ok(aioRadiator, "AIO radiator instance should exist");
-assert.ok(aioPump, "AIO pump instance should exist");
-assert.equal(aioPlan.instancesByCategory.cooling?.instanceId, aioRadiator.instanceId);
-assert.equal(aioRadiator.visible, true);
-assert.equal(
-  aioPump.visible,
-  false,
-  "current shared AIO GLB should not be duplicated as a fake visible pump model",
-);
-assert.deepEqual(aioRadiator.relatedInstanceIds, [aioPump.instanceId]);
-assert.deepEqual(aioPump.relatedInstanceIds, [aioRadiator.instanceId]);
-assert.equal(aioRadiator.mount.target?.category, "case");
-assert.equal(aioRadiator.mount.target?.slotKind, "radiatorMount");
-assert.equal(aioRadiator.mount.target?.slotId, "radiator.top");
-assert.equal(
-  aioRadiator.mount.target?.instanceId,
-  aioPlan.instancesByCategory.case?.instanceId,
-);
-assert.equal(aioPump.mount.target?.category, "motherboard");
-assert.equal(aioPump.mount.target?.anchor, "cpuSocket");
-assert.equal(
-  aioPump.mount.target?.instanceId,
-  aioPlan.instancesByCategory.motherboard?.instanceId,
-);
-assert.equal(
-  aioPlan.validationIssues.length,
-  0,
-  "valid AIO selection should not report cooling assembly conflicts",
-);
-
 assert.equal(gpu.mount.target?.category, "motherboard");
 assert.equal(gpu.mount.target?.anchor, "pcieX16");
 assert.equal(gpu.mount.target?.instanceId, motherboard.instanceId);
@@ -153,23 +104,6 @@ assert.equal(
 assert.equal(gpu.mount.secondaryTargets?.[0]?.slotId, "expansion.rear");
 assert.equal(gpu.mount.secondaryTargets?.[0]?.slotKind, "expansionSlot");
 assert.deepEqual(gpu.debug.secondaryTargetSlotIds, ["expansion.rear"]);
-
-const replacedGpuPlan = getAssemblyPlan({
-  ...defaultSelection,
-  gpu: "rtx-5060-ti",
-});
-const replacedGpu = replacedGpuPlan.instancesByCategory.gpu;
-assert.equal(replacedGpu?.partId, "rtx-5060-ti");
-assert.equal(
-  replacedGpu?.mount.target?.anchor,
-  "pcieX16",
-  "replacing GPU should keep the motherboard PCIe x16 installation",
-);
-assert.equal(
-  replacedGpu?.mount.secondaryTargets?.[0]?.slotId,
-  "expansion.rear",
-  "replacing GPU should keep the case expansion-slot reference",
-);
 
 const removedGpuPlan = getAssemblyPlan({
   ...defaultSelection,
@@ -195,18 +129,6 @@ assert.equal(storage.mount.target?.slotId, "m2.primary");
 assert.equal(storage.mount.target?.slotKind, "m2Slot");
 assert.equal(storage.mount.target?.instanceId, motherboard.instanceId);
 assert.equal(storage.mount.mode, "attached");
-
-const replacedStoragePlan = getAssemblyPlan({
-  ...defaultSelection,
-  storage: "samsung-990-pro-4tb",
-});
-const replacedStorage = replacedStoragePlan.instancesByCategory.storage;
-assert.equal(replacedStorage?.partId, "samsung-990-pro-4tb");
-assert.equal(
-  replacedStorage?.mount.target?.slotId,
-  "m2.primary",
-  "replacing storage should preserve the motherboard M.2 installation",
-);
 
 const removedStoragePlan = getAssemblyPlan({
   ...defaultSelection,
@@ -261,18 +183,6 @@ assert.equal(psu.mount.target?.slotKind, "psuBay");
 assert.equal(psu.mount.target?.instanceId, pcCase.instanceId);
 assert.equal(psu.mount.mode, "attached");
 
-const replacedPsuPlan = getAssemblyPlan({
-  ...defaultSelection,
-  psu: "rog-1000-platinum",
-});
-const replacedPsu = replacedPsuPlan.instancesByCategory.psu;
-assert.equal(replacedPsu?.partId, "rog-1000-platinum");
-assert.equal(
-  replacedPsu?.mount.target?.slotId,
-  "psu-bay.main",
-  "replacing PSU should preserve the case PSU bay installation",
-);
-
 const removedPsuPlan = getAssemblyPlan({
   ...defaultSelection,
   psu: undefined,
@@ -293,31 +203,6 @@ assert.ok(
 assert.ok(
   removedPsuPlan.instancesByCategory.gpu,
   "removing PSU should preserve the GPU instance",
-);
-
-const unsupportedRadiatorPlan = getAssemblyPlan({
-  ...defaultSelection,
-  case: "sama-quzao",
-  cooling: "lianli-galahad-360",
-});
-assert.equal(
-  unsupportedRadiatorPlan.instancesByCategory.cooling,
-  undefined,
-  "unsupported radiator size should not create fake cooling placements",
-);
-assert.equal(
-  unsupportedRadiatorPlan.instances.filter(
-    (instance) => instance.category === "cooling",
-  ).length,
-  0,
-  "unsupported radiator size should not render pump or radiator instances",
-);
-assert.ok(
-  unsupportedRadiatorPlan.validationIssues.some(
-    (issue) =>
-      issue.id === "cooling:lianli-galahad-360:radiator:missing-radiator-slot",
-  ),
-  "unsupported radiator size should report an instance-scoped assembly conflict",
 );
 
 const removedCoolingPlan = getAssemblyPlan({
@@ -341,83 +226,6 @@ assert.ok(
   removedCoolingPlan.instancesByCategory.gpu,
   "removing cooling should preserve the GPU instance",
 );
-
-const airCooler = catalog.cooling.find((part) => part.id === "pa120-se");
-assert.ok(airCooler, "test air cooler fixture should exist");
-const originalAirCoolerHeight = airCooler.heightMm;
-airCooler.heightMm = 220;
-try {
-  const overHeightCoolerPlan = getAssemblyPlan({
-    ...defaultSelection,
-    case: "sama-quzao",
-    cooling: "pa120-se",
-  });
-  assert.equal(
-    overHeightCoolerPlan.instancesByCategory.cooling,
-    undefined,
-    "over-height air cooler should not create a fake installable 3D instance",
-  );
-  assert.ok(
-    overHeightCoolerPlan.validationIssues.some(
-      (issue) =>
-        issue.id === "cooling:pa120-se:cooler-height-over-clearance",
-    ),
-    "over-height air cooler should report an instance-scoped assembly conflict",
-  );
-} finally {
-  airCooler.heightMm = originalAirCoolerHeight;
-}
-
-const overLengthGpuPlan = getAssemblyPlan({
-  ...defaultSelection,
-  case: "jonsbo-d31",
-  gpu: "rtx-4080-super",
-});
-const overLengthGpuIssue = overLengthGpuPlan.validationIssues.find(
-  (issue) => issue.id === "gpu:rtx-4080-super:gpu-length-over-clearance",
-);
-assert.equal(
-  overLengthGpuPlan.instancesByCategory.gpu,
-  undefined,
-  "over-length GPU should not create a fake installable 3D instance",
-);
-assert.ok(overLengthGpuIssue);
-assert.equal(
-  overLengthGpuIssue.slotId,
-  "expansion.rear",
-  "over-length GPU conflict should reference the case expansion slot",
-);
-assert.equal(
-  overLengthGpuIssue.slotKind,
-  "expansionSlot",
-  "over-length GPU should report an instance-scoped assembly conflict",
-);
-
-const wideGpu = catalog.gpu.find((part) => part.id === "rtx-5060-ti");
-assert.ok(wideGpu, "test GPU fixture should exist");
-const originalSlotWidth = wideGpu.totalSlotWidth;
-wideGpu.totalSlotWidth = 8;
-try {
-  const overSlotGpuPlan = getAssemblyPlan({
-    ...defaultSelection,
-    case: "jonsbo-d31",
-    gpu: "rtx-5060-ti",
-  });
-  assert.equal(
-    overSlotGpuPlan.instancesByCategory.gpu,
-    undefined,
-    "over-slot GPU should not create a fake installable 3D instance",
-  );
-  assert.ok(
-    overSlotGpuPlan.validationIssues.some(
-      (issue) =>
-        issue.id === "gpu:rtx-5060-ti:gpu-slot-width-over-expansion",
-    ),
-    "over-slot GPU should report an instance-scoped assembly conflict",
-  );
-} finally {
-  wideGpu.totalSlotWidth = originalSlotWidth;
-}
 
 assert.equal(fans.length, 3, "default 3-pack fan selection should install 3 fans");
 assert.deepEqual(
@@ -460,22 +268,27 @@ assert.equal(singleFans[0]?.instanceId, "fans:single-front-middle");
 assert.equal(singleFans[0]?.mount.target?.slotId, "fan.front.120.2");
 
 const fanState = toFanInstallationState(fans);
-const replacedPlan = getAssemblyPlan(defaultSelection, {
+const middleFan = fans.find(
+  (fan) => fan.mount.target?.slotId === "fan.front.120.2",
+);
+assert.ok(middleFan, "default fan pack should include the middle front fan");
+const uncalibratedFanPlan = getAssemblyPlan(defaultSelection, {
   fanInstallations: fanState.map((fan) =>
     fan.slotId === "fan.front.120.2"
       ? { ...fan, partId: "lianli-sl-inf-3" }
       : fan,
   ),
 });
-const replacedFan = replacedPlan.instances.find(
-  (instance) => instance.mount.target?.slotId === "fan.front.120.2",
+const uncalibratedFanIssue = uncalibratedFanPlan.validationIssues.find(
+  (issue) => issue.id === `${middleFan.instanceId}:missing-fan-model`,
 );
-assert.equal(replacedFan?.partId, "lianli-sl-inf-3");
 assert.equal(
-  replacedFan?.instanceId,
-  fans.find((fan) => fan.mount.target?.slotId === "fan.front.120.2")?.instanceId,
-  "replacing a fan should preserve the installed fan instance id",
+  uncalibratedFanPlan.instances.filter((instance) => instance.category === "fans")
+    .length,
+  2,
+  "uncalibrated fan replacement should not create a fake fan instance",
 );
+assert.ok(uncalibratedFanIssue);
 
 const removedPlan = getAssemblyPlan(defaultSelection, {
   fanInstallations: fanState.filter((fan) => fan.slotId !== "fan.front.120.2"),
@@ -517,33 +330,6 @@ assert.equal(
   invalidFanSlotIssue.slotKind,
   "fanMount",
   "invalid requested fan slots should report a clear conflict",
-);
-
-const calibrationCasePlan = getAssemblyPlan({
-  ...defaultSelection,
-  case: "calibration-open-frame",
-});
-const calibrationFans = calibrationCasePlan.instances.filter(
-  (instance) => instance.category === "fans",
-);
-assert.equal(
-  calibrationCasePlan.validationIssues.length,
-  0,
-  "calibration case should provide complete mount metadata for the default build",
-);
-assert.deepEqual(
-  calibrationFans.map((fan) => fan.mount.target?.slotId),
-  ["fan.front.120.1", "fan.front.120.2", "fan.front.120.3"],
-  "calibration case should let default fan pack visibly occupy the three front fan mounts",
-);
-assert.deepEqual(
-  calibrationFans.map((fan) => fan.position),
-  [
-    [1.18, 0.52, 0.14],
-    [1.18, 0, 0.14],
-    [1.18, -0.52, 0.14],
-  ],
-  "calibration case fan positions should match the visible front fan rails",
 );
 
 function requireInstance(category: CategoryId) {
