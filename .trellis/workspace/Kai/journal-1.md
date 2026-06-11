@@ -106,3 +106,36 @@ Cleared untrusted model asset records down to a 9-record calibrated core set, ad
 ### Next Steps
 
 - None - task complete
+
+
+## Session 4: Fix calibrated fan placement
+
+**Date**: 2026-06-11
+**Task**: Fix calibrated fan placement
+**Branch**: `codex/calibration-asset-intake-validation`
+
+### Summary
+
+Fixed default fan visual placement by aligning retained case and fan assets to the rendered fitSize coordinate space, added a Three.js render-bounds regression test, and documented the fitMode lesson.
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `9260d45` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
