@@ -31,3 +31,7 @@ _Avoid_: Saved scene coordinates, frozen 3D layout, serialized rendered transfor
 **Asset Calibration**:
 The process of correcting model anchors, slots, axes or bounds so future assemblies mount correctly. Asset calibration can be exported during local debug work, but production users must not directly write global model asset metadata.
 _Avoid_: User-written global model edits, production debug write-back, setup-owned calibration
+
+**Assembly Source of Truth**:
+Final installed positions come from the assembly graph aligning part anchors to parent anchors or mount slots. Crawled product specifications decide compatibility and semantic mount choices; GLB asset metadata supplies scene coordinates, axes, anchors and slots. Debug mode is an asset-maintainer calibration tool, not the source of normal user assembly placement.
+_Avoid_: Debug-driven assembly, user-tuned final positions, scraped scene coordinates

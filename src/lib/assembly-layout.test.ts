@@ -53,6 +53,7 @@ for (const instance of plan.instances) {
 const pcCase = requireInstance("case");
 const motherboard = requireInstance("motherboard");
 const cpu = requireInstance("cpu");
+const cooling = requireInstance("cooling");
 const gpu = requireInstance("gpu");
 const storage = requireInstance("storage");
 const psu = requireInstance("psu");
@@ -84,6 +85,61 @@ assert.equal(cpu.mount.target?.category, "motherboard");
 assert.equal(cpu.mount.target?.anchor, "cpuSocket");
 assert.equal(cpu.mount.target?.instanceId, motherboard.instanceId);
 assert.equal(cpu.mount.mode, "attached");
+
+assert.equal(cooling.mount.target?.category, "motherboard");
+assert.equal(cooling.mount.target?.anchor, "cpuSocket");
+assert.equal(cooling.mount.target?.instanceId, motherboard.instanceId);
+assert.equal(cooling.mount.mode, "attached");
+assert.equal(cooling.role, "single");
+
+const aioPlan = getAssemblyPlan({
+  ...defaultSelection,
+  case: "calibration-open-frame",
+  cooling: "lianli-galahad-360",
+});
+const aioCoolingInstances = aioPlan.instances.filter(
+  (instance) => instance.category === "cooling",
+);
+const aioRadiator = aioCoolingInstances.find(
+  (instance) => instance.role === "aio-radiator",
+);
+const aioPump = aioCoolingInstances.find(
+  (instance) => instance.role === "aio-pump",
+);
+assert.equal(
+  aioCoolingInstances.length,
+  2,
+  "AIO cooling should expand into related pump and radiator instances",
+);
+assert.ok(aioRadiator, "AIO radiator instance should exist");
+assert.ok(aioPump, "AIO pump instance should exist");
+assert.equal(aioPlan.instancesByCategory.cooling?.instanceId, aioRadiator.instanceId);
+assert.equal(aioRadiator.visible, true);
+assert.equal(
+  aioPump.visible,
+  false,
+  "current shared AIO GLB should not be duplicated as a fake visible pump model",
+);
+assert.deepEqual(aioRadiator.relatedInstanceIds, [aioPump.instanceId]);
+assert.deepEqual(aioPump.relatedInstanceIds, [aioRadiator.instanceId]);
+assert.equal(aioRadiator.mount.target?.category, "case");
+assert.equal(aioRadiator.mount.target?.slotKind, "radiatorMount");
+assert.equal(aioRadiator.mount.target?.slotId, "radiator.top");
+assert.equal(
+  aioRadiator.mount.target?.instanceId,
+  aioPlan.instancesByCategory.case?.instanceId,
+);
+assert.equal(aioPump.mount.target?.category, "motherboard");
+assert.equal(aioPump.mount.target?.anchor, "cpuSocket");
+assert.equal(
+  aioPump.mount.target?.instanceId,
+  aioPlan.instancesByCategory.motherboard?.instanceId,
+);
+assert.equal(
+  aioPlan.validationIssues.length,
+  0,
+  "valid AIO selection should not report cooling assembly conflicts",
+);
 
 assert.equal(gpu.mount.target?.category, "motherboard");
 assert.equal(gpu.mount.target?.anchor, "pcieX16");
@@ -135,8 +191,68 @@ assert.ok(
 
 assert.equal(storage.mount.target?.category, "motherboard");
 assert.equal(storage.mount.target?.anchor, "m2Slot");
+assert.equal(storage.mount.target?.slotId, "m2.primary");
+assert.equal(storage.mount.target?.slotKind, "m2Slot");
 assert.equal(storage.mount.target?.instanceId, motherboard.instanceId);
 assert.equal(storage.mount.mode, "attached");
+
+const replacedStoragePlan = getAssemblyPlan({
+  ...defaultSelection,
+  storage: "samsung-990-pro-4tb",
+});
+const replacedStorage = replacedStoragePlan.instancesByCategory.storage;
+assert.equal(replacedStorage?.partId, "samsung-990-pro-4tb");
+assert.equal(
+  replacedStorage?.mount.target?.slotId,
+  "m2.primary",
+  "replacing storage should preserve the motherboard M.2 installation",
+);
+
+const removedStoragePlan = getAssemblyPlan({
+  ...defaultSelection,
+  storage: undefined,
+});
+assert.equal(
+  removedStoragePlan.instancesByCategory.storage,
+  undefined,
+  "removing storage should hide only the storage instance",
+);
+assert.ok(
+  removedStoragePlan.instancesByCategory.case,
+  "removing storage should preserve the case instance",
+);
+assert.ok(
+  removedStoragePlan.instancesByCategory.motherboard,
+  "removing storage should preserve the motherboard instance",
+);
+assert.ok(
+  removedStoragePlan.instancesByCategory.gpu,
+  "removing storage should preserve the GPU instance",
+);
+
+const defaultMotherboardPart = catalog.motherboard.find(
+  (part) => part.id === defaultSelection.motherboard,
+);
+assert.ok(defaultMotherboardPart?.model, "default motherboard fixture should exist");
+const originalMotherboardMountSlots = defaultMotherboardPart.model.mountSlots;
+defaultMotherboardPart.model.mountSlots =
+  originalMotherboardMountSlots?.filter((slot) => slot.kind !== "m2Slot") ?? [];
+try {
+  const noM2StoragePlan = getAssemblyPlan(defaultSelection);
+  assert.equal(
+    noM2StoragePlan.instancesByCategory.storage,
+    undefined,
+    "missing motherboard M.2 slot should not create a fake storage placement",
+  );
+  assert.ok(
+    noM2StoragePlan.validationIssues.some(
+      (issue) => issue.id === "storage:sn850x-2tb:missing-parent-mount",
+    ),
+    "missing motherboard M.2 slot should report an instance-scoped storage conflict",
+  );
+} finally {
+  defaultMotherboardPart.model.mountSlots = originalMotherboardMountSlots;
+}
 
 assert.equal(psu.mount.target?.category, "case");
 assert.equal(psu.mount.target?.anchor, "psuBay");
@@ -179,21 +295,101 @@ assert.ok(
   "removing PSU should preserve the GPU instance",
 );
 
+const unsupportedRadiatorPlan = getAssemblyPlan({
+  ...defaultSelection,
+  case: "sama-quzao",
+  cooling: "lianli-galahad-360",
+});
+assert.equal(
+  unsupportedRadiatorPlan.instancesByCategory.cooling,
+  undefined,
+  "unsupported radiator size should not create fake cooling placements",
+);
+assert.equal(
+  unsupportedRadiatorPlan.instances.filter(
+    (instance) => instance.category === "cooling",
+  ).length,
+  0,
+  "unsupported radiator size should not render pump or radiator instances",
+);
+assert.ok(
+  unsupportedRadiatorPlan.validationIssues.some(
+    (issue) =>
+      issue.id === "cooling:lianli-galahad-360:radiator:missing-radiator-slot",
+  ),
+  "unsupported radiator size should report an instance-scoped assembly conflict",
+);
+
+const removedCoolingPlan = getAssemblyPlan({
+  ...defaultSelection,
+  cooling: undefined,
+});
+assert.equal(
+  removedCoolingPlan.instancesByCategory.cooling,
+  undefined,
+  "removing cooling should remove all cooling-related installed instances",
+);
+assert.ok(
+  removedCoolingPlan.instancesByCategory.case,
+  "removing cooling should preserve the case instance",
+);
+assert.ok(
+  removedCoolingPlan.instancesByCategory.motherboard,
+  "removing cooling should preserve the motherboard instance",
+);
+assert.ok(
+  removedCoolingPlan.instancesByCategory.gpu,
+  "removing cooling should preserve the GPU instance",
+);
+
+const airCooler = catalog.cooling.find((part) => part.id === "pa120-se");
+assert.ok(airCooler, "test air cooler fixture should exist");
+const originalAirCoolerHeight = airCooler.heightMm;
+airCooler.heightMm = 220;
+try {
+  const overHeightCoolerPlan = getAssemblyPlan({
+    ...defaultSelection,
+    case: "sama-quzao",
+    cooling: "pa120-se",
+  });
+  assert.equal(
+    overHeightCoolerPlan.instancesByCategory.cooling,
+    undefined,
+    "over-height air cooler should not create a fake installable 3D instance",
+  );
+  assert.ok(
+    overHeightCoolerPlan.validationIssues.some(
+      (issue) =>
+        issue.id === "cooling:pa120-se:cooler-height-over-clearance",
+    ),
+    "over-height air cooler should report an instance-scoped assembly conflict",
+  );
+} finally {
+  airCooler.heightMm = originalAirCoolerHeight;
+}
+
 const overLengthGpuPlan = getAssemblyPlan({
   ...defaultSelection,
   case: "jonsbo-d31",
   gpu: "rtx-4080-super",
 });
+const overLengthGpuIssue = overLengthGpuPlan.validationIssues.find(
+  (issue) => issue.id === "gpu:rtx-4080-super:gpu-length-over-clearance",
+);
 assert.equal(
   overLengthGpuPlan.instancesByCategory.gpu,
   undefined,
   "over-length GPU should not create a fake installable 3D instance",
 );
-assert.ok(
-  overLengthGpuPlan.validationIssues.some(
-    (issue) =>
-      issue.id === "gpu:rtx-4080-super:gpu-length-over-clearance",
-  ),
+assert.ok(overLengthGpuIssue);
+assert.equal(
+  overLengthGpuIssue.slotId,
+  "expansion.rear",
+  "over-length GPU conflict should reference the case expansion slot",
+);
+assert.equal(
+  overLengthGpuIssue.slotKind,
+  "expansionSlot",
   "over-length GPU should report an instance-scoped assembly conflict",
 );
 
@@ -303,15 +499,23 @@ const tooManyFanPlan = getAssemblyPlan(defaultSelection, {
     },
   ],
 });
+const invalidFanSlotIssue = tooManyFanPlan.validationIssues.find(
+  (issue) => issue.id === "fans:invalid-side-slot:missing-fan-slot",
+);
 assert.equal(
   tooManyFanPlan.instances.filter((instance) => instance.category === "fans").length,
   3,
   "invalid requested fan slots should not create fake fan placements",
 );
-assert.ok(
-  tooManyFanPlan.validationIssues.some(
-    (issue) => issue.id === "fans:invalid-side-slot:missing-fan-slot",
-  ),
+assert.ok(invalidFanSlotIssue);
+assert.equal(
+  invalidFanSlotIssue.slotId,
+  "fan.side.120.1",
+  "invalid fan conflict should preserve the requested slot id",
+);
+assert.equal(
+  invalidFanSlotIssue.slotKind,
+  "fanMount",
   "invalid requested fan slots should report a clear conflict",
 );
 

@@ -63,6 +63,7 @@ export type ModelMountSlotKind =
   | "psuBay"
   | "fanMount"
   | "radiatorMount"
+  | "m2Slot"
   | "storageBay"
   | "expansionSlot";
 

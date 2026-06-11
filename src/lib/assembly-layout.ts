@@ -61,6 +61,9 @@ export type AssemblyValidationIssue = {
   partId: string;
   category: CategoryId;
   message: string;
+  slotId?: string;
+  slotKind?: ModelMountSlot["kind"];
+  slotLabel?: string;
 };
 
 export type AssemblyFanInstallation = {
@@ -74,6 +77,8 @@ export type AssemblyOptions = {
   fanInstallations?: AssemblyFanInstallation[];
 };
 
+export type AssemblyInstanceRole = "single" | "aio-pump" | "aio-radiator";
+
 export type InstalledPartInstance = {
   instanceId: string;
   partId: string;
@@ -86,6 +91,8 @@ export type InstalledPartInstance = {
   anchors: Record<string, AnchorWorldPoint>;
   mountSlots: AssemblyMountSlot[];
   mount: AssemblyMount;
+  relatedInstanceIds: string[];
+  role: AssemblyInstanceRole;
   visible: boolean;
   debug: AssemblyDebugMetadata;
 };
@@ -148,17 +155,29 @@ export function getAssemblyPlan(
       continue;
     }
 
+    if (category === "cooling") {
+      const coolingResult = getInstalledCoolingInstances(
+        part,
+        instancesByCategory,
+      );
+      for (const instance of coolingResult.instances) {
+        instancesByCategory.cooling ??= instance;
+        instances.push(instance);
+      }
+      validationIssues.push(...coolingResult.validationIssues);
+      continue;
+    }
+
     const instance = getInstalledInstance(part, instancesByCategory);
-    const installationIssues = getBlockingInstallationIssues(
-      instance,
+    const installResult = getInstallableInstances(
+      [instance],
       instancesByCategory,
     );
-    validationIssues.push(...installationIssues);
-    if (installationIssues.length > 0) continue;
-
-    instancesByCategory[category] = instance;
-    instances.push(instance);
-    validationIssues.push(...validateInstalledInstance(instance));
+    for (const installedInstance of installResult.instances) {
+      instancesByCategory[category] = installedInstance;
+      instances.push(installedInstance);
+    }
+    validationIssues.push(...installResult.validationIssues);
   }
 
   return {
@@ -173,15 +192,23 @@ function getInstalledInstance(
   part: Part & { model: PartModel & { kind: "glb"; assetUrl: string } },
   instancesByCategory: Partial<Record<CategoryId, InstalledPartInstance>>,
   installation?: {
+    attachTo?: {
+      category: CategoryId;
+      anchor: string;
+    };
     instanceId?: string;
+    ownAnchor?: string;
+    relatedInstanceIds?: string[];
+    role?: AssemblyInstanceRole;
     targetInstance?: InstalledPartInstance;
     targetSlot?: AssemblyMountSlot;
+    visible?: boolean;
   },
 ): InstalledPartInstance {
   const model = part.model;
   const rotation = model.rotation ?? [0, 0, 0];
   const fitSize = model.fitSize ?? defaultFitSize;
-  const ownAnchorName = model.placement?.anchor ?? "origin";
+  const ownAnchorName = installation?.ownAnchor ?? model.placement?.anchor ?? "origin";
   const ownAnchor = getLocalAnchor(model, ownAnchorName);
   const { attachTo, targetAnchor, targetInstance, targetSlot } = getMountTarget(
     part,
@@ -240,8 +267,10 @@ function getInstalledInstance(
     part,
     partId: part.id,
     position,
+    relatedInstanceIds: installation?.relatedInstanceIds ?? [],
     rotation,
-    visible: true,
+    role: installation?.role ?? "single",
+    visible: installation?.visible ?? true,
   };
 }
 
@@ -284,11 +313,14 @@ function validateInstalledInstance(instance: InstalledPartInstance) {
         category: instance.category,
         id: `${instance.instanceId}:missing-slot-anchor:${slot.id}`,
         instanceId: instance.instanceId,
-        message: `${instance.part.name} 的安装槽 ${slot.label} 引用了不存在的 anchor ${slot.anchor}。`,
-        partId: instance.partId,
-        severity: "error",
-      });
-    }
+      message: `${instance.part.name} 的安装槽 ${slot.label} 引用了不存在的 anchor ${slot.anchor}。`,
+      partId: instance.partId,
+      severity: "error",
+      slotId: slot.id,
+      slotKind: slot.kind,
+      slotLabel: slot.label,
+    });
+  }
   }
 
   return issues;
@@ -308,6 +340,9 @@ function getBlockingInstallationIssues(
       message: `${instance.part.name} 缺少可解析的父级安装点 ${instance.mount.target.category}.${instance.mount.target.anchor}，不会生成孤儿 3D 实例。`,
       partId: instance.partId,
       severity: "warning",
+      slotId: instance.mount.target.slotId,
+      slotKind: instance.mount.target.slotKind,
+      slotLabel: instance.mount.target.slotLabel,
     });
   }
 
@@ -316,6 +351,31 @@ function getBlockingInstallationIssues(
   }
 
   return issues;
+}
+
+function getInstallableInstances(
+  candidateInstances: InstalledPartInstance[],
+  instancesByCategory: Partial<Record<CategoryId, InstalledPartInstance>>,
+) {
+  const instances: InstalledPartInstance[] = [];
+  const validationIssues: AssemblyValidationIssue[] = [];
+
+  for (const instance of candidateInstances) {
+    const installationIssues = getBlockingInstallationIssues(
+      instance,
+      instancesByCategory,
+    );
+    validationIssues.push(...installationIssues);
+    if (installationIssues.length > 0) continue;
+
+    const instanceIssues = validateInstalledInstance(instance);
+    validationIssues.push(...instanceIssues);
+    if (instanceIssues.some((issue) => issue.severity === "error")) continue;
+
+    instances.push(instance);
+  }
+
+  return { instances, validationIssues };
 }
 
 function getGpuInstallationIssues(
@@ -336,6 +396,9 @@ function getGpuInstallationIssues(
       message: `${instance.part.name} 缺少可解析的机箱扩展槽，不能生成可信的显卡安装实例。`,
       partId: instance.partId,
       severity: "warning",
+      slotId: expansionTarget?.slotId,
+      slotKind: expansionTarget?.slotKind,
+      slotLabel: expansionTarget?.slotLabel,
     });
     return issues;
   }
@@ -357,6 +420,9 @@ function getGpuInstallationIssues(
       message: `${instance.part.name} 长 ${gpuLengthMm}mm，${pcCase.part.name} 显卡限长 ${caseGpuClearanceMm}mm，3D 场景不会假装可安装。`,
       partId: instance.partId,
       severity: "error",
+      slotId: expansionTarget.slotId,
+      slotKind: expansionTarget.slotKind,
+      slotLabel: expansionTarget.slotLabel,
     });
   }
 
@@ -374,6 +440,131 @@ function getGpuInstallationIssues(
       id: `${instance.instanceId}:gpu-slot-width-over-expansion`,
       instanceId: instance.instanceId,
       message: `${instance.part.name} 约 ${gpuSlotWidth} 槽，${pcCase.part.name} 的 ${expansionTarget.slotLabel ?? "扩展槽"} 只有 ${caseExpansionSlots} 槽，3D 场景不会假装可安装。`,
+      partId: instance.partId,
+      severity: "error",
+      slotId: expansionTarget.slotId,
+      slotKind: expansionTarget.slotKind,
+      slotLabel: expansionTarget.slotLabel,
+    });
+  }
+
+  return issues;
+}
+
+function getInstalledCoolingInstances(
+  selectedCoolingPart: Part & { model: PartModel & { kind: "glb"; assetUrl: string } },
+  instancesByCategory: Partial<Record<CategoryId, InstalledPartInstance>>,
+) {
+  if (isAioCoolingPart(selectedCoolingPart)) {
+    return getInstalledAioCoolingInstances(
+      selectedCoolingPart,
+      instancesByCategory,
+    );
+  }
+
+  const instance = getInstalledInstance(selectedCoolingPart, instancesByCategory);
+  const validationIssues = [
+    ...getBlockingInstallationIssues(instance, instancesByCategory),
+    ...getAirCoolerInstallationIssues(instance, instancesByCategory),
+  ];
+  if (validationIssues.length > 0) {
+    return { instances: [], validationIssues };
+  }
+
+  validationIssues.push(...validateInstalledInstance(instance));
+  return { instances: [instance], validationIssues };
+}
+
+function getInstalledAioCoolingInstances(
+  selectedCoolingPart: Part & { model: PartModel & { kind: "glb"; assetUrl: string } },
+  instancesByCategory: Partial<Record<CategoryId, InstalledPartInstance>>,
+) {
+  const radiatorInstanceId = createAioInstanceId(selectedCoolingPart, "radiator");
+  const pumpInstanceId = createAioInstanceId(selectedCoolingPart, "pump");
+  const targetInstance = instancesByCategory.case;
+  const targetSlot = getCompatibleRadiatorMountSlots(
+    selectedCoolingPart,
+    targetInstance,
+  )[0];
+
+  if (!targetInstance || !targetSlot) {
+    return {
+      instances: [],
+      validationIssues: [
+        {
+          category: "cooling" as const,
+          id: `${radiatorInstanceId}:missing-radiator-slot`,
+          instanceId: radiatorInstanceId,
+          message: `${selectedCoolingPart.name} 需要 ${selectedCoolingPart.radiatorMm}mm 冷排位，当前机箱缺少兼容且可解析的冷排安装位。`,
+          partId: selectedCoolingPart.id,
+          severity: "warning" as const,
+        },
+      ],
+    };
+  }
+
+  const radiatorInstance = getInstalledInstance(
+    selectedCoolingPart,
+    instancesByCategory,
+    {
+      instanceId: radiatorInstanceId,
+      ownAnchor: "radiatorMount",
+      relatedInstanceIds: [pumpInstanceId],
+      role: "aio-radiator",
+      targetInstance,
+      targetSlot,
+      visible: true,
+    },
+  );
+  const pumpInstance = getInstalledInstance(
+    selectedCoolingPart,
+    instancesByCategory,
+    {
+      attachTo: {
+        anchor: "cpuSocket",
+        category: "motherboard",
+      },
+      instanceId: pumpInstanceId,
+      ownAnchor: "pumpContact",
+      relatedInstanceIds: [radiatorInstanceId],
+      role: "aio-pump",
+      visible: shouldRenderAioPumpModel(selectedCoolingPart.model),
+    },
+  );
+  const installResult = getInstallableInstances(
+    [radiatorInstance, pumpInstance],
+    instancesByCategory,
+  );
+
+  if (installResult.instances.length !== 2) {
+    return { instances: [], validationIssues: installResult.validationIssues };
+  }
+
+  return installResult;
+}
+
+function getAirCoolerInstallationIssues(
+  instance: InstalledPartInstance,
+  instancesByCategory: Partial<Record<CategoryId, InstalledPartInstance>>,
+) {
+  const issues: AssemblyValidationIssue[] = [];
+  const pcCase = instancesByCategory.case;
+  const coolerHeightMm =
+    instance.part.heightMm ??
+    instance.part.dimensions?.heightMm ??
+    instance.model.boundingBoxMm?.heightMm;
+  const coolerClearanceMm = pcCase?.part.coolerClearanceMm;
+
+  if (
+    coolerHeightMm &&
+    coolerClearanceMm &&
+    coolerHeightMm > coolerClearanceMm
+  ) {
+    issues.push({
+      category: "cooling",
+      id: `${instance.instanceId}:cooler-height-over-clearance`,
+      instanceId: instance.instanceId,
+      message: `${instance.part.name} 高 ${coolerHeightMm}mm，${pcCase.part.name} 风冷限高 ${coolerClearanceMm}mm，3D 场景不会假装可安装。`,
       partId: instance.partId,
       severity: "error",
     });
@@ -406,6 +597,8 @@ function getInstalledFanInstances(
         message: `${fanPart.name} 请求的风扇安装位 ${installation.slotId} 不存在或不兼容。`,
         partId: fanPart.id,
         severity: "warning",
+        slotId: installation.slotId,
+        slotKind: "fanMount",
       });
       continue;
     }
@@ -476,11 +669,41 @@ function getCompatibleFanMountSlots(
   );
 }
 
+function getCompatibleRadiatorMountSlots(
+  coolingPart: Part,
+  targetInstance?: InstalledPartInstance,
+) {
+  const radiatorMm = coolingPart.radiatorMm;
+  const caseRadiatorSupportMm = targetInstance?.part.radiatorSupportMm;
+
+  return (
+    targetInstance?.mountSlots
+      .filter((slot) => slot.kind === "radiatorMount" && slot.anchorResolved)
+      .filter(
+        (slot) =>
+          !radiatorMm ||
+          !slot.supportedRadiatorMm ||
+          slot.supportedRadiatorMm.includes(radiatorMm),
+      )
+      .filter(
+        () =>
+          !radiatorMm ||
+          !caseRadiatorSupportMm ||
+          radiatorMm <= caseRadiatorSupportMm,
+      )
+      .sort(compareMountSlots) ?? []
+  );
+}
+
 function getMountTarget(
   part: Part,
   model: PartModel,
   instancesByCategory: Partial<Record<CategoryId, InstalledPartInstance>>,
   installation?: {
+    attachTo?: {
+      category: CategoryId;
+      anchor: string;
+    };
     targetInstance?: InstalledPartInstance;
     targetSlot?: AssemblyMountSlot;
   },
@@ -488,7 +711,29 @@ function getMountTarget(
   const fanSlotTarget = getFanMountSlotTarget(part, instancesByCategory, installation);
   if (fanSlotTarget) return fanSlotTarget;
 
-  const attachTo = model.placement?.attachTo;
+  const storageSlotTarget = getStorageMountSlotTarget(
+    part,
+    instancesByCategory,
+    installation,
+  );
+  if (storageSlotTarget) return storageSlotTarget;
+
+  if (installation?.targetInstance && installation.targetSlot) {
+    return {
+      attachTo: installation.attachTo ?? {
+        anchor: installation.targetSlot.anchor,
+        category: installation.targetInstance.category,
+      },
+      targetAnchor: {
+        label: installation.targetSlot.label,
+        position: installation.targetSlot.position,
+      },
+      targetInstance: installation.targetInstance,
+      targetSlot: installation.targetSlot,
+    };
+  }
+
+  const attachTo = installation?.attachTo ?? model.placement?.attachTo;
   if (!attachTo) {
     return {
       attachTo: undefined,
@@ -540,6 +785,54 @@ function getCaseExpansionSlot(targetInstance?: InstalledPartInstance) {
     targetInstance?.mountSlots
       .filter((slot) => slot.kind === "expansionSlot" && slot.anchorResolved)
       .sort(compareMountSlots)[0]
+  );
+}
+
+function getStorageMountSlotTarget(
+  part: Part,
+  instancesByCategory: Partial<Record<CategoryId, InstalledPartInstance>>,
+  installation?: {
+    targetInstance?: InstalledPartInstance;
+    targetSlot?: AssemblyMountSlot;
+  },
+) {
+  if (part.category !== "storage") return undefined;
+
+  const targetInstance =
+    installation?.targetInstance ?? instancesByCategory.motherboard;
+  const targetSlot =
+    installation?.targetSlot ??
+    getCompatibleM2MountSlots(targetInstance)[0];
+  const attachTo = {
+    anchor: targetSlot?.anchor ?? "m2Slot",
+    category: "motherboard" as const,
+  };
+
+  if (!targetInstance || !targetSlot) {
+    return {
+      attachTo,
+      targetAnchor: undefined,
+      targetInstance,
+      targetSlot: undefined,
+    };
+  }
+
+  return {
+    attachTo,
+    targetAnchor: {
+      label: targetSlot.label,
+      position: targetSlot.position,
+    },
+    targetInstance,
+    targetSlot,
+  };
+}
+
+function getCompatibleM2MountSlots(targetInstance?: InstalledPartInstance) {
+  return (
+    targetInstance?.mountSlots
+      .filter((slot) => slot.kind === "m2Slot" && slot.anchorResolved)
+      .sort(compareMountSlots) ?? []
   );
 }
 
@@ -595,6 +888,18 @@ function getFanSizeMm(part: Part) {
   if (explicitSize) return Number.parseInt(explicitSize, 10);
   const size = part.model?.boundingBoxMm;
   return size?.lengthMm ?? size?.widthMm;
+}
+
+function isAioCoolingPart(part: Part) {
+  return part.category === "cooling" && Boolean(part.radiatorMm);
+}
+
+function shouldRenderAioPumpModel(model: PartModel) {
+  return model.mount === "aio-pump" || model.mount === "cpu-block";
+}
+
+function createAioInstanceId(part: Part, role: "pump" | "radiator") {
+  return `cooling:${part.id}:${role}`;
 }
 
 function compareMountSlots(left: AssemblyMountSlot, right: AssemblyMountSlot) {

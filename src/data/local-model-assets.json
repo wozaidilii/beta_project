@@ -299,7 +299,23 @@
           "category": "case",
           "anchor": "motherboardTray"
         }
-      }
+      },
+      "mountSlots": [
+        {
+          "id": "m2.primary",
+          "kind": "m2Slot",
+          "label": "M.2 2280 主插槽",
+          "anchor": "m2Slot",
+          "group": "internal",
+          "priority": 1,
+          "count": 1,
+          "sizeMm": {
+            "lengthMm": 80,
+            "widthMm": 22,
+            "heightMm": 3.5
+          }
+        }
+      ]
     },
     "externalIds": {
       "modelAssetId": "msi_b550_gaming_plus"
@@ -387,7 +403,23 @@
           "category": "case",
           "anchor": "motherboardTray"
         }
-      }
+      },
+      "mountSlots": [
+        {
+          "id": "m2.primary",
+          "kind": "m2Slot",
+          "label": "M.2 2280 主插槽",
+          "anchor": "m2Slot",
+          "group": "internal",
+          "priority": 1,
+          "count": 1,
+          "sizeMm": {
+            "lengthMm": 80,
+            "widthMm": 22,
+            "heightMm": 3.5
+          }
+        }
+      ]
     },
     "externalIds": {
       "modelAssetId": "sketchfab_motherboard_asus_b550f"
@@ -475,7 +507,23 @@
           "category": "case",
           "anchor": "motherboardTray"
         }
-      }
+      },
+      "mountSlots": [
+        {
+          "id": "m2.primary",
+          "kind": "m2Slot",
+          "label": "M.2 2280 主插槽",
+          "anchor": "m2Slot",
+          "group": "internal",
+          "priority": 1,
+          "count": 1,
+          "sizeMm": {
+            "lengthMm": 80,
+            "widthMm": 22,
+            "heightMm": 3.5
+          }
+        }
+      ]
     },
     "externalIds": {
       "modelAssetId": "sketchfab_motherboard_maximus_vi_formula"
@@ -563,7 +611,23 @@
           "category": "case",
           "anchor": "motherboardTray"
         }
-      }
+      },
+      "mountSlots": [
+        {
+          "id": "m2.primary",
+          "kind": "m2Slot",
+          "label": "M.2 2280 主插槽",
+          "anchor": "m2Slot",
+          "group": "internal",
+          "priority": 1,
+          "count": 1,
+          "sizeMm": {
+            "lengthMm": 80,
+            "widthMm": 22,
+            "heightMm": 3.5
+          }
+        }
+      ]
     },
     "externalIds": {
       "modelAssetId": "motherboard__components"
