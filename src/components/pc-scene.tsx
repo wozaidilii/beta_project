@@ -248,109 +248,111 @@ export function PcScene({
   }, [debug, nudgeSelectedPart, rotateSelectedPart, selectedInstanceId]);
 
   return (
-    <Canvas
-      camera={{ position: [3.7, 2.05, 4.65], fov: 38 }}
-      dpr={[1, 1.8]}
-      gl={{ antialias: true, alpha: true }}
-      shadows
-    >
-      <Suspense fallback={null}>
-        <color attach="background" args={["#17191c"]} />
-        <ambientLight intensity={0.68} />
-        <spotLight
-          angle={0.42}
-          castShadow
-          color="#ffffff"
-          intensity={42}
-          penumbra={0.45}
-          position={[2.8, 4.8, 3.2]}
-        />
-        <pointLight color={tone} intensity={7} position={activePosition} />
-        <WorkbenchGrid debug={debug} />
-        <PcRig
-          debugPositions={debugPositions}
-          debugRotations={debugRotations}
-          debug={debug}
-          isTransforming={isTransforming}
-          placements={placementList}
-          selectedInstanceId={selectedInstanceId}
-          selectedSlotId={selectedSlotId}
-          setDebugPosition={(instanceId, position) => {
-            setDebugPositions((current) => ({
-              ...current,
-              [instanceId]: roundVec(position),
-            }));
-            setExportStatus({ kind: "dirty", message: "有未导出的调试偏移" });
-          }}
-          setIsTransforming={setIsTransforming}
-          setSelectedInstanceId={selectInstance}
-          setSelectedSlotId={selectSlot}
-        />
-        <ContactShadows
-          blur={2.6}
-          far={9}
-          opacity={0.36}
-          position={[0, -2.28, 0]}
-          scale={7.6}
-        />
-        <Environment preset="city" />
-        <OrbitControls
-          autoRotate={!debug}
-          autoRotateSpeed={0.28}
-          enabled={!isTransforming}
-          enableDamping
-          enablePan={false}
-          enableRotate
-          maxDistance={7.4}
-          maxPolarAngle={Math.PI / 2.05}
-          minDistance={2.25}
-          minPolarAngle={Math.PI / 5}
-          rotateSpeed={0.72}
-          target={cameraTarget}
-        />
-        {debug ? (
-          <DebugExportOverlay
+    <>
+      <Canvas
+        camera={{ position: [3.7, 2.05, 4.65], fov: 38 }}
+        dpr={[1, 1.8]}
+        gl={{ antialias: true, alpha: true }}
+        shadows
+      >
+        <Suspense fallback={null}>
+          <color attach="background" args={["#17191c"]} />
+          <ambientLight intensity={0.68} />
+          <spotLight
+            angle={0.42}
+            castShadow
+            color="#ffffff"
+            intensity={42}
+            penumbra={0.45}
+            position={[2.8, 4.8, 3.2]}
+          />
+          <pointLight color={tone} intensity={7} position={activePosition} />
+          <WorkbenchGrid debug={debug} />
+          <PcRig
             debugPositions={debugPositions}
             debugRotations={debugRotations}
-            onFlip={(axis) => {
-              if (!selectedInstanceId) return;
-
-              const placement = placementList.find(
-                (item) => item.instanceId === selectedInstanceId,
-              );
-              if (!placement) return;
-
-              setDebugRotations((current) => ({
-                ...current,
-                [selectedInstanceId]: flipRotation(
-                  current[selectedInstanceId] ?? placement.rotation,
-                  axis,
-                ),
-              }));
-              setExportStatus({ kind: "dirty", message: "有未导出的翻转配置" });
-            }}
-            movedCount={movedCount}
-            onExport={async () => {
-              await exportDebugModelConfig({
-                debugPositions,
-                debugRotations,
-                placementList,
-                setExportStatus,
-              });
-            }}
-            onNudge={nudgeSelectedPart}
-            onRotate={rotateSelectedPart}
-            onSelect={selectInstance}
-            onSelectSlot={selectSlot}
+            debug={debug}
+            isTransforming={isTransforming}
             placements={placementList}
             selectedInstanceId={selectedInstanceId}
             selectedSlotId={selectedSlotId}
-            slotTargets={debugSlotTargets}
-            status={exportStatus}
+            setDebugPosition={(instanceId, position) => {
+              setDebugPositions((current) => ({
+                ...current,
+                [instanceId]: roundVec(position),
+              }));
+              setExportStatus({ kind: "dirty", message: "有未导出的调试偏移" });
+            }}
+            setIsTransforming={setIsTransforming}
+            setSelectedInstanceId={selectInstance}
+            setSelectedSlotId={selectSlot}
           />
-        ) : null}
-      </Suspense>
-    </Canvas>
+          <ContactShadows
+            blur={2.6}
+            far={9}
+            opacity={0.36}
+            position={[0, -2.28, 0]}
+            scale={7.6}
+          />
+          <Environment preset="city" />
+          <OrbitControls
+            autoRotate={!debug}
+            autoRotateSpeed={0.28}
+            enabled={!isTransforming}
+            enableDamping
+            enablePan={false}
+            enableRotate
+            maxDistance={7.4}
+            maxPolarAngle={Math.PI / 2.05}
+            minDistance={2.25}
+            minPolarAngle={Math.PI / 5}
+            rotateSpeed={0.72}
+            target={cameraTarget}
+          />
+        </Suspense>
+      </Canvas>
+      {debug ? (
+        <DebugExportOverlay
+          debugPositions={debugPositions}
+          debugRotations={debugRotations}
+          onFlip={(axis) => {
+            if (!selectedInstanceId) return;
+
+            const placement = placementList.find(
+              (item) => item.instanceId === selectedInstanceId,
+            );
+            if (!placement) return;
+
+            setDebugRotations((current) => ({
+              ...current,
+              [selectedInstanceId]: flipRotation(
+                current[selectedInstanceId] ?? placement.rotation,
+                axis,
+              ),
+            }));
+            setExportStatus({ kind: "dirty", message: "有未导出的翻转配置" });
+          }}
+          movedCount={movedCount}
+          onExport={async () => {
+            await exportDebugModelConfig({
+              debugPositions,
+              debugRotations,
+              placementList,
+              setExportStatus,
+            });
+          }}
+          onNudge={nudgeSelectedPart}
+          onRotate={rotateSelectedPart}
+          onSelect={selectInstance}
+          onSelectSlot={selectSlot}
+          placements={placementList}
+          selectedInstanceId={selectedInstanceId}
+          selectedSlotId={selectedSlotId}
+          slotTargets={debugSlotTargets}
+          status={exportStatus}
+        />
+      ) : null}
+    </>
   );
 }
 
@@ -774,17 +776,16 @@ function DebugExportOverlay({
     : undefined;
 
   return (
-    <Html fullscreen pointerEvents="none">
-      <div className="scene-debug-tools">
-        <div className="scene-debug-tools__header">
-          <span>调试目标</span>
-          <strong>{selectedTitle}</strong>
-          {selectedSlot ? (
-            <small>
-              {selectedSlot.parent.part.name} · {selectedSlot.slot.kind}
-            </small>
-          ) : null}
-        </div>
+    <div className="scene-debug-tools" data-debug-overlay="true">
+      <div className="scene-debug-tools__header">
+        <span>调试目标</span>
+        <strong>{selectedTitle}</strong>
+        {selectedSlot ? (
+          <small>
+            {selectedSlot.parent.part.name} · {selectedSlot.slot.kind}
+          </small>
+        ) : null}
+      </div>
         <div className="scene-debug-tools__guide">
           <strong>风扇校准流程</strong>
           <span>从下方列表选中风扇，不依赖点选模型。</span>
@@ -948,8 +949,7 @@ function DebugExportOverlay({
             {status.message || "旋转、移动或翻转后可写回模型配置"}
           </span>
         </div>
-      </div>
-    </Html>
+    </div>
   );
 }
 

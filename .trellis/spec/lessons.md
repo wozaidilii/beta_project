@@ -62,3 +62,10 @@
 - 根因：不同 GLB 的内部轴向、父节点旋转和可见正面并不可靠，单靠包围盒、slot 命中或代码推理无法判断正确 roll 方向。
 - 修复：撤回错误默认 roll，改为增强调试模式，让资产维护者用列表选中实例、X/Y/Z 旋转微调、位移和导出 patch 完成人工校准。
 - 预防：3D 姿态修复没有截图/人工确认前，不要把猜测写进 `local-model-assets.json`；调试模式应优先暴露可重复的人工校准流程。
+
+## Keep critical debug UI outside the 3D canvas
+
+- 问题：进入调试模式后，退出按钮无响应，部件选择列表不可见。
+- 根因：关键调试工具面板通过 drei `Html` 渲染在 Three.js Canvas/Suspense 内部，容易受模型加载、Canvas 层级和 Html bridge 行为影响。
+- 修复：把调试工具面板改成普通 React DOM，作为 Canvas 的 sibling 渲染在 scene panel 内；只保留 anchor/slot 标签继续使用 Canvas 内的 `Html`。
+- 预防：退出、选择、导出这类关键调试控制不应依赖 Canvas 内部渲染；Canvas 内只放 3D 场景和非关键场景标签。

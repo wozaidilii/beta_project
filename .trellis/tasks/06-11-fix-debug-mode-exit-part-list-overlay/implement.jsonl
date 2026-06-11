@@ -1,0 +1,6 @@
+{"file":".trellis/spec/frontend/index.md","reason":"Frontend UI regression fix should follow project frontend quality expectations."}
+{"file":".trellis/spec/frontend/type-safety.md","reason":"Changed debug scene TypeScript and must preserve model validation/test expectations."}
+{"file":".trellis/spec/guides/index.md","reason":"Review cross-layer and reuse risks before changing UI/debug behavior."}
+{"file":".trellis/spec/guides/code-reuse-thinking-guide.md","reason":"Extend existing debug overlay rather than duplicating controls."}
+{"file":".trellis/tasks/06-11-fix-debug-mode-exit-part-list-overlay/prd.md","reason":"Task-specific bug report and acceptance criteria."}
+{"file":".trellis/tasks/06-11-fix-debug-mode-exit-part-list-overlay/design.md","reason":"Task-specific design to decouple critical debug UI from Canvas."}
