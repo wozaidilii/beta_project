@@ -29,7 +29,7 @@ import {
   type Vec3,
 } from "~/lib/catalog";
 import {
-  getAssemblyPlacements,
+  getAssemblyPlan,
   type AssemblyPlacement,
 } from "~/lib/assembly-layout";
 
@@ -83,25 +83,10 @@ const rigPosition: Vec3 = [0, -0.04, 0];
 const rigScale = 1.08;
 const nudgeStep = 0.04;
 const fastNudgeMultiplier = 5;
-const placementOrder: CategoryId[] = [
-  "case",
-  "motherboard",
-  "cpu",
-  "cooling",
-  "gpu",
-  "memory",
-  "storage",
-  "psu",
-  "fans",
-];
-
 export function PcScene({ selection, activeCategory, debug = false }: PcSceneProps) {
   const activePosition = activePositions[activeCategory];
-  const placements = useMemo(() => getAssemblyPlacements(selection), [selection]);
-  const placementList = useMemo(
-    () => Object.values(placements).sort(comparePlacements),
-    [placements],
-  );
+  const assemblyPlan = useMemo(() => getAssemblyPlan(selection), [selection]);
+  const placementList = assemblyPlan.instances;
   const [debugPositions, setDebugPositions] = useState<Record<string, Vec3>>({});
   const [debugRotations, setDebugRotations] = useState<Record<string, Vec3>>({});
   const [exportStatus, setExportStatus] = useState<DebugExportStatus>({
@@ -109,21 +94,23 @@ export function PcScene({ selection, activeCategory, debug = false }: PcScenePro
     message: "",
   });
   const [isTransforming, setIsTransforming] = useState(false);
-  const [selectedPartId, setSelectedPartId] = useState<string | null>(null);
+  const [selectedInstanceId, setSelectedInstanceId] = useState<string | null>(null);
   const tone = categoryMeta[activeCategory].tone;
 
   useEffect(() => {
     if (!debug) {
       setIsTransforming(false);
-      setSelectedPartId(null);
+      setSelectedInstanceId(null);
       setDebugPositions({});
       setDebugRotations({});
       setExportStatus({ kind: "idle", message: "" });
       return;
     }
 
-    setSelectedPartId(selection[activeCategory] ?? null);
-  }, [activeCategory, debug, selection]);
+    setSelectedInstanceId(
+      assemblyPlan.instancesByCategory[activeCategory]?.instanceId ?? null,
+    );
+  }, [activeCategory, assemblyPlan.instancesByCategory, debug]);
 
   useEffect(() => {
     setDebugPositions({});
@@ -138,28 +125,28 @@ export function PcScene({ selection, activeCategory, debug = false }: PcScenePro
 
   const nudgeSelectedPart = useCallback(
     (direction: NudgeDirection, multiplier = 1) => {
-      if (!selectedPartId) return;
+      if (!selectedInstanceId) return;
 
       const placement = placementList.find(
-        (item) => item.part.id === selectedPartId,
+        (item) => item.instanceId === selectedInstanceId,
       );
       if (!placement) return;
 
       const delta = getNudgeDelta(direction, multiplier);
       setDebugPositions((current) => {
-        const base = current[selectedPartId] ?? placement.position;
+        const base = current[selectedInstanceId] ?? placement.position;
         return {
           ...current,
-          [selectedPartId]: roundVec(addVec(base, delta)),
+          [selectedInstanceId]: roundVec(addVec(base, delta)),
         };
       });
       setExportStatus({ kind: "dirty", message: "有未导出的按键位移" });
     },
-    [placementList, selectedPartId],
+    [placementList, selectedInstanceId],
   );
 
   useEffect(() => {
-    if (!debug || !selectedPartId) return;
+    if (!debug || !selectedInstanceId) return;
 
     const handleKeyDown = (event: KeyboardEvent) => {
       if (isEditableTarget(event.target)) return;
@@ -176,7 +163,7 @@ export function PcScene({ selection, activeCategory, debug = false }: PcScenePro
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [debug, nudgeSelectedPart, selectedPartId]);
+  }, [debug, nudgeSelectedPart, selectedInstanceId]);
 
   return (
     <Canvas
@@ -203,16 +190,16 @@ export function PcScene({ selection, activeCategory, debug = false }: PcScenePro
           debug={debug}
           isTransforming={isTransforming}
           placements={placementList}
-          selectedPartId={selectedPartId}
-          setDebugPosition={(partId, position) => {
+          selectedInstanceId={selectedInstanceId}
+          setDebugPosition={(instanceId, position) => {
             setDebugPositions((current) => ({
               ...current,
-              [partId]: roundVec(position),
+              [instanceId]: roundVec(position),
             }));
             setExportStatus({ kind: "dirty", message: "有未导出的调试偏移" });
           }}
           setIsTransforming={setIsTransforming}
-          setSelectedPartId={setSelectedPartId}
+          setSelectedInstanceId={setSelectedInstanceId}
         />
         <ContactShadows
           blur={2.6}
@@ -239,17 +226,17 @@ export function PcScene({ selection, activeCategory, debug = false }: PcScenePro
         {debug ? (
           <DebugExportOverlay
             onFlip={(axis) => {
-              if (!selectedPartId) return;
+              if (!selectedInstanceId) return;
 
               const placement = placementList.find(
-                (item) => item.part.id === selectedPartId,
+                (item) => item.instanceId === selectedInstanceId,
               );
               if (!placement) return;
 
               setDebugRotations((current) => ({
                 ...current,
-                [selectedPartId]: flipRotation(
-                  current[selectedPartId] ?? placement.rotation,
+                [selectedInstanceId]: flipRotation(
+                  current[selectedInstanceId] ?? placement.rotation,
                   axis,
                 ),
               }));
@@ -265,9 +252,9 @@ export function PcScene({ selection, activeCategory, debug = false }: PcScenePro
               });
             }}
             onNudge={nudgeSelectedPart}
-            onSelect={setSelectedPartId}
+            onSelect={setSelectedInstanceId}
             placements={placementList}
-            selectedPartId={selectedPartId}
+            selectedInstanceId={selectedInstanceId}
             status={exportStatus}
           />
         ) : null}
@@ -282,20 +269,20 @@ function PcRig({
   debugRotations,
   isTransforming,
   placements,
-  selectedPartId,
+  selectedInstanceId,
   setDebugPosition,
   setIsTransforming,
-  setSelectedPartId,
+  setSelectedInstanceId,
 }: {
   debug: boolean;
   debugPositions: Record<string, Vec3>;
   debugRotations: Record<string, Vec3>;
   isTransforming: boolean;
   placements: AssemblyPlacement[];
-  selectedPartId: string | null;
-  setDebugPosition: (partId: string, position: Vec3) => void;
+  selectedInstanceId: string | null;
+  setDebugPosition: (instanceId: string, position: Vec3) => void;
   setIsTransforming: (value: boolean) => void;
-  setSelectedPartId: (partId: string | null) => void;
+  setSelectedInstanceId: (instanceId: string | null) => void;
 }) {
   const group = useRef<Group>(null);
 
@@ -308,18 +295,18 @@ function PcRig({
     <group ref={group} rotation={[0, -0.48, 0]} position={rigPosition} scale={rigScale}>
       {Object.values(placements).map((placement) => (
         <ModelLoadBoundary
-          key={placement.part.id}
+          key={placement.instanceId}
           assetUrl={placement.model.assetUrl}
         >
           <GltfPart
-            debugPosition={debugPositions[placement.part.id]}
-            debugRotation={debugRotations[placement.part.id]}
+            debugPosition={debugPositions[placement.instanceId]}
+            debugRotation={debugRotations[placement.instanceId]}
             debug={debug}
-            isSelected={selectedPartId === placement.part.id}
-            onSelect={() => setSelectedPartId(placement.part.id)}
+            isSelected={selectedInstanceId === placement.instanceId}
+            onSelect={() => setSelectedInstanceId(placement.instanceId)}
             onTransformEnd={() => setIsTransforming(false)}
             onTransformMove={(position) =>
-              setDebugPosition(placement.part.id, position)
+              setDebugPosition(placement.instanceId, position)
             }
             onTransformStart={() => setIsTransforming(true)}
             placement={placement}
@@ -330,9 +317,9 @@ function PcRig({
         <DebugAssembly
           debugPositions={debugPositions}
           debugRotations={debugRotations}
-          onSelect={setSelectedPartId}
+          onSelect={setSelectedInstanceId}
           placements={Object.values(placements)}
-          selectedPartId={selectedPartId}
+          selectedInstanceId={selectedInstanceId}
         />
       ) : null}
     </group>
@@ -473,31 +460,31 @@ function DebugAssembly({
   debugRotations,
   onSelect,
   placements,
-  selectedPartId,
+  selectedInstanceId,
 }: {
   debugPositions: Record<string, Vec3>;
   debugRotations: Record<string, Vec3>;
-  onSelect: (partId: string) => void;
+  onSelect: (instanceId: string) => void;
   placements: AssemblyPlacement[];
-  selectedPartId: string | null;
+  selectedInstanceId: string | null;
 }) {
   return (
     <group>
       <axesHelper args={[0.85]} />
       {placements.map((placement) => {
         const currentPosition =
-          debugPositions[placement.part.id] ?? placement.position;
+          debugPositions[placement.instanceId] ?? placement.position;
         const currentRotation =
-          debugRotations[placement.part.id] ?? placement.rotation;
+          debugRotations[placement.instanceId] ?? placement.rotation;
 
         return (
-        <group key={placement.part.id}>
+        <group key={placement.instanceId}>
           <group position={currentPosition} rotation={currentRotation}>
             <axesHelper args={[0.32]} />
             <mesh
               onPointerDown={(event) => {
                 event.stopPropagation();
-                onSelect(placement.part.id);
+                onSelect(placement.instanceId);
               }}
             >
               <boxGeometry args={placement.fitSize} />
@@ -513,11 +500,11 @@ function DebugAssembly({
               <boxGeometry args={placement.fitSize} />
               <meshBasicMaterial
                 color={
-                  selectedPartId === placement.part.id
+                  selectedInstanceId === placement.instanceId
                     ? "#fbbf24"
                     : categoryMeta[placement.category].tone
                 }
-                opacity={selectedPartId === placement.part.id ? 0.86 : 0.56}
+                opacity={selectedInstanceId === placement.instanceId ? 0.86 : 0.56}
                 transparent
                 wireframe
               />
@@ -554,21 +541,21 @@ function DebugExportOverlay({
   onNudge,
   onSelect,
   placements,
-  selectedPartId,
+  selectedInstanceId,
   status,
 }: {
   movedCount: number;
   onFlip: (axis: FlipAxis) => void;
   onExport: () => Promise<void>;
   onNudge: (direction: NudgeDirection, multiplier?: number) => void;
-  onSelect: (partId: string) => void;
+  onSelect: (instanceId: string) => void;
   placements: AssemblyPlacement[];
-  selectedPartId: string | null;
+  selectedInstanceId: string | null;
   status: DebugExportStatus;
 }) {
   const disabled = movedCount === 0 || status.kind === "saving";
   const selectedPlacement = placements.find(
-    (placement) => placement.part.id === selectedPartId,
+    (placement) => placement.instanceId === selectedInstanceId,
   );
 
   return (
@@ -582,10 +569,10 @@ function DebugExportOverlay({
           {placements.map((placement) => (
             <button
               className={`scene-debug-part ${
-                placement.part.id === selectedPartId ? "is-selected" : ""
+                placement.instanceId === selectedInstanceId ? "is-selected" : ""
               }`}
-              key={placement.part.id}
-              onClick={() => onSelect(placement.part.id)}
+              key={placement.instanceId}
+              onClick={() => onSelect(placement.instanceId)}
               type="button"
             >
               <span>{categoryMeta[placement.category].shortLabel}</span>
@@ -597,7 +584,7 @@ function DebugExportOverlay({
           <span>翻转</span>
           {(["x", "y", "z"] as const).map((axis) => (
             <button
-              disabled={!selectedPartId}
+              disabled={!selectedInstanceId}
               key={axis}
               onClick={() => onFlip(axis)}
               type="button"
@@ -611,7 +598,7 @@ function DebugExportOverlay({
           <button
             aria-label="向上移动"
             className="is-up"
-            disabled={!selectedPartId}
+            disabled={!selectedInstanceId}
             onClick={() => onNudge("up")}
             type="button"
           >
@@ -620,7 +607,7 @@ function DebugExportOverlay({
           <button
             aria-label="向左移动"
             className="is-left"
-            disabled={!selectedPartId}
+            disabled={!selectedInstanceId}
             onClick={() => onNudge("left")}
             type="button"
           >
@@ -629,7 +616,7 @@ function DebugExportOverlay({
           <button
             aria-label="向右移动"
             className="is-right"
-            disabled={!selectedPartId}
+            disabled={!selectedInstanceId}
             onClick={() => onNudge("right")}
             type="button"
           >
@@ -638,7 +625,7 @@ function DebugExportOverlay({
           <button
             aria-label="向下移动"
             className="is-down"
-            disabled={!selectedPartId}
+            disabled={!selectedInstanceId}
             onClick={() => onNudge("down")}
             type="button"
           >
@@ -647,7 +634,7 @@ function DebugExportOverlay({
           <button
             aria-label="向前移动"
             className="is-forward"
-            disabled={!selectedPartId}
+            disabled={!selectedInstanceId}
             onClick={() => onNudge("forward")}
             type="button"
           >
@@ -656,7 +643,7 @@ function DebugExportOverlay({
           <button
             aria-label="向后移动"
             className="is-back"
-            disabled={!selectedPartId}
+            disabled={!selectedInstanceId}
             onClick={() => onNudge("back")}
             type="button"
           >
@@ -747,11 +734,11 @@ function createDebugModelPatches(
 
   for (const placement of placementList) {
     const currentPosition =
-      debugPositions[placement.part.id] ?? placement.position;
+      debugPositions[placement.instanceId] ?? placement.position;
     const anchorPoints = placement.model.anchorPoints ?? {};
     const attachTo = placement.model.placement?.attachTo;
 
-    if (debugPositions[placement.part.id]) {
+    if (debugPositions[placement.instanceId]) {
       if (attachTo) {
         const targetAnchor = currentAnchors.get(attachTo.category)?.[
           attachTo.anchor
@@ -781,12 +768,12 @@ function createDebugModelPatches(
       }
     }
 
-    if (debugRotations[placement.part.id]) {
+    if (debugRotations[placement.instanceId]) {
       patches.push({
         partId: placement.part.id,
         partName: placement.part.name,
         patch: {
-          rotation: roundVec(debugRotations[placement.part.id]),
+          rotation: roundVec(debugRotations[placement.instanceId]),
           type: "rotation",
         },
       });
@@ -803,12 +790,6 @@ function createDebugModelPatches(
   }
 
   return patches;
-}
-
-function comparePlacements(left: AssemblyPlacement, right: AssemblyPlacement) {
-  return (
-    placementOrder.indexOf(left.category) - placementOrder.indexOf(right.category)
-  );
 }
 
 function addVec(left: Vec3, right: Vec3): Vec3 {

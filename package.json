@@ -10,6 +10,7 @@
     "lint": "eslint . --max-warnings=0",
     "import:opendb": "node scripts/import-opendb-parts.mjs",
     "scrape:parts": "node scripts/scrape-core-parts.mjs",
+    "test:assembly": "tsx src/lib/assembly-layout.test.ts",
     "upload:models:blob": "node scripts/upload-models-to-vercel-blob.mjs",
     "start": "next start",
     "typecheck": "tsc --noEmit"
@@ -38,6 +39,7 @@
     "eslint-config-next": "^15.4.6",
     "postcss": "^8.5.6",
     "tailwindcss": "^3.4.17",
+    "tsx": "^4.22.4",
     "typescript": "^5.8.3"
   }
 }
