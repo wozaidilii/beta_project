@@ -8,7 +8,7 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 8
+- **Total Sessions**: 9
 - **Last Active**: 2026-06-11
 <!-- @@@/auto:current-status -->
 
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~273 | Active |
+| `journal-1.md` | ~306 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,6 +29,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 9 | 2026-06-11 | Separate commerce products from calibration models | `f2bf5f9` | `codex/calibration-asset-intake-validation` |
 | 8 | 2026-06-11 | Fix debug mode overlay controls | `0237eed` | `codex/calibration-asset-intake-validation` |
 | 7 | 2026-06-11 | Improve builder debug calibration | `79d2cccb85c0e64ec358cec0f9146a2236dec269` | `codex/calibration-asset-intake-validation` |
 | 6 | 2026-06-11 | Fix fan roll alignment | `e76693ed4ab1e5b0d8dc8acd727f62afd3a81d5d` | `codex/calibration-asset-intake-validation` |

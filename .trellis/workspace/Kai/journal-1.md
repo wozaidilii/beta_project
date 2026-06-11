@@ -271,3 +271,36 @@ Moved critical debug controls out of the Three.js Canvas so the exit button and 
 ### Next Steps
 
 - None - task complete
+
+
+## Session 9: Separate commerce products from calibration models
+
+**Date**: 2026-06-11
+**Task**: Separate commerce products from calibration models
+**Branch**: `codex/calibration-asset-intake-validation`
+
+### Summary
+
+Removed misleading real-product model bindings, generated calibration-only GLTF assets, made product lists commerce-driven instead of model-driven, and updated model validation to use calibrationSelection.
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `f2bf5f9` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
