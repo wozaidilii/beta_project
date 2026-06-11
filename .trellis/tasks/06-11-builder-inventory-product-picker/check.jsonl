@@ -1,0 +1,5 @@
+{"file": ".trellis/spec/frontend/index.md", "reason": "Frontend quality checklist for review."}
+{"file": ".trellis/spec/frontend/quality-guidelines.md", "reason": "Review should cover accessibility, responsive behavior and maintainability."}
+{"file": ".trellis/spec/lessons.md", "reason": "Known project lessons should inform validation and avoid repeated workflow mistakes."}
+{"file": ".trellis/spec/frontend/type-safety.md", "reason": "Review should verify typed catalog, score and selection contracts remain consistent."}
+{"file": ".trellis/spec/guides/code-reuse-thinking-guide.md", "reason": "Review should ensure existing catalog, filter and scoring helpers are reused instead of forked."}

@@ -1,0 +1,4 @@
+{"file": ".trellis/spec/frontend/index.md", "reason": "Frontend entry checklist and quality gates for the Builder inventory implementation."}
+{"file": ".trellis/spec/frontend/component-guidelines.md", "reason": "Builder UI changes should follow existing global CSS and overlay component conventions."}
+{"file": ".trellis/spec/frontend/state-management.md", "reason": "Product picker behavior changes local selection, fan installation and derived score state."}
+{"file": ".trellis/spec/guides/cross-layer-thinking-guide.md", "reason": "The picker crosses catalog data, scoring, purchase links, assembly state and rendering."}

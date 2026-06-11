@@ -2,10 +2,12 @@
 
 import {
   AlertTriangle,
+  ArrowLeft,
   Box,
   Bug,
   CheckCircle2,
   Cpu,
+  ExternalLink,
   Factory,
   Fan,
   Gauge,
@@ -14,6 +16,7 @@ import {
   MemoryStick,
   MonitorUp,
   Palette,
+  Plus,
   RotateCcw,
   Ruler,
   Search,
@@ -47,12 +50,19 @@ import {
   hasModelAsset,
   scoreLabel,
   starterBuilds,
+  type BuildSummary,
   type CategoryId,
   type Part,
   type PartSelection,
   type Severity,
 } from "~/lib/catalog";
 import { describeDimensions } from "~/lib/model-layout";
+import {
+  calculatePartScoreDeltas,
+  getCandidateSelection,
+  scoreDeltaKeys,
+  type ScoreDeltaMap,
+} from "~/lib/score-deltas";
 
 const categoryIcons: Record<CategoryId, React.ComponentType<{ size?: number }>> = {
   cpu: Cpu,
@@ -76,6 +86,7 @@ const scenarioLabels = [
 type WorkspaceMode = "builder" | "products" | "setups";
 type ShopCategoryId = CategoryId;
 type ProductVisualCategory = "builds" | CategoryId;
+type PurchaseChannel = keyof NonNullable<Part["purchaseLinks"]>;
 type ShopFilters = {
   brands: string[];
   colors: string[];
@@ -140,6 +151,14 @@ const colorFamilyMeta = {
 
 type ColorFamily = keyof typeof colorFamilyMeta;
 
+const purchaseChannelLabels: Record<PurchaseChannel, string> = {
+  jd: "京东",
+  official: "官网",
+  pdd: "拼多多",
+  taobao: "淘宝",
+  tmall: "天猫",
+};
+
 export function PcBuilderApp() {
   const [selection, setSelection] = useState<PartSelection>(defaultSelection);
   const [activeCategory, setActiveCategory] = useState<CategoryId>("gpu");
@@ -150,6 +169,13 @@ export function PcBuilderApp() {
     useState<ShopCategoryId>("case");
   const [shopFilters, setShopFilters] =
     useState<ShopFilters>(() => getDefaultShopFilters(getShopFilterOptions("case")));
+  const [inventoryCategory, setInventoryCategory] =
+    useState<ShopCategoryId | null>(null);
+  const [inventoryQuery, setInventoryQuery] = useState("");
+  const [inventoryFilters, setInventoryFilters] =
+    useState<ShopFilters>(() => getDefaultShopFilters(getShopFilterOptions("gpu")));
+  const [inventorySelectedPartId, setInventorySelectedPartId] =
+    useState<string | null>(null);
   const [uploadedSetups, setUploadedSetups] = useState<SetupItem[]>([]);
   const [setupUploadError, setSetupUploadError] = useState("");
   const [showAssemblyDebug, setShowAssemblyDebug] = useState(false);
@@ -194,13 +220,6 @@ export function PcBuilderApp() {
   );
   const fanPartOptions = useMemo(() => catalog.fans.filter(hasModelAsset), []);
   const selectedPart = summary.selectedParts[activeCategory];
-  const activeOptions = useMemo(
-    () =>
-      catalog[activeCategory].filter(
-        (part) => partMatchesQuery(part, query) && hasModelAsset(part),
-      ),
-    [activeCategory, query],
-  );
   const shopParts = useMemo(
     () =>
       catalog[activeShopCategory].filter((part) =>
@@ -209,6 +228,49 @@ export function PcBuilderApp() {
         partMatchesFilters(part, shopFilters),
       ),
     [activeShopCategory, query, shopFilters],
+  );
+  const inventoryFilterOptions = useMemo(
+    () =>
+      inventoryCategory
+        ? getShopFilterOptions(inventoryCategory)
+        : getShopFilterOptions("gpu"),
+    [inventoryCategory],
+  );
+  const inventoryParts = useMemo(() => {
+    if (!inventoryCategory) return [];
+    return catalog[inventoryCategory].filter((part) =>
+      hasModelAsset(part) &&
+      partMatchesQuery(part, inventoryQuery) &&
+      partMatchesFilters(part, inventoryFilters),
+    );
+  }, [inventoryCategory, inventoryFilters, inventoryQuery]);
+  const inventorySelectedPart = useMemo(() => {
+    if (!inventoryCategory || !inventorySelectedPartId) return inventoryParts[0];
+    return (
+      catalog[inventoryCategory].find((part) => part.id === inventorySelectedPartId) ??
+      inventoryParts[0]
+    );
+  }, [inventoryCategory, inventoryParts, inventorySelectedPartId]);
+  const inventoryCandidateSelection = useMemo(
+    () =>
+      inventorySelectedPart
+        ? getCandidateSelection(selection, inventorySelectedPart)
+        : undefined,
+    [inventorySelectedPart, selection],
+  );
+  const inventoryCandidateSummary = useMemo(
+    () =>
+      inventoryCandidateSelection
+        ? calculateBuild(inventoryCandidateSelection)
+        : undefined,
+    [inventoryCandidateSelection],
+  );
+  const inventoryScoreDeltas = useMemo(
+    () =>
+      inventorySelectedPart
+        ? calculatePartScoreDeltas(selection, inventorySelectedPart)
+        : undefined,
+    [inventorySelectedPart, selection],
   );
   const popularSetups = useMemo<SetupItem[]>(
     () =>
@@ -236,6 +298,24 @@ export function PcBuilderApp() {
   );
   const activeShopCount = shopParts.length;
 
+  const openInventory = (category: ShopCategoryId) => {
+    const options = getShopFilterOptions(category);
+    const currentPartId =
+      selection[category] ??
+      catalog[category].find((part) => hasModelAsset(part))?.id ??
+      null;
+
+    setActiveCategory(category);
+    setInventoryCategory(category);
+    setInventoryFilters(getDefaultShopFilters(options));
+    setInventoryQuery("");
+    setInventorySelectedPartId(currentPartId);
+  };
+
+  const closeInventory = () => {
+    setInventoryCategory(null);
+  };
+
   const setPart = (part: Part) => {
     if (part.category === "fans" || part.category === "case") {
       setFanInstallations(undefined);
@@ -260,6 +340,10 @@ export function PcBuilderApp() {
     setSelectedFanInstanceId(null);
     setActiveWorkspace("builder");
   };
+  const addInventoryPartToBuild = (part: Part) => {
+    setPart(part);
+    closeInventory();
+  };
   const handleSetupUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -278,6 +362,31 @@ export function PcBuilderApp() {
       event.target.value = "";
     }
   };
+
+  useEffect(() => {
+    if (!inventoryCategory) return;
+    if (
+      inventorySelectedPartId &&
+      inventoryParts.some((part) => part.id === inventorySelectedPartId)
+    ) {
+      return;
+    }
+
+    setInventorySelectedPartId(inventoryParts[0]?.id ?? null);
+  }, [inventoryCategory, inventoryParts, inventorySelectedPartId]);
+
+  useEffect(() => {
+    if (!inventoryCategory) return;
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setInventoryCategory(null);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [inventoryCategory]);
 
   useEffect(() => {
     setSelectedFanInstanceId((current) =>
@@ -390,79 +499,25 @@ export function PcBuilderApp() {
             >
               <BuilderDynamicBackground />
 
-              <aside className="panel picker-panel" aria-label="配件库">
-                <div className="panel-heading">
-                  <div>
-                    <span className="eyebrow">3D Builder</span>
-                    <h1>{categoryMeta[activeCategory].label}</h1>
-                  </div>
-                  <ShieldCheck size={22} />
-                </div>
-
-                <label className="search-box">
-                  <Search size={17} />
-                  <input
-                    onChange={(event) => setQuery(event.target.value)}
-                    placeholder="搜索当前分类"
-                    value={query}
-                  />
-                </label>
-
-                <div className="category-rail">
-                  {categoryIds.map((category) => {
-                    const Icon = categoryIcons[category];
-                    const isActive = category === activeCategory;
-                    return (
-                      <button
-                        aria-label={categoryMeta[category].label}
-                        className={`category-button ${isActive ? "is-active" : ""}`}
-                        key={category}
-                        onClick={() => setActiveCategory(category)}
-                        style={
-                          { "--tone": categoryMeta[category].tone } as React.CSSProperties
-                        }
-                        title={categoryMeta[category].label}
-                        type="button"
-                      >
-                        <Icon size={18} />
-                        <span>{categoryMeta[category].shortLabel}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-
-                {activeCategory === "fans" ? (
-                  <FanInstallationPanel
-                    fanParts={fanPartOptions}
-                    installedFans={installedFans}
-                    onRemove={removeFanInstance}
-                    onReplace={replaceFanInstance}
-                    onReset={() => {
-                      setFanInstallations(undefined);
-                      setSelectedFanInstanceId(null);
-                    }}
-                    onSelect={setSelectedFanInstanceId}
-                    selectedInstanceId={selectedFanInstanceId}
-                  />
-                ) : null}
-
-                {activeCategory === "psu" ? (
-                  <InstalledPsuPanel
-                    installedPsu={assemblyPlan.instancesByCategory.psu}
-                    onRemove={() => removePart("psu")}
-                  />
-                ) : null}
-
-                <div className="part-list">
-                  {activeOptions.map((part) => (
-                    <PartRow
-                      isSelected={selection[activeCategory] === part.id}
-                      key={part.id}
-                      onSelect={() => setPart(part)}
-                      part={part}
-                    />
-                  ))}
-                </div>
+              <aside className="panel picker-panel" aria-label="当前已装部件">
+                <InstalledBuildPanel
+                  activeCategory={activeCategory}
+                  installedFans={installedFans}
+                  installedPsu={assemblyPlan.instancesByCategory.psu}
+                  onOpenInventory={openInventory}
+                  onRemoveCategory={removePart}
+                  onRemoveFan={removeFanInstance}
+                  onResetFans={() => {
+                    setFanInstallations(undefined);
+                    setSelectedFanInstanceId(null);
+                  }}
+                  onSelectCategory={setActiveCategory}
+                  onSelectFan={setSelectedFanInstanceId}
+                  onReplaceFan={replaceFanInstance}
+                  selectedFanInstanceId={selectedFanInstanceId}
+                  selectedParts={summary.selectedParts}
+                  fanParts={fanPartOptions}
+                />
               </aside>
 
               <section className="scene-panel" aria-label="3D 主机预览">
@@ -734,6 +789,28 @@ export function PcBuilderApp() {
           )}
         </section>
       </section>
+
+      {inventoryCategory ? (
+        <PartInventoryOverlay
+          activeCategory={inventoryCategory}
+          candidateSummary={inventoryCandidateSummary}
+          currentPartId={selection[inventoryCategory]}
+          filters={inventoryFilters}
+          onAddToBuild={addInventoryPartToBuild}
+          onChangeFilters={setInventoryFilters}
+          onClose={closeInventory}
+          onQueryChange={setInventoryQuery}
+          onResetFilters={() =>
+            setInventoryFilters(getDefaultShopFilters(inventoryFilterOptions))
+          }
+          onSelectPart={setInventorySelectedPartId}
+          options={inventoryFilterOptions}
+          parts={inventoryParts}
+          query={inventoryQuery}
+          scoreDeltas={inventoryScoreDeltas}
+          selectedPart={inventorySelectedPart}
+        />
+      ) : null}
     </main>
   );
 }
@@ -1046,6 +1123,359 @@ function toFanInstallationState(
       },
     ];
   });
+}
+
+function InstalledBuildPanel({
+  activeCategory,
+  fanParts,
+  installedFans,
+  installedPsu,
+  onOpenInventory,
+  onRemoveCategory,
+  onRemoveFan,
+  onReplaceFan,
+  onResetFans,
+  onSelectCategory,
+  onSelectFan,
+  selectedFanInstanceId,
+  selectedParts,
+}: {
+  activeCategory: CategoryId;
+  fanParts: Array<Part & { model: NonNullable<Part["model"]> }>;
+  installedFans: InstalledPartInstance[];
+  installedPsu?: InstalledPartInstance;
+  onOpenInventory: (category: CategoryId) => void;
+  onRemoveCategory: (category: CategoryId) => void;
+  onRemoveFan: (instanceId: string) => void;
+  onReplaceFan: (instanceId: string, partId: string) => void;
+  onResetFans: () => void;
+  onSelectCategory: (category: CategoryId) => void;
+  onSelectFan: (instanceId: string) => void;
+  selectedFanInstanceId: string | null;
+  selectedParts: Partial<Record<CategoryId, Part>>;
+}) {
+  return (
+    <>
+      <div className="panel-heading">
+        <div>
+          <span className="eyebrow">3D Builder</span>
+          <h1>已装部件</h1>
+        </div>
+        <ShieldCheck size={22} />
+      </div>
+
+      <div className="installed-build-list">
+        {categoryIds.map((category) => (
+          <InstalledBuildRow
+            active={activeCategory === category}
+            category={category}
+            installedFanCount={installedFans.length}
+            key={category}
+            onOpenInventory={onOpenInventory}
+            onSelectCategory={onSelectCategory}
+            part={selectedParts[category]}
+          />
+        ))}
+      </div>
+
+      {activeCategory === "fans" ? (
+        <FanInstallationPanel
+          fanParts={fanParts}
+          installedFans={installedFans}
+          onRemove={onRemoveFan}
+          onReplace={onReplaceFan}
+          onReset={onResetFans}
+          onSelect={onSelectFan}
+          selectedInstanceId={selectedFanInstanceId}
+        />
+      ) : null}
+
+      {activeCategory === "psu" ? (
+        <InstalledPsuPanel
+          installedPsu={installedPsu}
+          onRemove={() => onRemoveCategory("psu")}
+        />
+      ) : null}
+    </>
+  );
+}
+
+function InstalledBuildRow({
+  active,
+  category,
+  installedFanCount,
+  onOpenInventory,
+  onSelectCategory,
+  part,
+}: {
+  active: boolean;
+  category: CategoryId;
+  installedFanCount: number;
+  onOpenInventory: (category: CategoryId) => void;
+  onSelectCategory: (category: CategoryId) => void;
+  part?: Part;
+}) {
+  const Icon = categoryIcons[category];
+  const isFans = category === "fans";
+  const status =
+    isFans && installedFanCount > 0
+      ? `${installedFanCount} 个实例`
+      : part
+        ? "已装入"
+        : "未选择";
+
+  return (
+    <article
+      className={`installed-build-row ${active ? "is-active" : ""} ${
+        part ? "has-part" : ""
+      }`}
+      style={{ "--tone": categoryMeta[category].tone } as React.CSSProperties}
+    >
+      <button
+        className="installed-build-row__select"
+        onClick={() => onSelectCategory(category)}
+        type="button"
+      >
+        <span className="installed-build-row__icon">
+          <Icon size={18} />
+        </span>
+        <span className="installed-build-row__body">
+          <span>
+            {categoryMeta[category].label}
+            <small>{status}</small>
+          </span>
+          <strong>{part?.name ?? "选择一个产品"}</strong>
+          {part ? <SpecLine part={part} /> : null}
+        </span>
+      </button>
+      <button
+        aria-label={`选择${categoryMeta[category].label}`}
+        className="installed-build-row__add"
+        onClick={() => onOpenInventory(category)}
+        title="打开产品背包"
+        type="button"
+      >
+        <Plus size={17} />
+      </button>
+    </article>
+  );
+}
+
+function PartInventoryOverlay({
+  activeCategory,
+  candidateSummary,
+  currentPartId,
+  filters,
+  onAddToBuild,
+  onChangeFilters,
+  onClose,
+  onQueryChange,
+  onResetFilters,
+  onSelectPart,
+  options,
+  parts,
+  query,
+  scoreDeltas,
+  selectedPart,
+}: {
+  activeCategory: ShopCategoryId;
+  candidateSummary?: BuildSummary;
+  currentPartId?: string;
+  filters: ShopFilters;
+  onAddToBuild: (part: Part) => void;
+  onChangeFilters: (filters: ShopFilters) => void;
+  onClose: () => void;
+  onQueryChange: (query: string) => void;
+  onResetFilters: () => void;
+  onSelectPart: (partId: string) => void;
+  options: ShopFilterOptions;
+  parts: Part[];
+  query: string;
+  scoreDeltas?: ScoreDeltaMap;
+  selectedPart?: Part;
+}) {
+  const selectedIsCurrent = Boolean(selectedPart && selectedPart.id === currentPartId);
+  const candidateIssues =
+    candidateSummary?.compatibility.filter((issue) => issue.severity !== "ok") ?? [];
+
+  return (
+    <section className="part-inventory-overlay" aria-label="产品背包">
+      <div className="part-inventory-overlay__chrome">
+        <header className="part-inventory-header">
+          <button className="inventory-back-button" onClick={onClose} type="button">
+            <ArrowLeft size={18} />
+            <span>返回 Builder</span>
+          </button>
+          <div>
+            <span className="eyebrow">Part Inventory</span>
+            <h2>{categoryMeta[activeCategory].label}产品背包</h2>
+            <p>{parts.length} 个结果 / Esc 关闭 / Add to build 后回到 3D Builder</p>
+          </div>
+          <label className="shop-search inventory-search">
+            <Search size={18} />
+            <input
+              onChange={(event) => onQueryChange(event.target.value)}
+              placeholder="搜索产品、品牌、渠道"
+              value={query}
+            />
+          </label>
+        </header>
+
+        <div className="part-inventory-layout">
+          <ShopFilterSidebar
+            activeCategory={activeCategory}
+            filters={filters}
+            onChange={onChangeFilters}
+            onReset={onResetFilters}
+            options={options}
+            resultCount={parts.length}
+          />
+
+          <div className="part-inventory-grid" aria-label="可选产品">
+            {parts.length === 0 ? (
+              <div className="shop-empty">
+                <SlidersHorizontal size={22} />
+                <strong>没有符合条件的产品</strong>
+                <span>调整筛选条件或重置价格范围后再查看。</span>
+              </div>
+            ) : parts.map((part) => (
+              <ShopProductCard
+                actionLabel={part.id === currentPartId ? "当前已装" : "查看参数"}
+                isSelected={selectedPart?.id === part.id}
+                key={part.id}
+                onSelect={() => onSelectPart(part.id)}
+                part={part}
+              />
+            ))}
+          </div>
+
+          <aside className="part-inventory-detail" aria-label="产品详情">
+            {selectedPart ? (
+              <>
+                <ProductVisual
+                  category={selectedPart.category}
+                  color={selectedPart.color}
+                  hasModel={hasModelAsset(selectedPart)}
+                  imageUrl={selectedPart.productImageUrl}
+                  label={selectedPart.name}
+                />
+
+                <div className="part-inventory-detail__title">
+                  <span>{selectedPart.brand}</span>
+                  <strong>{selectedPart.name}</strong>
+                  <small>{selectedPart.series}</small>
+                </div>
+
+                <div className="part-inventory-detail__price">
+                  <span>国内参考价</span>
+                  <strong>{formatCny(selectedPart.price)}</strong>
+                </div>
+
+                <ProductSpecGrid part={selectedPart} />
+
+                {scoreDeltas ? <ScoreDeltaPanel deltas={scoreDeltas} /> : null}
+
+                <div className="candidate-issues">
+                  <span className="candidate-issues__title">候选兼容性</span>
+                  {candidateIssues.length === 0 ? (
+                    <div className="candidate-issue is-ok">
+                      <CheckCircle2 size={16} />
+                      <span>兼容检查通过，装配仍以 3D anchor 和 slot 为准。</span>
+                    </div>
+                  ) : candidateIssues.map((issue) => (
+                    <div
+                      className={`candidate-issue severity-${issue.severity}`}
+                      key={issue.id}
+                    >
+                      <IssueIcon severity={issue.severity} />
+                      <span>{issue.detail}</span>
+                    </div>
+                  ))}
+                </div>
+
+                <PurchaseActions part={selectedPart} />
+
+                <button
+                  className="inventory-add-button"
+                  onClick={() => onAddToBuild(selectedPart)}
+                  type="button"
+                >
+                  <Plus size={17} />
+                  <span>{selectedIsCurrent ? "已在方案中，重新应用" : "Add to build"}</span>
+                </button>
+              </>
+            ) : (
+              <div className="part-inventory-detail__empty">
+                <ShoppingCart size={24} />
+                <strong>选择一个产品查看详情</strong>
+                <span>筛选结果为空时可以先重置筛选条件。</span>
+              </div>
+            )}
+          </aside>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function ProductSpecGrid({ part }: { part: Part }) {
+  const specs = getProductSpecItems(part);
+
+  return (
+    <div className="product-spec-grid">
+      {specs.map((spec) => (
+        <div key={spec.label}>
+          <span>{spec.label}</span>
+          <strong>{spec.value}</strong>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function ScoreDeltaPanel({ deltas }: { deltas: ScoreDeltaMap }) {
+  return (
+    <section className="inventory-score-deltas" aria-label="评分变化">
+      <div className="inventory-score-deltas__heading">
+        <span>评分变化</span>
+        <small>基于当前方案临时替换计算</small>
+      </div>
+      {scoreDeltaKeys.map((key) => {
+        const delta = deltas[key];
+        const label = scenarioLabels.find((scenario) => scenario.key === key)?.label ?? key;
+
+        return (
+          <div className="inventory-score-delta" key={key}>
+            <span>{label}</span>
+            <strong>{delta.next}</strong>
+            <em className={delta.delta > 0 ? "is-up" : delta.delta < 0 ? "is-down" : ""}>
+              {formatScoreDelta(delta.delta)}
+            </em>
+          </div>
+        );
+      })}
+    </section>
+  );
+}
+
+function PurchaseActions({ part }: { part: Part }) {
+  const purchaseEntries = getPurchaseEntries(part);
+
+  return (
+    <div className="purchase-actions" aria-label="购买渠道">
+      <span className="purchase-actions__title">购买渠道</span>
+      {purchaseEntries.length === 0 ? (
+        <button disabled type="button">
+          暂无购买链接
+        </button>
+      ) : purchaseEntries.map(([channel, url]) => (
+        <a href={url} key={channel} rel="noreferrer" target="_blank">
+          <span>{purchaseChannelLabels[channel]}</span>
+          <ExternalLink size={14} />
+        </a>
+      ))}
+    </div>
+  );
 }
 
 function FanInstallationPanel({
@@ -1499,10 +1929,12 @@ function SetupCard({
 }
 
 function ShopProductCard({
+  actionLabel,
   isSelected,
   onSelect,
   part,
 }: {
+  actionLabel?: string;
   isSelected: boolean;
   onSelect: () => void;
   part: Part;
@@ -1535,7 +1967,7 @@ function ShopProductCard({
       </span>
       <span className="shop-card__footer">
         <strong>{formatCny(part.price)}</strong>
-        <span>{isSelected ? "已装入" : "装入方案"}</span>
+        <span>{actionLabel ?? (isSelected ? "已装入" : "装入方案")}</span>
       </span>
     </button>
   );
@@ -1583,40 +2015,6 @@ function ProductVisual({
   );
 }
 
-function PartRow({
-  isSelected,
-  onSelect,
-  part,
-}: {
-  isSelected: boolean;
-  onSelect: () => void;
-  part: Part;
-}) {
-  return (
-    <button
-      className={`part-row ${isSelected ? "is-selected" : ""}`}
-      onClick={onSelect}
-      type="button"
-    >
-      <span className="part-row__swatch" style={{ background: part.color }} />
-      <span className="part-row__body">
-        <span className="part-row__brand">{part.brand}</span>
-        <strong>{part.name}</strong>
-        <small>{part.series}</small>
-        <SpecLine part={part} />
-        <span className="tag-line">
-          {part.source ? <span>参数已导入</span> : null}
-          {part.modelSource ? <span>真实模型</span> : null}
-          {part.marketTags.slice(0, 3).map((tag) => (
-            <span key={tag}>{tag}</span>
-          ))}
-        </span>
-      </span>
-      <span className="part-row__price">{formatCny(part.price)}</span>
-    </button>
-  );
-}
-
 function SpecLine({ part }: { part: Part }) {
   const dimensions = describeDimensions(part);
   const specs = [
@@ -1631,6 +2029,56 @@ function SpecLine({ part }: { part: Part }) {
   if (specs.length === 0) return null;
 
   return <small className="spec-line">{specs.slice(0, 3).join(" / ")}</small>;
+}
+
+function getProductSpecItems(part: Part) {
+  const specs = [
+    { label: "类别", value: categoryMeta[part.category].label },
+    { label: "厂商", value: part.brand },
+    { label: "系列", value: part.series },
+    { label: "尺寸", value: describeDimensions(part) },
+    part.socket ? { label: "Socket", value: part.socket } : undefined,
+    part.memoryType ? { label: "内存", value: part.memoryType } : undefined,
+    part.formFactor ? { label: "板型", value: part.formFactor } : undefined,
+    part.lengthMm ? { label: "显卡长度", value: `${part.lengthMm}mm` } : undefined,
+    part.totalSlotWidth
+      ? { label: "槽位宽度", value: `${part.totalSlotWidth} 槽` }
+      : undefined,
+    part.gpuClearanceMm
+      ? { label: "显卡限长", value: `${part.gpuClearanceMm}mm` }
+      : undefined,
+    part.coolerClearanceMm
+      ? { label: "散热限高", value: `${part.coolerClearanceMm}mm` }
+      : undefined,
+    part.heightMm ? { label: "高度", value: `${part.heightMm}mm` } : undefined,
+    part.radiatorMm ? { label: "冷排", value: `${part.radiatorMm}mm` } : undefined,
+    part.radiatorSupportMm
+      ? { label: "冷排支持", value: `${part.radiatorSupportMm}mm` }
+      : undefined,
+    part.psuWattage ? { label: "电源功率", value: `${part.psuWattage}W` } : undefined,
+    part.psuFormFactor ? { label: "电源规格", value: part.psuFormFactor } : undefined,
+    part.maxPsuLengthMm
+      ? { label: "电源限长", value: `${part.maxPsuLengthMm}mm` }
+      : undefined,
+    part.m2Slots ? { label: "M.2 插槽", value: `${part.m2Slots} 个` } : undefined,
+    hasModelAsset(part) ? { label: "3D 模型", value: "已接入 GLB / glTF" } : undefined,
+  ].filter((item): item is { label: string; value: string } =>
+    Boolean(item?.value),
+  );
+
+  return specs.slice(0, 12);
+}
+
+function getPurchaseEntries(part: Part): Array<[PurchaseChannel, string]> {
+  if (!part.purchaseLinks) return [];
+
+  return (Object.entries(part.purchaseLinks) as Array<[PurchaseChannel, string | undefined]>)
+    .filter((entry): entry is [PurchaseChannel, string] => Boolean(entry[1]));
+}
+
+function formatScoreDelta(delta: number) {
+  if (delta > 0) return `+${delta}`;
+  return `${delta}`;
 }
 
 function getAssemblyIssueMeta(issue: AssemblyValidationIssue) {

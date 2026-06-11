@@ -53,6 +53,35 @@ layout changes it controls.
 
 (To be filled by the team)
 
+### Builder Inventory Overlays Separate Selection From Mutation
+
+Builder product selection surfaces should keep browsing, inspection, purchase,
+and build mutation as separate user actions.
+
+Required behavior:
+- Use a viewport-bound overlay such as `position: fixed` for focused inventory
+  or equipment-picker flows. Do not expand long product lists inside the narrow
+  Builder sidebar.
+- Category `+` actions may open the inventory, but product-card clicks should
+  only select a candidate and show details. Build state changes only through an
+  explicit `Add to build` action.
+- Purchase links must open external channels without mutating the build.
+- Score deltas should be derived by temporarily applying the candidate to the
+  current selection and reusing the existing build scoring function.
+- Product selection UI must not write model anchors, debug calibration patches,
+  or final scene coordinates.
+
+Wrong:
+```tsx
+<ProductCard onClick={() => setSelection({ ...selection, gpu: part.id })} />
+```
+
+Correct:
+```tsx
+<ProductCard onClick={() => setSelectedCandidate(part.id)} />
+<button onClick={() => addToBuild(selectedCandidate)}>Add to build</button>
+```
+
 ---
 
 ## Common Mistakes

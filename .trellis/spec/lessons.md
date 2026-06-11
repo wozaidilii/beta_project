@@ -27,3 +27,10 @@
 - 根因：调试菜单放在 Three.js `Html fullscreen` 容器内用 absolute 定位，实际定位会受 Canvas/布局高度影响；普通 builder 周边 UI 也继续占用空间。
 - 修复：进入调试模式时切换为专注布局，隐藏普通导航、配件列表和清单，只保留全屏 scene、退出按钮和 fixed 定位的可滚动调试菜单。
 - 预防：凡是覆盖 3D Canvas 的维护工具面板，都应优先使用 viewport-bound fixed 定位和明确的 max-height/overflow 策略，避免依赖 Canvas 内部布局高度。
+
+## TSX tests need sandbox-aware execution
+
+- 问题：直接在沙箱内执行 `tsx` 测试时，`tsx` 创建本地 IPC pipe 会触发 `listen EPERM`，导致测试命令失败但代码本身未失败。
+- 根因：当前 Codex 沙箱限制了 `/var/folders/.../tsx-*/...pipe` 这类本地监听行为。
+- 修复：遇到该错误时，用相同测试命令请求沙箱外执行，不要改测试代码或绕过测试。
+- 预防：后续新增 `tsx` 测试后，先按正常命令运行；如果失败信息是 IPC `listen EPERM`，明确记录为环境权限问题并用提升权限重跑。
