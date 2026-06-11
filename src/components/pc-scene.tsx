@@ -83,7 +83,7 @@ const activePositions: Record<CategoryId, [number, number, number]> = {
   cooling: [-0.42, 0.38, -0.46],
   psu: [0.45, -1.33, -0.32],
   case: [0, 0, 0],
-  fans: [1.28, 0.18, 0.14],
+  fans: [0.84, 0.18, 0.14],
 };
 
 const cameraTarget: Vec3 = [0, -0.08, 0];

@@ -1,0 +1,5 @@
+{"file": ".trellis/tasks/06-11-fix-case-stretch-distortion/prd.md", "reason": "Verify fix against task acceptance criteria."}
+{"file": ".trellis/spec/frontend/type-safety.md", "reason": "Check long-term fitMode/model asset rule remains accurate."}
+{"file": ".trellis/spec/lessons.md", "reason": "Ensure regression lesson records the corrected prevention rule."}
+{"file": "src/data/local-model-assets.json", "reason": "Confirm trusted case/fan metadata is calibrated without case stretch."}
+{"file": "src/lib/model-render-bounds.test.ts", "reason": "Confirm tests fail for stretched case or out-of-case fans."}

@@ -39,5 +39,12 @@
 
 - 问题：风扇语义上挂到了 `fan.front.120.*` slot，但 builder 画面里仍在机箱外。
 - 根因：现有测试只校验 assembly graph 的 slot/anchor 对齐，没有校验 GLB 经 `autoCenter + fitSize + fitMode` 后的真实渲染包围盒；机箱默认 `fitMode: contain` 让视觉机箱小于写入 anchor 的坐标空间。
-- 修复：为当前机箱和风扇资产显式设置 `fitMode: "stretch"`，并新增 `test:render-bounds`，用 Three.js 加载资产并断言三枚风扇的渲染 bbox 落在机箱 bbox 内。
+- 修复：新增 `test:render-bounds`，用 Three.js 加载资产并断言三枚风扇的渲染 bbox 落在机箱 bbox 内；后续校准必须以实际渲染 bounds 为准。
 - 预防：修改模型 `fitSize`、`fitMode`、机箱 anchor/mount slot、风扇 anchor/rotation 时，必须运行 `npm run test:render-bounds`；不要只依赖 assembly 语义测试判断视觉安装正确。
+
+## Do not stretch complex case GLBs to fit anchor coordinates
+
+- 问题：为让风扇 bbox 进入机箱 bbox，把机箱设为 `fitMode: "stretch"` 后，机箱在 builder 里变成斜掉的平行四边形。
+- 根因：复杂 GLB 机箱通常有子 mesh 旋转、局部变换或非轴对齐面；在父级 group 上做非等比 scale 会产生明显视觉变形。
+- 修复：移除机箱 `fitMode: "stretch"`，保持默认等比 `contain`；把前风扇 mount anchors 从旧坐标 `x=1.18` 重新校准到等比机箱 bounds 内的 `x=0.84`，并让 render-bounds 测试禁止复杂 case 使用 stretch。
+- 预防：机箱/机壳类复杂模型优先保持等比缩放；如果风扇或其他部件跑出机箱，先重标父级 anchors/slots 到实际 render bounds，而不是拉伸机箱。

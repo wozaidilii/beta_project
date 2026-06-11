@@ -56,10 +56,10 @@ Each trusted model asset record must include:
 - `model.slot`: one of the project `CategoryId` values.
 - `model.assetUrl`: local `/models/...` path that exists under `public/`.
 - `model.fitSize`: positive numeric `[x, y, z]`.
-- `model.fitMode`: when anchors and slots are calibrated against `fitSize`
-  as the rendered coordinate box, set `"stretch"` explicitly. Leaving the
-  default `"contain"` preserves aspect ratio and can make rendered geometry
-  smaller than the anchor coordinate space.
+- `model.fitMode`: keep complex case/chassis assets on uniform `"contain"`
+  scaling unless there is a dedicated visual review proving non-uniform scale
+  is safe. `"stretch"` is acceptable for simple slab-like assets only when
+  `test:render-bounds` verifies the rendered bbox and anchor space still align.
 - `model.rotation`: numeric `[x, y, z]`.
 - `model.assetAxis.right/up/forward`: distinct `+x/-x/+y/-y/+z/-z` axes.
 - `model.boundingBoxMm`: positive physical dimensions; `lengthMm` or `depthMm`, plus `widthMm` or `thicknessMm`, plus `heightMm`.
@@ -78,6 +78,7 @@ Each trusted model asset record must include:
 - Mount slot references a missing anchor -> validation error.
 - Missing case/motherboard required slot kind -> validation error.
 - Missing category coverage for the core calibration build -> validation error.
+- Case/chassis asset uses `fitMode: "stretch"` -> validation error.
 
 #### 5. Good/Base/Bad Cases
 
@@ -91,8 +92,9 @@ Each trusted model asset record must include:
 - Run `npm run test:models` as the package-level smoke test.
 - Run `npm run test:assembly` to confirm default calibrated assets still assemble without validation issues.
 - Run `npm run test:render-bounds` when changing `fitSize`, `fitMode`, case
-  anchors, case mount slots, fan anchors, or fan rotation. This catches visual
-  bbox drift that semantic assembly tests cannot see.
+  anchors, case mount slots, fan anchors, fan rotation, or category focus
+  positions. This catches visual bbox drift and case scale distortion that
+  semantic assembly tests cannot see.
 - Run `npm run build` for Next.js type and route validation.
 
 #### 7. Wrong vs Correct

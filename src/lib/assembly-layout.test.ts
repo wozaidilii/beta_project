@@ -241,7 +241,7 @@ for (const fan of fans) {
   assert.equal(fan.mount.mode, "attached");
   assert.equal(
     fan.position[0],
-    1.18,
+    0.84,
     "front fans should mount inside the case front panel instead of outside the chassis",
   );
   assert.equal(

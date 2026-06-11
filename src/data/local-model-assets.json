@@ -450,7 +450,6 @@
         3.78,
         1.74
       ],
-      "fitMode": "stretch",
       "rotation": [
         0,
         0,
@@ -503,7 +502,7 @@
         "frontFanMount": {
           "label": "frontFanMount",
           "position": [
-            1.18,
+            0.84,
             0,
             0.14
           ]
@@ -511,7 +510,7 @@
         "frontFanMountTop": {
           "label": "frontFanMountTop",
           "position": [
-            1.18,
+            0.84,
             0.52,
             0.14
           ]
@@ -519,7 +518,7 @@
         "frontFanMountMiddle": {
           "label": "frontFanMountMiddle",
           "position": [
-            1.18,
+            0.84,
             0,
             0.14
           ]
@@ -527,7 +526,7 @@
         "frontFanMountBottom": {
           "label": "frontFanMountBottom",
           "position": [
-            1.18,
+            0.84,
             -0.52,
             0.14
           ]

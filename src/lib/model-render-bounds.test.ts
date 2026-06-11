@@ -71,6 +71,11 @@ const fans = plan.instances.filter((instance) => instance.category === "fans");
 
 assert.ok(pcCase, "default build should include a visible case model");
 assert.equal(fans.length, 3, "default fan pack should install three fans");
+assert.notEqual(
+  pcCase.model.fitMode,
+  "stretch",
+  "complex case models should keep uniform scaling to avoid visual distortion",
+);
 
 const caseBounds = await getRenderedBounds(pcCase.model, pcCase.position, pcCase.rotation);
 

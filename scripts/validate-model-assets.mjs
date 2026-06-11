@@ -183,6 +183,19 @@ function validateEntry(entry, pathLabel, catalogIds, assetIds) {
     errors.push(`${pathLabel}.model.slot must be a supported part category`);
   }
 
+  if (
+    model.fitMode != null &&
+    !["contain", "stretch"].includes(model.fitMode)
+  ) {
+    errors.push(`${pathLabel}.model.fitMode must be "contain" or "stretch"`);
+  }
+
+  if (model.slot === "case" && model.fitMode === "stretch") {
+    errors.push(
+      `${pathLabel}.model.fitMode must not be "stretch" for case assets; recalibrate anchors to uniform rendered bounds instead`,
+    );
+  }
+
   validateAssetUrl(model.assetUrl, `${pathLabel}.model.assetUrl`);
   validateVec3(model.fitSize, `${pathLabel}.model.fitSize`, {
     requirePositive: true,
