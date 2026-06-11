@@ -450,6 +450,7 @@
         3.78,
         1.74
       ],
+      "fitMode": "stretch",
       "rotation": [
         0,
         0,
@@ -731,6 +732,7 @@
         0.72,
         0.12
       ],
+      "fitMode": "stretch",
       "rotation": [
         0,
         1.5708,

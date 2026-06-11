@@ -1,0 +1,5 @@
+{"file": ".trellis/tasks/06-11-fix-calibrated-fan-placement/prd.md", "reason": "Verify implementation against task acceptance criteria."}
+{"file": ".trellis/spec/frontend/type-safety.md", "reason": "Ensure validation and tests preserve the model asset contract."}
+{"file": "src/data/local-model-assets.json", "reason": "Confirm trusted assets stay small and calibrated."}
+{"file": "src/lib/assembly-layout.test.ts", "reason": "Confirm regression coverage for fan install positions."}
+{"file": "src/components/pc-scene.tsx", "reason": "Check any render-space changes against visual placement requirements."}

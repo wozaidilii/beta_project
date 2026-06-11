@@ -56,6 +56,10 @@ Each trusted model asset record must include:
 - `model.slot`: one of the project `CategoryId` values.
 - `model.assetUrl`: local `/models/...` path that exists under `public/`.
 - `model.fitSize`: positive numeric `[x, y, z]`.
+- `model.fitMode`: when anchors and slots are calibrated against `fitSize`
+  as the rendered coordinate box, set `"stretch"` explicitly. Leaving the
+  default `"contain"` preserves aspect ratio and can make rendered geometry
+  smaller than the anchor coordinate space.
 - `model.rotation`: numeric `[x, y, z]`.
 - `model.assetAxis.right/up/forward`: distinct `+x/-x/+y/-y/+z/-z` axes.
 - `model.boundingBoxMm`: positive physical dimensions; `lengthMm` or `depthMm`, plus `widthMm` or `thicknessMm`, plus `heightMm`.
@@ -86,6 +90,9 @@ Each trusted model asset record must include:
 - Run `npm run validate:models` after every model asset data change.
 - Run `npm run test:models` as the package-level smoke test.
 - Run `npm run test:assembly` to confirm default calibrated assets still assemble without validation issues.
+- Run `npm run test:render-bounds` when changing `fitSize`, `fitMode`, case
+  anchors, case mount slots, fan anchors, or fan rotation. This catches visual
+  bbox drift that semantic assembly tests cannot see.
 - Run `npm run build` for Next.js type and route validation.
 
 #### 7. Wrong vs Correct

@@ -34,3 +34,10 @@
 - 根因：当前 Codex 沙箱限制了 `/var/folders/.../tsx-*/...pipe` 这类本地监听行为。
 - 修复：遇到该错误时，用相同测试命令请求沙箱外执行，不要改测试代码或绕过测试。
 - 预防：后续新增 `tsx` 测试后，先按正常命令运行；如果失败信息是 IPC `listen EPERM`，明确记录为环境权限问题并用提升权限重跑。
+
+## Model anchors must match rendered bounds, not just assembly coordinates
+
+- 问题：风扇语义上挂到了 `fan.front.120.*` slot，但 builder 画面里仍在机箱外。
+- 根因：现有测试只校验 assembly graph 的 slot/anchor 对齐，没有校验 GLB 经 `autoCenter + fitSize + fitMode` 后的真实渲染包围盒；机箱默认 `fitMode: contain` 让视觉机箱小于写入 anchor 的坐标空间。
+- 修复：为当前机箱和风扇资产显式设置 `fitMode: "stretch"`，并新增 `test:render-bounds`，用 Three.js 加载资产并断言三枚风扇的渲染 bbox 落在机箱 bbox 内。
+- 预防：修改模型 `fitSize`、`fitMode`、机箱 anchor/mount slot、风扇 anchor/rotation 时，必须运行 `npm run test:render-bounds`；不要只依赖 assembly 语义测试判断视觉安装正确。

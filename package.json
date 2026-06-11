@@ -12,6 +12,7 @@
     "scrape:parts": "node scripts/scrape-core-parts.mjs",
     "test:assembly": "tsx src/lib/assembly-layout.test.ts",
     "test:models": "node scripts/validate-model-assets.mjs",
+    "test:render-bounds": "tsx src/lib/model-render-bounds.test.ts",
     "upload:models:blob": "node scripts/upload-models-to-vercel-blob.mjs",
     "validate:models": "node scripts/validate-model-assets.mjs",
     "start": "next start",
