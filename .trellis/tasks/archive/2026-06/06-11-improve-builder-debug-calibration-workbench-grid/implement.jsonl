@@ -1,0 +1,6 @@
+{"file":".trellis/spec/frontend/type-safety.md","reason":"Model asset metadata and assembly tests must follow the local model intake contract."}
+{"file":".trellis/spec/frontend/index.md","reason":"Frontend task should follow project frontend workflow and quality expectations."}
+{"file":".trellis/spec/guides/index.md","reason":"Cross-layer and reuse thinking guide entry point for UI plus asset metadata changes."}
+{"file":".trellis/spec/guides/code-reuse-thinking-guide.md","reason":"The task changes existing debug controls and background markup; reuse existing patterns rather than duplicating controls."}
+{"file":".trellis/tasks/06-11-improve-builder-debug-calibration-workbench-grid/prd.md","reason":"Task-specific requirements and acceptance criteria for debug calibration and workbench grid."}
+{"file":".trellis/tasks/06-11-improve-builder-debug-calibration-workbench-grid/design.md","reason":"Task-specific implementation design for manual calibration controls and grid workbench."}

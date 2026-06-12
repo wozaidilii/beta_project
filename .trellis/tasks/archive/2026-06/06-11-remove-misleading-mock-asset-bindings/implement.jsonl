@@ -1,0 +1,9 @@
+{"file": "docs/CONTEXT.md", "reason": "Defines assembly source of truth and asset calibration terminology."}
+{"file": ".trellis/spec/frontend/index.md", "reason": "Frontend task entrypoint and quality checklist."}
+{"file": ".trellis/spec/frontend/type-safety.md", "reason": "Catalog and selection changes must preserve TypeScript contracts."}
+{"file": ".trellis/spec/guides/code-reuse-thinking-guide.md", "reason": "Reuse existing assembly/model predicates instead of duplicating logic."}
+{"file": "src/lib/catalog.ts", "reason": "Catalog, model asset override, default selection and new calibration selection are defined here."}
+{"file": "src/components/pc-builder-app.tsx", "reason": "Product/inventory UI currently filters by 3D model availability."}
+{"file": "scripts/validate-model-assets.mjs", "reason": "Model intake validation currently enforces defaultSelection model bindings."}
+{"file": "src/lib/assembly-layout.test.ts", "reason": "Assembly regression tests currently use defaultSelection."}
+{"file": "src/lib/model-render-bounds.test.ts", "reason": "Render bounds regression tests currently use defaultSelection."}

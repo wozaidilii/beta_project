@@ -1,0 +1,5 @@
+{"file": ".trellis/spec/frontend/type-safety.md", "reason": "Model asset validation introduces a runtime data contract that should stay explicit."}
+{"file": ".trellis/spec/guides/cross-layer-thinking-guide.md", "reason": "The change crosses catalog data, model metadata, assembly logic and package scripts."}
+{"file": ".trellis/spec/guides/code-reuse-thinking-guide.md", "reason": "Reuse existing model metadata fields and assembly tests instead of inventing a parallel placement system."}
+{"file": "docs/CONTEXT.md", "reason": "Stable domain terms define trusted 3D installability, asset calibration and assembly source of truth."}
+{"file": ".trellis/tasks/archive/2026-06/06-11-anchor-based-pc-assembly/design.md", "reason": "Existing assembly design defines the separation between catalog data, OpenDB parameters and GLB assets."}

@@ -12,11 +12,6 @@
       "widthMm": 40,
       "heightMm": 4
     },
-    "model": {
-      "kind": "parametric",
-      "slot": "cpu",
-      "mount": "socket-am5"
-    },
     "source": {
       "sourceName": "AMD official specifications",
       "sourceUrl": "https://www.amd.com/en/products/processors/desktops/ryzen/7000-series/amd-ryzen-7-7800x3d.html",
@@ -44,11 +39,6 @@
       "lengthMm": 40,
       "widthMm": 40,
       "heightMm": 4
-    },
-    "model": {
-      "kind": "parametric",
-      "slot": "cpu",
-      "mount": "socket-am5"
     },
     "source": {
       "sourceName": "AMD official specifications",
@@ -79,19 +69,6 @@
       "widthMm": 243.84,
       "heightMm": 18
     },
-    "model": {
-      "kind": "glb",
-      "slot": "motherboard",
-      "mount": "case-standoffs",
-      "assetUrl": "/models/msi_b550_gaming_plus.glb",
-      "fitSize": [1.55, 0.08, 2.05],
-      "position": [-0.36, 0.08, -0.7],
-      "rotation": [1.5708, 0, 0],
-      "scale": 1
-    },
-    "externalIds": {
-      "modelAssetId": "msi_b550_gaming_plus"
-    },
     "source": {
       "sourceName": "MSI official specifications",
       "sourceUrl": "https://www.msi.com/Motherboard/MAG-B850M-MORTAR-WIFI/Specification",
@@ -120,19 +97,6 @@
       "widthMm": 244,
       "heightMm": 18
     },
-    "model": {
-      "kind": "glb",
-      "slot": "motherboard",
-      "mount": "case-standoffs",
-      "assetUrl": "/models/msi_b550_gaming_plus.glb",
-      "fitSize": [1.55, 0.08, 2.05],
-      "position": [-0.36, 0.08, -0.7],
-      "rotation": [1.5708, 0, 0],
-      "scale": 1
-    },
-    "externalIds": {
-      "modelAssetId": "msi_b550_gaming_plus"
-    },
     "source": {
       "sourceName": "ASUS official specifications",
       "sourceUrl": "https://www.asus.com/motherboards-components/motherboards/tuf-gaming/tuf-gaming-b760m-plus-wifi-ii/techspec/",
@@ -158,19 +122,6 @@
       "lengthMm": 329,
       "heightMm": 140,
       "thicknessMm": 62.5
-    },
-    "model": {
-      "kind": "glb",
-      "slot": "gpu",
-      "mount": "pcie-x16",
-      "assetUrl": "/models/nvidia_geforce_rtx_3090.glb",
-      "fitSize": [1.73, 0.52, 0.62],
-      "position": [0.18, -0.52, -0.2],
-      "rotation": [0, 0, 0],
-      "scale": 1
-    },
-    "externalIds": {
-      "modelAssetId": "nvidia_geforce_rtx_3090"
     },
     "source": {
       "sourceName": "ASUS official specifications",
@@ -199,19 +150,6 @@
       "lengthMm": 229,
       "heightMm": 120,
       "thicknessMm": 50
-    },
-    "model": {
-      "kind": "glb",
-      "slot": "gpu",
-      "mount": "pcie-x16",
-      "assetUrl": "/models/nvidia_geforce_rtx_3090.glb",
-      "fitSize": [1.3, 0.44, 0.5],
-      "position": [0.18, -0.52, -0.2],
-      "rotation": [0, 0, 0],
-      "scale": 1
-    },
-    "externalIds": {
-      "modelAssetId": "nvidia_geforce_rtx_3090"
     },
     "source": {
       "sourceName": "ASUS official specifications",
@@ -246,11 +184,6 @@
       "widthMm": 288,
       "heightMm": 384
     },
-    "model": {
-      "kind": "parametric",
-      "slot": "case",
-      "mount": "root"
-    },
     "source": {
       "sourceName": "LIAN LI official specifications",
       "sourceUrl": "https://lian-li.com/product/o11-air-mini/",
@@ -283,11 +216,6 @@
       "widthMm": 215,
       "heightMm": 469
     },
-    "model": {
-      "kind": "parametric",
-      "slot": "case",
-      "mount": "root"
-    },
     "source": {
       "sourceName": "Fractal Design official specifications",
       "sourceUrl": "https://www.fractal-design.com/products/cases/north/north/chalk-white/",
@@ -317,11 +245,6 @@
       "pumpWidthMm": 74,
       "pumpHeightMm": 69
     },
-    "model": {
-      "kind": "parametric",
-      "slot": "cooling",
-      "mount": "top-radiator"
-    },
     "source": {
       "sourceName": "LIAN LI official specifications",
       "sourceUrl": "https://lian-li.com/product/galahad-ii-trinity/",
@@ -346,11 +269,6 @@
       "lengthMm": 140,
       "widthMm": 150,
       "heightMm": 86
-    },
-    "model": {
-      "kind": "parametric",
-      "slot": "psu",
-      "mount": "psu-bay"
     },
     "source": {
       "sourceName": "Seasonic official specifications",
@@ -377,30 +295,7 @@
       "lengthMm": 133.35,
       "widthMm": 8,
       "heightMm": 45
-    },
-    "model": {
-      "kind": "glb",
-      "slot": "memory",
-      "mount": "dimm-slots",
-      "assetUrl": "/models/xpg_d41_dual_kit_ram.glb",
-      "fitSize": [0.3, 0.86, 0.18],
-      "position": [-0.06, 0.36, -0.5],
-      "rotation": [0, 0, 0],
-      "scale": 1
-    },
-    "externalIds": {
-      "modelAssetId": "xpg_d41_dual_kit_ram"
-    },
-    "source": {
-      "sourceName": "Local GLB asset",
-      "sourceUrl": "/models/xpg_d41_dual_kit_ram.glb",
-      "scrapedAt": "2026-06-10T07:26:00.000Z"
-    },
-    "scrapedSpecs": {
-      "modelAsset": "XPG D41 dual kit RAM GLB",
-      "note": "Used as a visual placeholder for DDR5 dual-channel memory."
-    },
-    "scrapeStatus": "local-asset"
+    }
   },
   {
     "id": "gskill-ddr5-64-6400",
@@ -412,30 +307,7 @@
       "lengthMm": 133.35,
       "widthMm": 8,
       "heightMm": 45
-    },
-    "model": {
-      "kind": "glb",
-      "slot": "memory",
-      "mount": "dimm-slots",
-      "assetUrl": "/models/xpg_d41_dual_kit_ram.glb",
-      "fitSize": [0.3, 0.86, 0.18],
-      "position": [-0.06, 0.36, -0.5],
-      "rotation": [0, 0, 0],
-      "scale": 1
-    },
-    "externalIds": {
-      "modelAssetId": "xpg_d41_dual_kit_ram"
-    },
-    "source": {
-      "sourceName": "Local GLB asset",
-      "sourceUrl": "/models/xpg_d41_dual_kit_ram.glb",
-      "scrapedAt": "2026-06-10T07:26:00.000Z"
-    },
-    "scrapedSpecs": {
-      "modelAsset": "XPG D41 dual kit RAM GLB",
-      "note": "Used as a visual placeholder for DDR5 dual-channel memory."
-    },
-    "scrapeStatus": "local-asset"
+    }
   },
   {
     "id": "asgard-ddr5-48-7200",
@@ -447,29 +319,6 @@
       "lengthMm": 133.35,
       "widthMm": 8,
       "heightMm": 45
-    },
-    "model": {
-      "kind": "glb",
-      "slot": "memory",
-      "mount": "dimm-slots",
-      "assetUrl": "/models/xpg_d41_dual_kit_ram.glb",
-      "fitSize": [0.3, 0.86, 0.18],
-      "position": [-0.06, 0.36, -0.5],
-      "rotation": [0, 0, 0],
-      "scale": 1
-    },
-    "externalIds": {
-      "modelAssetId": "xpg_d41_dual_kit_ram"
-    },
-    "source": {
-      "sourceName": "Local GLB asset",
-      "sourceUrl": "/models/xpg_d41_dual_kit_ram.glb",
-      "scrapedAt": "2026-06-10T07:26:00.000Z"
-    },
-    "scrapedSpecs": {
-      "modelAsset": "XPG D41 dual kit RAM GLB",
-      "note": "Used as a visual placeholder for DDR5 dual-channel memory."
-    },
-    "scrapeStatus": "local-asset"
+    }
   }
 ]

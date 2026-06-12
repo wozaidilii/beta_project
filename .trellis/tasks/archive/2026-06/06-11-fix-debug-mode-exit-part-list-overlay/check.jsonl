@@ -1,0 +1,6 @@
+{"file":".trellis/spec/frontend/index.md","reason":"Frontend quality check context."}
+{"file":".trellis/spec/frontend/type-safety.md","reason":"Model and assembly validation requirements after scene code changes."}
+{"file":".trellis/spec/guides/index.md","reason":"Review cross-layer risks and missing validation."}
+{"file":".trellis/spec/guides/code-reuse-thinking-guide.md","reason":"Check that existing debug controls remain the single implementation."}
+{"file":".trellis/tasks/06-11-fix-debug-mode-exit-part-list-overlay/prd.md","reason":"Acceptance criteria for final verification."}
+{"file":".trellis/tasks/06-11-fix-debug-mode-exit-part-list-overlay/design.md","reason":"Design intent for DOM overlay fix."}

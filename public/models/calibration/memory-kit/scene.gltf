@@ -1,0 +1,319 @@
+{
+  "asset": {
+    "version": "2.0",
+    "generator": "beta_project calibration fixture"
+  },
+  "scenes": [
+    {
+      "nodes": [
+        0,
+        1,
+        2
+      ]
+    }
+  ],
+  "scene": 0,
+  "nodes": [
+    {
+      "name": "memory module a",
+      "mesh": 4,
+      "translation": [
+        -0.08,
+        0,
+        0
+      ],
+      "scale": [
+        0.08,
+        0.74,
+        0.28
+      ]
+    },
+    {
+      "name": "memory module b",
+      "mesh": 4,
+      "translation": [
+        0.08,
+        0,
+        0
+      ],
+      "scale": [
+        0.08,
+        0.74,
+        0.28
+      ]
+    },
+    {
+      "name": "memory contacts",
+      "mesh": 5,
+      "translation": [
+        0,
+        -0.39,
+        0
+      ],
+      "scale": [
+        0.2,
+        0.035,
+        0.08
+      ]
+    }
+  ],
+  "meshes": [
+    {
+      "primitives": [
+        {
+          "attributes": {
+            "POSITION": 0,
+            "NORMAL": 1
+          },
+          "indices": 2,
+          "material": 0
+        }
+      ]
+    },
+    {
+      "primitives": [
+        {
+          "attributes": {
+            "POSITION": 0,
+            "NORMAL": 1
+          },
+          "indices": 2,
+          "material": 1
+        }
+      ]
+    },
+    {
+      "primitives": [
+        {
+          "attributes": {
+            "POSITION": 0,
+            "NORMAL": 1
+          },
+          "indices": 2,
+          "material": 2
+        }
+      ]
+    },
+    {
+      "primitives": [
+        {
+          "attributes": {
+            "POSITION": 0,
+            "NORMAL": 1
+          },
+          "indices": 2,
+          "material": 3
+        }
+      ]
+    },
+    {
+      "primitives": [
+        {
+          "attributes": {
+            "POSITION": 0,
+            "NORMAL": 1
+          },
+          "indices": 2,
+          "material": 4
+        }
+      ]
+    },
+    {
+      "primitives": [
+        {
+          "attributes": {
+            "POSITION": 0,
+            "NORMAL": 1
+          },
+          "indices": 2,
+          "material": 5
+        }
+      ]
+    },
+    {
+      "primitives": [
+        {
+          "attributes": {
+            "POSITION": 0,
+            "NORMAL": 1
+          },
+          "indices": 2,
+          "material": 6
+        }
+      ]
+    }
+  ],
+  "materials": [
+    {
+      "name": "anodized dark frame",
+      "pbrMetallicRoughness": {
+        "baseColorFactor": [
+          0.05,
+          0.07,
+          0.08,
+          1
+        ],
+        "metallicFactor": 0.55,
+        "roughnessFactor": 0.42
+      }
+    },
+    {
+      "name": "visible teal mount slots",
+      "pbrMetallicRoughness": {
+        "baseColorFactor": [
+          0.08,
+          0.8,
+          0.72,
+          0.62
+        ],
+        "metallicFactor": 0.25,
+        "roughnessFactor": 0.55
+      },
+      "alphaMode": "BLEND",
+      "doubleSided": true
+    },
+    {
+      "name": "smoked transparent bays",
+      "pbrMetallicRoughness": {
+        "baseColorFactor": [
+          0.34,
+          0.43,
+          0.5,
+          0.24
+        ],
+        "metallicFactor": 0.05,
+        "roughnessFactor": 0.68
+      },
+      "alphaMode": "BLEND",
+      "doubleSided": true
+    },
+    {
+      "name": "amber calibration marks",
+      "pbrMetallicRoughness": {
+        "baseColorFactor": [
+          1,
+          0.54,
+          0.12,
+          0.72
+        ],
+        "metallicFactor": 0.1,
+        "roughnessFactor": 0.5
+      },
+      "alphaMode": "BLEND",
+      "doubleSided": true
+    },
+    {
+      "name": "calibration product body",
+      "pbrMetallicRoughness": {
+        "baseColorFactor": [
+          0.12,
+          0.16,
+          0.2,
+          1
+        ],
+        "metallicFactor": 0.15,
+        "roughnessFactor": 0.58
+      }
+    },
+    {
+      "name": "calibration connector",
+      "pbrMetallicRoughness": {
+        "baseColorFactor": [
+          0.93,
+          0.56,
+          0.18,
+          1
+        ],
+        "metallicFactor": 0.2,
+        "roughnessFactor": 0.48
+      }
+    },
+    {
+      "name": "calibration fan blades",
+      "pbrMetallicRoughness": {
+        "baseColorFactor": [
+          0.12,
+          0.78,
+          0.9,
+          0.72
+        ],
+        "metallicFactor": 0.1,
+        "roughnessFactor": 0.45
+      },
+      "alphaMode": "BLEND",
+      "doubleSided": true
+    }
+  ],
+  "buffers": [
+    {
+      "uri": "data:application/octet-stream;base64,AAAAvwAAAL8AAAA/AAAAPwAAAL8AAAA/AAAAPwAAAD8AAAA/AAAAvwAAAD8AAAA/AAAAPwAAAL8AAAC/AAAAvwAAAL8AAAC/AAAAvwAAAD8AAAC/AAAAPwAAAD8AAAC/AAAAvwAAAD8AAAA/AAAAPwAAAD8AAAA/AAAAPwAAAD8AAAC/AAAAvwAAAD8AAAC/AAAAvwAAAL8AAAC/AAAAPwAAAL8AAAC/AAAAPwAAAL8AAAA/AAAAvwAAAL8AAAA/AAAAPwAAAL8AAAA/AAAAPwAAAL8AAAC/AAAAPwAAAD8AAAC/AAAAPwAAAD8AAAA/AAAAvwAAAL8AAAC/AAAAvwAAAL8AAAA/AAAAvwAAAD8AAAA/AAAAvwAAAD8AAAC/AAAAAAAAAAAAAIA/AAAAAAAAAAAAAIA/AAAAAAAAAAAAAIA/AAAAAAAAAAAAAIA/AAAAAAAAAAAAAIC/AAAAAAAAAAAAAIC/AAAAAAAAAAAAAIC/AAAAAAAAAAAAAIC/AAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAgL8AAAAAAAAAAAAAgL8AAAAAAAAAAAAAgL8AAAAAAAAAAAAAgL8AAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAACAvwAAAAAAAAAAAACAvwAAAAAAAAAAAACAvwAAAAAAAAAAAACAvwAAAAAAAAAAAAABAAIAAAACAAMABAAFAAYABAAGAAcACAAJAAoACAAKAAsADAANAA4ADAAOAA8AEAARABIAEAASABMAFAAVABYAFAAWABcA",
+      "byteLength": 648
+    }
+  ],
+  "bufferViews": [
+    {
+      "buffer": 0,
+      "byteOffset": 0,
+      "byteLength": 288,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 288,
+      "byteLength": 288,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 576,
+      "byteLength": 72,
+      "target": 34963
+    }
+  ],
+  "accessors": [
+    {
+      "bufferView": 0,
+      "componentType": 5126,
+      "count": 24,
+      "type": "VEC3",
+      "min": [
+        -0.5,
+        -0.5,
+        -0.5
+      ],
+      "max": [
+        0.5,
+        0.5,
+        0.5
+      ]
+    },
+    {
+      "bufferView": 1,
+      "componentType": 5126,
+      "count": 24,
+      "type": "VEC3",
+      "min": [
+        -1,
+        -1,
+        -1
+      ],
+      "max": [
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "bufferView": 2,
+      "componentType": 5123,
+      "count": 36,
+      "type": "SCALAR",
+      "min": [
+        0
+      ],
+      "max": [
+        23
+      ]
+    }
+  ]
+}

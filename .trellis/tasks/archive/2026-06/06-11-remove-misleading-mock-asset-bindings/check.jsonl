@@ -1,0 +1,8 @@
+{"file": ".trellis/tasks/06-11-remove-misleading-mock-asset-bindings/prd.md", "reason": "Verify implementation against user-visible requirements."}
+{"file": "src/data/local-model-assets.json", "reason": "Confirm real products are no longer bound to misleading generic GLB assets."}
+{"file": "src/data/scraped-core-parts.json", "reason": "Confirm scraped product data no longer injects stale model metadata."}
+{"file": "src/lib/catalog.ts", "reason": "Confirm commerce default selection and calibration selection are separated."}
+{"file": "src/components/pc-builder-app.tsx", "reason": "Confirm product lists no longer use 3D model availability as the visibility gate."}
+{"file": "scripts/validate-model-assets.mjs", "reason": "Confirm model validation enforces calibration selection instead of fake commerce bindings."}
+{"file": "src/lib/assembly-layout.test.ts", "reason": "Confirm assembly tests still exercise calibrated model placement."}
+{"file": "src/lib/model-render-bounds.test.ts", "reason": "Confirm render-space checks still validate calibrated assets."}

@@ -48,6 +48,7 @@ import {
   defaultSelection,
   formatCny,
   hasModelAsset,
+  isCommercePart,
   scoreLabel,
   starterBuilds,
   type BuildSummary,
@@ -223,7 +224,7 @@ export function PcBuilderApp() {
   const shopParts = useMemo(
     () =>
       catalog[activeShopCategory].filter((part) =>
-        hasModelAsset(part) &&
+        isCommercePart(part) &&
         partMatchesQuery(part, query) &&
         partMatchesFilters(part, shopFilters),
       ),
@@ -239,7 +240,7 @@ export function PcBuilderApp() {
   const inventoryParts = useMemo(() => {
     if (!inventoryCategory) return [];
     return catalog[inventoryCategory].filter((part) =>
-      hasModelAsset(part) &&
+      isCommercePart(part) &&
       partMatchesQuery(part, inventoryQuery) &&
       partMatchesFilters(part, inventoryFilters),
     );
@@ -291,7 +292,7 @@ export function PcBuilderApp() {
     () =>
       categoryIds.reduce(
         (total, category) =>
-          total + catalog[category].filter(hasModelAsset).length,
+          total + catalog[category].filter(isCommercePart).length,
         0,
       ),
     [],
@@ -302,7 +303,7 @@ export function PcBuilderApp() {
     const options = getShopFilterOptions(category);
     const currentPartId =
       selection[category] ??
-      catalog[category].find((part) => hasModelAsset(part))?.id ??
+      catalog[category].find(isCommercePart)?.id ??
       null;
 
     setActiveCategory(category);
@@ -818,17 +819,8 @@ export function PcBuilderApp() {
 function BuilderDynamicBackground() {
   return (
     <div className="builder-tech-bg" aria-hidden="true">
-      <span className="builder-tech-bg__plane" />
-      <span className="builder-tech-bg__axis builder-tech-bg__axis--x" />
-      <span className="builder-tech-bg__axis builder-tech-bg__axis--y" />
-      <span className="builder-tech-bg__bus builder-tech-bg__bus--top" />
-      <span className="builder-tech-bg__bus builder-tech-bg__bus--mid" />
-      <span className="builder-tech-bg__bus builder-tech-bg__bus--bottom" />
-      <span className="builder-tech-bg__pulse builder-tech-bg__pulse--one" />
-      <span className="builder-tech-bg__pulse builder-tech-bg__pulse--two" />
-      <span className="builder-tech-bg__pulse builder-tech-bg__pulse--three" />
-      <span className="builder-tech-bg__corner builder-tech-bg__corner--tl" />
-      <span className="builder-tech-bg__corner builder-tech-bg__corner--br" />
+      <span className="builder-tech-bg__bench" />
+      <span className="builder-tech-bg__horizon" />
     </div>
   );
 }
@@ -891,11 +883,11 @@ function getShopCategoryIcon(category: ProductVisualCategory) {
 }
 
 function getShopCategoryCount(category: ShopCategoryId) {
-  return catalog[category].filter(hasModelAsset).length;
+  return catalog[category].filter(isCommercePart).length;
 }
 
 function getShopFilterOptions(category: ShopCategoryId): ShopFilterOptions {
-  const parts = catalog[category].filter(hasModelAsset);
+  const parts = catalog[category].filter(isCommercePart);
   const prices = parts.map((part) => part.price);
   const colorMap = new Map<ColorFamily, { value: string; label: string; swatch: string }>();
 
@@ -955,7 +947,7 @@ function getPricePercent(value: number, bounds: ShopFilterOptions["price"]) {
 
 function getShopCategoryPreviewImage(category: ShopCategoryId) {
   return catalog[category].find(
-    (part) => hasModelAsset(part) && part.productImageUrl,
+    (part) => isCommercePart(part) && part.productImageUrl,
   )?.productImageUrl;
 }
 

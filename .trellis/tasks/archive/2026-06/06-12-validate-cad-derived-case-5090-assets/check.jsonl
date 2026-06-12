@@ -1,0 +1,3 @@
+{"file": ".trellis/spec/frontend/type-safety.md", "reason": "Verify asset records satisfy model validation and do not reintroduce mock real-product bindings."}
+{"file": ".trellis/spec/frontend/quality-guidelines.md", "reason": "Verify focused tests and build checks match frontend/data change risk."}
+{"file": ".trellis/spec/lessons.md", "reason": "Check against previous asset and debug-mode mistakes."}

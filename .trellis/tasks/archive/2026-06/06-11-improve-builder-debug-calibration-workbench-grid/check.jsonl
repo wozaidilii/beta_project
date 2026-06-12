@@ -1,0 +1,6 @@
+{"file":".trellis/spec/frontend/type-safety.md","reason":"Quality gate requires model validation and assembly/render tests after asset metadata changes."}
+{"file":".trellis/spec/frontend/index.md","reason":"Frontend quality expectations for UI changes."}
+{"file":".trellis/spec/guides/index.md","reason":"Review cross-layer risks between UI controls, debug API patches, and asset metadata."}
+{"file":".trellis/spec/guides/code-reuse-thinking-guide.md","reason":"Check that existing debug patterns were extended rather than duplicated inconsistently."}
+{"file":".trellis/tasks/06-11-improve-builder-debug-calibration-workbench-grid/prd.md","reason":"Acceptance criteria for final verification."}
+{"file":".trellis/tasks/06-11-improve-builder-debug-calibration-workbench-grid/design.md","reason":"Design intent for manual calibration workflow and workbench background."}
