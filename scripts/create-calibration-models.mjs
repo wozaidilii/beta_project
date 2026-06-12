@@ -96,6 +96,15 @@ writeModel("120mm-fan", [
   box("fan blade horizontal", 6, [0, 0, 0.025], [0.58, 0.08, 0.045]),
   box("fan blade vertical", 6, [0, 0, 0.03], [0.08, 0.58, 0.045]),
 ]);
+writeModel("o11-air-mini-cad-validation", createO11AirMiniCadValidationNodes());
+writeModel("rtx-5090-fe-validation", [
+  box("rtx 5090 fe shroud", 4, [0.45, 0, 0], [1.52, 0.32, 0.62]),
+  box("rtx 5090 fe flow through fin stack", 2, [0.48, 0.02, 0.01], [1.24, 0.38, 0.48]),
+  box("rtx 5090 fe pcie connector", 5, [0, 0, -0.35], [0.62, 0.055, 0.08]),
+  box("rtx 5090 fe io bracket", 5, [-0.35, 0, 0.02], [0.05, 0.54, 0.72]),
+  box("rtx 5090 fe fan visual a", 6, [0.16, 0.02, 0.34], [0.32, 0.32, 0.04]),
+  box("rtx 5090 fe fan visual b", 6, [0.76, 0.02, 0.34], [0.32, 0.32, 0.04]),
+]);
 
 function createOpenFrameCaseNodes() {
   const nodes = [];
@@ -148,6 +157,48 @@ function createOpenFrameCaseNodes() {
     box("rear fan left rail", 1, [-1.18, 0.42, -0.72], [0.045, 0.78, 0.05]),
     box("rear fan right rail", 1, [-1.18, 0.42, 0], [0.045, 0.78, 0.05]),
   );
+
+  return nodes;
+}
+
+function createO11AirMiniCadValidationNodes() {
+  const nodes = [];
+  const caseSize = [2.17, 2.01, 1.51];
+  const half = caseSize.map((value) => value / 2);
+
+  for (const x of [-half[0], half[0]]) {
+    for (const z of [-half[2], half[2]]) {
+      nodes.push(box(`cad o11 corner post ${x}:${z}`, 0, [x, 0, z], [0.055, caseSize[1], 0.055]));
+    }
+  }
+
+  for (const y of [-half[1], half[1]]) {
+    for (const z of [-half[2], half[2]]) {
+      nodes.push(box(`cad o11 depth rail ${y}:${z}`, 0, [0, y, z], [caseSize[0], 0.055, 0.055]));
+    }
+    for (const x of [-half[0], half[0]]) {
+      nodes.push(box(`cad o11 width rail ${x}:${y}`, 0, [x, y, 0], [0.055, 0.055, caseSize[2]]));
+    }
+  }
+
+  nodes.push(
+    box("cad o11 side glass envelope", 2, [0, 0, -0.77], [caseSize[0], caseSize[1], 0.035]),
+    box("cad o11 front panel plane", 2, [1.0, 0.04, -0.2], [0.12, 1.46, 0.92]),
+    box("cad o11 motherboard tray from step", 2, [-1.04, 0.05, -0.22], [0.1, 1.63, 1.02]),
+    box("cad o11 psu bay from step", 2, [-0.32, -0.85, 0.5], [0.74, 0.42, 0.64]),
+    box("cad o11 expansion slot guide", 3, [-1.0, -0.5, -0.52], [0.08, 0.42, 0.44]),
+    box("cad o11 top radiator guide", 2, [0, 0.92, -0.1], [1.35, 0.1, 0.92]),
+  );
+
+  for (const [index, y] of [0.41, -0.32].entries()) {
+    const label = index + 1;
+    nodes.push(
+      box(`cad o11 front fan ${label} top rail`, 1, [0.98, y + 0.31, -0.2], [0.055, 0.04, 0.72]),
+      box(`cad o11 front fan ${label} bottom rail`, 1, [0.98, y - 0.31, -0.2], [0.055, 0.04, 0.72]),
+      box(`cad o11 front fan ${label} left rail`, 1, [0.98, y, -0.56], [0.055, 0.66, 0.04]),
+      box(`cad o11 front fan ${label} right rail`, 1, [0.98, y, 0.16], [0.055, 0.66, 0.04]),
+    );
+  }
 
   return nodes;
 }

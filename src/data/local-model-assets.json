@@ -771,5 +771,321 @@
       "sourceUrl": "/models/calibration/120mm-fan/scene.gltf",
       "scrapedAt": "2026-06-11T00:00:00.000Z"
     }
+  },
+  {
+    "id": "cad-o11-air-mini-validation",
+    "model": {
+      "kind": "glb",
+      "slot": "case",
+      "mount": "root",
+      "assetUrl": "/models/calibration/o11-air-mini-cad-validation/scene.gltf",
+      "fitSize": [
+        2.17,
+        2.01,
+        1.51
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": 1,
+      "assetAxis": {
+        "right": "+x",
+        "up": "+y",
+        "forward": "+z"
+      },
+      "boundingBoxMm": {
+        "depthMm": 414,
+        "widthMm": 288,
+        "heightMm": 383
+      },
+      "anchorPoints": {
+        "root": {
+          "label": "root",
+          "position": [
+            0,
+            0,
+            0
+          ]
+        },
+        "motherboardTray": {
+          "label": "motherboardTray",
+          "position": [
+            -1.04,
+            0.05,
+            -0.22
+          ]
+        },
+        "psuBay": {
+          "label": "psuBay",
+          "position": [
+            -0.32,
+            -0.85,
+            0.5
+          ]
+        },
+        "topRadiator": {
+          "label": "topRadiator",
+          "position": [
+            0,
+            0.92,
+            -0.1
+          ]
+        },
+        "frontFanMount": {
+          "label": "frontFanMount",
+          "position": [
+            0.98,
+            0.04,
+            -0.2
+          ]
+        },
+        "frontFanMountTop": {
+          "label": "frontFanMountTop",
+          "position": [
+            0.98,
+            0.41,
+            -0.2
+          ]
+        },
+        "frontFanMountBottom": {
+          "label": "frontFanMountBottom",
+          "position": [
+            0.98,
+            -0.32,
+            -0.2
+          ]
+        },
+        "expansionSlots": {
+          "label": "expansionSlots",
+          "position": [
+            -1,
+            -0.5,
+            -0.52
+          ]
+        },
+        "storageBay": {
+          "label": "storageBay",
+          "position": [
+            -0.28,
+            -0.62,
+            0.5
+          ]
+        }
+      },
+      "placement": {
+        "anchor": "root",
+        "fallbackPosition": [
+          0,
+          0,
+          0
+        ]
+      },
+      "mountSlots": [
+        {
+          "id": "motherboard-tray.main",
+          "kind": "motherboardTray",
+          "label": "主板托盘",
+          "anchor": "motherboardTray",
+          "group": "internal",
+          "priority": 10,
+          "supportedFormFactors": [
+            "ATX",
+            "Micro-ATX",
+            "Mini-ITX"
+          ]
+        },
+        {
+          "id": "psu-bay.main",
+          "kind": "psuBay",
+          "label": "电源仓",
+          "anchor": "psuBay",
+          "group": "internal",
+          "priority": 20,
+          "supportedFormFactors": [
+            "ATX",
+            "SFX-L",
+            "SFX"
+          ]
+        },
+        {
+          "id": "radiator.top",
+          "kind": "radiatorMount",
+          "label": "顶部冷排位",
+          "anchor": "topRadiator",
+          "group": "top",
+          "priority": 30,
+          "supportedRadiatorMm": [
+            240,
+            360
+          ]
+        },
+        {
+          "id": "fan.front.120.1",
+          "kind": "fanMount",
+          "label": "前部风扇位 1",
+          "anchor": "frontFanMountTop",
+          "group": "front",
+          "priority": 40,
+          "normal": "-x",
+          "supportedFanSizesMm": [
+            120
+          ]
+        },
+        {
+          "id": "fan.front.120.2",
+          "kind": "fanMount",
+          "label": "前部风扇位 2",
+          "anchor": "frontFanMountBottom",
+          "group": "front",
+          "priority": 41,
+          "normal": "-x",
+          "supportedFanSizesMm": [
+            120
+          ]
+        },
+        {
+          "id": "expansion.rear",
+          "kind": "expansionSlot",
+          "label": "后部扩展槽",
+          "anchor": "expansionSlots",
+          "group": "rear",
+          "priority": 70,
+          "count": 7
+        },
+        {
+          "id": "storage.internal.1",
+          "kind": "storageBay",
+          "label": "内部存储位",
+          "anchor": "storageBay",
+          "group": "internal",
+          "priority": 80,
+          "sizeMm": {
+            "lengthMm": 100,
+            "widthMm": 70,
+            "heightMm": 10
+          }
+        }
+      ]
+    },
+    "externalIds": {
+      "modelAssetId": "cad_o11_air_mini_validation"
+    },
+    "modelSource": {
+      "sourceName": "Local STEP-derived validation: LIAN LI O11 AIR MINI",
+      "sourceUrl": "/Users/wangkai/Downloads/LIAN LI_O11 AIR MINI.stp",
+      "scrapedAt": "2026-06-12T00:00:00.000Z"
+    }
+  },
+  {
+    "id": "rtx-5090-fe-validation",
+    "model": {
+      "kind": "glb",
+      "slot": "gpu",
+      "mount": "pcie-x16",
+      "assetUrl": "/models/calibration/rtx-5090-fe-validation/scene.gltf",
+      "fitSize": [
+        1.6,
+        0.42,
+        0.72
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": 1,
+      "assetAxis": {
+        "right": "+x",
+        "up": "+y",
+        "forward": "+z"
+      },
+      "boundingBoxMm": {
+        "lengthMm": 304,
+        "heightMm": 137,
+        "thicknessMm": 61
+      },
+      "anchorPoints": {
+        "pcieConnector": {
+          "label": "pcieConnector",
+          "position": [
+            0,
+            0,
+            0
+          ]
+        }
+      },
+      "placement": {
+        "anchor": "pcieConnector",
+        "attachTo": {
+          "category": "motherboard",
+          "anchor": "pcieX16"
+        }
+      }
+    },
+    "externalIds": {
+      "modelAssetId": "rtx_5090_fe_spec_validation"
+    },
+    "modelSource": {
+      "sourceName": "Spec-derived validation: NVIDIA GeForce RTX 5090 Founders Edition",
+      "sourceUrl": "https://www.nvidia.com/en-us/geforce/graphics-cards/50-series/rtx-5090/",
+      "scrapedAt": "2026-06-12T00:00:00.000Z"
+    }
+  },
+  {
+    "id": "cad-120mm-fan-validation",
+    "model": {
+      "kind": "glb",
+      "slot": "fans",
+      "mount": "front-fan",
+      "assetUrl": "/models/calibration/120mm-fan/scene.gltf",
+      "fitSize": [
+        0.72,
+        0.72,
+        0.12
+      ],
+      "rotation": [
+        0,
+        1.5708,
+        0
+      ],
+      "scale": 1,
+      "assetAxis": {
+        "right": "+x",
+        "up": "+y",
+        "forward": "+z"
+      },
+      "boundingBoxMm": {
+        "lengthMm": 120,
+        "widthMm": 120,
+        "heightMm": 25
+      },
+      "anchorPoints": {
+        "mountFace": {
+          "label": "mountFace",
+          "position": [
+            0,
+            0,
+            0
+          ]
+        }
+      },
+      "placement": {
+        "anchor": "mountFace",
+        "attachTo": {
+          "category": "case",
+          "anchor": "frontFanMount"
+        }
+      }
+    },
+    "externalIds": {
+      "modelAssetId": "cad_120mm_fan_validation"
+    },
+    "modelSource": {
+      "sourceName": "Generated validation GLTF: 120mm fan for CAD case",
+      "sourceUrl": "/models/calibration/120mm-fan/scene.gltf",
+      "scrapedAt": "2026-06-12T00:00:00.000Z"
+    }
   }
 ]

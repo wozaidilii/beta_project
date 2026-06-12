@@ -18,7 +18,6 @@ const expectedOrder: CategoryId[] = [
   "psu",
   "fans",
   "fans",
-  "fans",
 ];
 
 const plan = getAssemblyPlan(calibrationSelection);
@@ -65,7 +64,7 @@ assert.equal(
   "default build model metadata should not report mount slot validation issues",
 );
 assert.ok(
-  pcCase.mountSlots.length >= 8,
+  pcCase.mountSlots.length >= 7,
   "case should expose a structured mount inventory",
 );
 assertCaseSlot("motherboardTray", "motherboard-tray.main");
@@ -73,7 +72,6 @@ assertCaseSlot("psuBay", "psu-bay.main");
 assertCaseSlot("radiatorMount", "radiator.top");
 assertCaseSlot("fanMount", "fan.front.120.1");
 assertCaseSlot("fanMount", "fan.front.120.2");
-assertCaseSlot("fanMount", "fan.front.120.3");
 assertCaseSlot("expansionSlot", "expansion.rear");
 
 assert.equal(motherboard.mount.target?.category, "case");
@@ -227,11 +225,11 @@ assert.ok(
   "removing cooling should preserve the GPU instance",
 );
 
-assert.equal(fans.length, 3, "default 3-pack fan selection should install 3 fans");
+assert.equal(fans.length, 2, "default CAD fan selection should install 2 fans");
 assert.deepEqual(
   fans.map((fan) => fan.mount.target?.slotId),
-  ["fan.front.120.1", "fan.front.120.2", "fan.front.120.3"],
-  "default fan pack should occupy the front fan slots in priority order",
+  ["fan.front.120.1", "fan.front.120.2"],
+  "default CAD fan pack should occupy the front fan slots in priority order",
 );
 
 for (const fan of fans) {
@@ -241,8 +239,8 @@ for (const fan of fans) {
   assert.equal(fan.mount.mode, "attached");
   assert.equal(
     fan.position[0],
-    1.18,
-    "front fans should mount inside the case front panel instead of outside the chassis",
+    0.98,
+    "front fans should mount on the CAD-derived front panel anchors",
   );
   assert.equal(
     fan.rotation[1],
@@ -259,8 +257,8 @@ for (const fan of fans) {
 const singleFanPlan = getAssemblyPlan(calibrationSelection, {
   fanInstallations: [
     {
-      instanceId: "fans:single-front-middle",
-      partId: "calibration-120mm-fan",
+      instanceId: "fans:single-front-second",
+      partId: "cad-120mm-fan-validation",
       slotId: "fan.front.120.2",
     },
   ],
@@ -269,14 +267,14 @@ const singleFans = singleFanPlan.instances.filter(
   (instance) => instance.category === "fans",
 );
 assert.equal(singleFans.length, 1, "explicit fan state should support one fan");
-assert.equal(singleFans[0]?.instanceId, "fans:single-front-middle");
+assert.equal(singleFans[0]?.instanceId, "fans:single-front-second");
 assert.equal(singleFans[0]?.mount.target?.slotId, "fan.front.120.2");
 
 const fanState = toFanInstallationState(fans);
-const middleFan = fans.find(
+const secondFan = fans.find(
   (fan) => fan.mount.target?.slotId === "fan.front.120.2",
 );
-assert.ok(middleFan, "default fan pack should include the middle front fan");
+assert.ok(secondFan, "default fan pack should include the second front fan");
 const uncalibratedFanPlan = getAssemblyPlan(calibrationSelection, {
   fanInstallations: fanState.map((fan) =>
     fan.slotId === "fan.front.120.2"
@@ -285,12 +283,12 @@ const uncalibratedFanPlan = getAssemblyPlan(calibrationSelection, {
   ),
 });
 const uncalibratedFanIssue = uncalibratedFanPlan.validationIssues.find(
-  (issue) => issue.id === `${middleFan.instanceId}:missing-fan-model`,
+  (issue) => issue.id === `${secondFan.instanceId}:missing-fan-model`,
 );
 assert.equal(
   uncalibratedFanPlan.instances.filter((instance) => instance.category === "fans")
     .length,
-  2,
+  1,
   "uncalibrated fan replacement should not create a fake fan instance",
 );
 assert.ok(uncalibratedFanIssue);
@@ -303,7 +301,7 @@ const remainingFanSlots = removedPlan.instances
   .map((instance) => instance.mount.target?.slotId);
 assert.deepEqual(
   remainingFanSlots,
-  ["fan.front.120.1", "fan.front.120.3"],
+  ["fan.front.120.1"],
   "removing one fan should preserve the other installed fan instances",
 );
 
@@ -312,7 +310,7 @@ const tooManyFanPlan = getAssemblyPlan(calibrationSelection, {
     ...fanState,
     {
       instanceId: "fans:invalid-side-slot",
-      partId: "calibration-120mm-fan",
+      partId: "cad-120mm-fan-validation",
       slotId: "fan.side.120.1",
     },
   ],
@@ -322,7 +320,7 @@ const invalidFanSlotIssue = tooManyFanPlan.validationIssues.find(
 );
 assert.equal(
   tooManyFanPlan.instances.filter((instance) => instance.category === "fans").length,
-  3,
+  2,
   "invalid requested fan slots should not create fake fan placements",
 );
 assert.ok(invalidFanSlotIssue);

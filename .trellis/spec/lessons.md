@@ -76,3 +76,10 @@
 - 根因：早期把 scraped product data、local model overrides 和 trusted 3D installability 混在一起，`hasModelAsset` 又被产品页当成商品可见性门槛。
 - 修复：真实商品不再从 scraped 数据注入 `model`，`local-model-assets.json` 只保留 `calibration-*` 可信资产，产品页改用 commerce predicate。
 - 预防：普通商品数据只能提供规格、价格、图片和购买链接；3D installability 必须来自经过 intake validation 的模型资产记录。
+
+## STEP intake needs tool and bbox validation
+
+- 问题：macOS FreeCAD cask 的 `freecadcmd` 入口可能因 Qt/CPU feature 检测失败无法运行，且部分 STEP 子装配会产生离群或无效 bbox，污染整体尺寸判断。
+- 根因：CAD 工具链和 STEP 结构都不是前端资产格式；不同入口、顶层装配、参考平面和离体零件会把“可导入”误导成“可直接入库”。
+- 修复：使用 `/Applications/FreeCAD.app/Contents/MacOS/FreeCAD -c` 作为可用回退入口，并在 STEP intake 脚本中过滤非有限、过大或离群 bbox，再优先读取可信顶层产品装配与命名关键对象。
+- 预防：以后导入 CAD 资产时，必须保存 FreeCAD 版本、单位、顶层装配 bbox、关键对象列表和过滤规则；不要直接把全局 bbox 或未授权原始 CAD 绑定到真实商品模型。
