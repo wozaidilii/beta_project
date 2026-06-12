@@ -304,3 +304,36 @@ Removed misleading real-product model bindings, generated calibration-only GLTF 
 ### Next Steps
 
 - None - task complete
+
+
+## Session 10: Validate CAD-derived case and RTX 5090 assets
+
+**Date**: 2026-06-12
+**Task**: Validate CAD-derived case and RTX 5090 assets
+**Branch**: `codex/calibration-asset-intake-validation`
+
+### Summary
+
+Installed FreeCAD, inspected the local O11 Air Mini STEP, added CAD/spec-derived calibration assets for O11 case, 120mm fans, and RTX 5090 validation, updated assembly/render tests, and documented CAD intake lessons.
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `665008d` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
